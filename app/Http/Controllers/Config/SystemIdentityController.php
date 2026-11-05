@@ -97,12 +97,12 @@ class SystemIdentityController extends Controller
             Setting::set('logo_navbar', $path, 'identity');
         }
 
-        // 3. Procesar y Redimensionar Logotipo de Inicio de Sesión (Login: Máx. óptimo 560 × 130 px @2x)
+        // 3. Procesar y Redimensionar Logotipo de Inicio de Sesión (Login: Máx. óptimo 680 × 220 px @2x)
         if ($request->boolean('remove_logo_login')) {
             $this->deleteStoredFile('logo_login');
         } elseif ($request->hasFile('logo_login')) {
             $this->deleteStoredFile('logo_login');
-            $path = $this->storeAndOptimizeImage($request->file('logo_login'), 560, 130);
+            $path = $this->storeAndOptimizeImage($request->file('logo_login'), 680, 220);
             Setting::set('logo_login', $path, 'identity');
         }
 

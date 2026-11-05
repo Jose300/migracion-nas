@@ -48,8 +48,8 @@
     }
     .preview-real-frame.frame-login {
         width: 100%;
-        max-width: 310px;
-        min-height: 85px;
+        max-width: 370px;
+        min-height: 125px;
     }
     .browser-mockup-tab {
         background: #f1f5f9;
@@ -341,7 +341,7 @@
                                     <i class="ti ti-shield-alert me-1"></i> Rango Mínimo: <strong>120 × 35 px</strong>
                                 </span>
                                 <span class="badge bg-indigo-lt text-indigo fw-bold" title="Tamaño óptimo para visualización nítida">
-                                    <i class="ti ti-sparkles me-1"></i> Tamaño Óptimo: <strong>280 × 65 px</strong>
+                                    <i class="ti ti-sparkles me-1"></i> Tamaño Óptimo: <strong>340 × 110 px</strong>
                                 </span>
                             </div>
                             <span class="badge bg-success-lt text-success font-monospace" style="font-size: 0.70rem;">
@@ -356,18 +356,18 @@
                                         Vista Previa en Inicio de Sesión
                                     </div>
                                     <span class="badge bg-indigo-lt text-indigo font-monospace" style="font-size: 0.68rem;">
-                                        <i class="ti ti-dimensions me-1"></i> Visualización: 280 × 65 px
+                                        <i class="ti ti-dimensions me-1"></i> Visualización: 340 × 110 px
                                     </span>
                                 </div>
                                 <div class="preview-canvas mb-3">
                                     <div class="preview-real-frame frame-login shadow-sm">
-                                        <div id="preview-container-login" class="text-center d-flex align-items-center justify-content-center" style="max-width: 280px; max-height: 65px;">
+                                        <div id="preview-container-login" class="text-center d-flex align-items-center justify-content-center" style="max-width: 340px; max-height: 110px;">
                                             @if($logoLogin && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoLogin))
                                                 <img src="{{ asset('storage/' . $logoLogin) }}" 
                                                      id="img-preview-login" 
                                                      alt="Logo Login" 
                                                      class="img-fluid" 
-                                                     style="max-height: 65px; max-width: 280px; width: auto; height: auto; object-fit: contain; display: block;">
+                                                     style="max-height: 110px; max-width: 340px; width: auto; height: auto; object-fit: contain; display: block;">
                                             @else
                                                 <div id="default-preview-login" class="d-flex align-items-center justify-content-center">
                                                     <div class="bg-primary-lt p-2 rounded-3 me-2 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px;">
@@ -377,7 +377,7 @@
                                                         {{ $appName }}
                                                     </span>
                                                 </div>
-                                                <img src="" id="img-preview-login" alt="Logo Login" class="img-fluid d-none" style="max-height: 65px; max-width: 280px; width: auto; height: auto; object-fit: contain; display: block;">
+                                                <img src="" id="img-preview-login" alt="Logo Login" class="img-fluid d-none" style="max-height: 110px; max-width: 340px; width: auto; height: auto; object-fit: contain; display: block;">
                                             @endif
                                         </div>
                                     </div>
@@ -402,7 +402,7 @@
                                             <i class="ti ti-ban me-1"></i> Bloqueo si &lt; 120 × 35 px
                                         </span>
                                         <span class="badge bg-indigo-lt text-indigo font-monospace" style="font-size: 0.70rem;">
-                                            <i class="ti ti-check me-1"></i> Óptimo: 280 × 65 px
+                                            <i class="ti ti-check me-1"></i> Óptimo: 340 × 110 px
                                         </span>
                                     </div>
                                 </div>
@@ -607,8 +607,8 @@
                     const origH = this.naturalHeight;
                     const minW = target === 'login' ? 120 : 80;
                     const minH = target === 'login' ? 35 : 25;
-                    const optW = target === 'login' ? 280 : 185;
-                    const optH = target === 'login' ? 65 : 42;
+                    const optW = target === 'login' ? 340 : 185;
+                    const optH = target === 'login' ? 110 : 42;
                     const targetName = target === 'login' ? 'Inicio de Sesión' : 'Barra Lateral';
 
                     // Si la imagen es inferior al rango mínimo, PROHIBIR la carga
