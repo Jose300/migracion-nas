@@ -21,9 +21,16 @@
         @import url('https://rsms.me/inter/inter.css');
         :root {
             --tblr-font-sans-serif: 'Inter var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+            --tblr-navbar-vertical-width: 16.5rem;
         }
         body {
             font-feature-settings: "cv03", "cv04", "cv11";
+        }
+
+        @media (min-width: 768px) {
+            .navbar-vertical.navbar-expand-md {
+                width: 16.5rem !important;
+            }
         }
 
         /* Estructura base uniforme para opciones activas e inactivas del menú lateral */
@@ -178,6 +185,26 @@
                                 <span class="nav-link-title">Mi Perfil</span>
                             </a>
                         </li>
+                        @can('ver-migracion-nas')
+                        <li class="nav-item {{ (request()->is('nas-migracion') || request()->is('nas-migracion/tareas*') || request()->is('nas-migracion/logs*')) && !request()->is('nas-migracion/confirmacion*') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('nas-migracion.index') }}">
+                                <span class="nav-link-icon">
+                                    <i class="ti ti-arrows-transfer-down" style="color: #2fb344 !important;"></i>
+                                </span>
+                                <span class="nav-link-title">Sincronización y Tareas</span>
+                            </a>
+                        </li>
+                        @endcan
+                        @can('ver-confirmacion-nas')
+                        <li class="nav-item {{ request()->is('nas-migracion/confirmacion*') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('nas-migracion.confirmacion.index') }}">
+                                <span class="nav-link-icon">
+                                    <i class="ti ti-checklist" style="color: #0ca678 !important;"></i>
+                                </span>
+                                <span class="nav-link-title">Confirmación de Archivos</span>
+                            </a>
+                        </li>
+                        @endcan
                         @canany(['ver-usuarios', 'ver-roles', 'ver-permisos', 'ver-identidad', 'ver-auditoria', 'ver-logs', 'ver-sistema', 'ver-conexiones'])
                         <li class="nav-item dropdown {{ request()->is('configuracion*') ? 'active' : '' }}">
                             <a class="nav-link dropdown-toggle" href="#navbar-config" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
@@ -277,18 +304,7 @@
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu" aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
-                    <div class="collapse navbar-collapse" id="navbar-menu">
-                        <div>
-                            <form action="./" method="get" autocomplete="off" novalidate>
-                                <div class="input-icon">
-                                    <span class="input-icon-addon">
-                                        <i class="ti ti-search"></i>
-                                    </span>
-                                    <input type="text" value="" class="form-control" placeholder="Buscar..." aria-label="Search in website">
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                    <div class="collapse navbar-collapse" id="navbar-menu"></div>
                     <div class="navbar-nav flex-row ms-auto">
                         <div class="nav-item dropdown d-none d-md-flex me-3">
                             <a href="#" class="nav-link px-0" data-bs-toggle="dropdown" tabindex="-1" aria-label="Show notifications">
@@ -375,6 +391,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @stack('js')
+    @stack('scripts')
     
     @if(request()->is('configuracion/usuarios*'))
         <script src="{{ asset('js/users.js') }}"></script>

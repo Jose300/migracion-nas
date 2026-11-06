@@ -83,4 +83,52 @@ Route::middleware('auth')->group(function () {
             });
         });
     });
+
+    // Módulo de Migración y Sincronización NAS
+    Route::prefix('nas-migracion')->name('nas-migracion.')->group(function () {
+        Route::get('/', [App\Http\Controllers\NasMigrationController::class, 'index'])
+            ->middleware('permission:ver-migracion-nas')->name('index');
+
+        Route::post('/tareas', [App\Http\Controllers\NasMigrationController::class, 'store'])
+            ->middleware('permission:crear-tarea-nas')->name('tasks.store');
+
+        Route::put('/tareas/{task}', [App\Http\Controllers\NasMigrationController::class, 'update'])
+            ->middleware('permission:editar-tarea-nas')->name('tasks.update');
+
+        Route::delete('/tareas/{task}', [App\Http\Controllers\NasMigrationController::class, 'destroy'])
+            ->middleware('permission:eliminar-tarea-nas')->name('tasks.destroy');
+
+        Route::post('/tareas/{task}/test-connection', [App\Http\Controllers\NasMigrationController::class, 'testConnection'])
+            ->middleware('permission:probar-conexion-nas')->name('tasks.test');
+
+        Route::post('/tareas/{task}/sync', [App\Http\Controllers\NasMigrationController::class, 'startSync'])
+            ->middleware('permission:ejecutar-migracion-nas')->name('tasks.sync');
+
+        Route::post('/tareas/{task}/stop', [App\Http\Controllers\NasMigrationController::class, 'stopSync'])
+            ->middleware('permission:ejecutar-migracion-nas')->name('tasks.stop');
+
+        Route::get('/tareas/{task}/status', [App\Http\Controllers\NasMigrationController::class, 'checkStatus'])
+            ->middleware('permission:ver-migracion-nas')->name('tasks.status');
+
+        Route::get('/logs/{log}', [App\Http\Controllers\NasMigrationController::class, 'showLog'])
+            ->middleware('permission:ver-consola-log-nas')->name('logs.show');
+
+        // Submódulo de Confirmación y Cotejo de Archivos (Synology vs Inspur)
+        Route::prefix('confirmacion')->name('confirmacion.')->group(function () {
+            Route::get('/', [App\Http\Controllers\NasVerificationController::class, 'index'])
+                ->middleware('permission:ver-confirmacion-nas')->name('index');
+
+            Route::post('/iniciar/{task}', [App\Http\Controllers\NasVerificationController::class, 'startVerification'])
+                ->middleware('permission:ejecutar-confirmacion-nas')->name('start');
+
+            Route::get('/{verification}/status', [App\Http\Controllers\NasVerificationController::class, 'checkStatus'])
+                ->middleware('permission:ver-confirmacion-nas')->name('status');
+
+            Route::post('/simular/{task}', [App\Http\Controllers\NasVerificationController::class, 'simulate'])
+                ->middleware('permission:ejecutar-confirmacion-nas')->name('simulate');
+
+            Route::get('/{verification}/exportar', [App\Http\Controllers\NasVerificationController::class, 'export'])
+                ->middleware('permission:exportar-confirmacion-nas')->name('export');
+        });
+    });
 });

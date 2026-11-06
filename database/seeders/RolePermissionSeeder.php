@@ -148,6 +148,58 @@ class RolePermissionSeeder extends Seeder
                 'module' => 'Conexiones',
                 'description' => 'Exportar reporte de conexiones y sesiones a Excel o CSV'
             ],
+
+            // Migración NAS (10)
+            [
+                'name' => 'ver-migracion-nas',
+                'module' => 'Migración NAS',
+                'description' => 'Consultar el panel principal y listado de tareas de migración NAS'
+            ],
+            [
+                'name' => 'crear-tarea-nas',
+                'module' => 'Migración NAS',
+                'description' => 'Registrar y crear nuevas tareas de migración NAS (+ Nueva Tarea)'
+            ],
+            [
+                'name' => 'probar-conexion-nas',
+                'module' => 'Migración NAS',
+                'description' => 'Ejecutar prueba de conectividad Ping y SSH hacia la NAS'
+            ],
+            [
+                'name' => 'ejecutar-migracion-nas',
+                'module' => 'Migración NAS',
+                'description' => 'Iniciar sincronización de archivos por lotes o paralizar ejecución activa'
+            ],
+            [
+                'name' => 'editar-tarea-nas',
+                'module' => 'Migración NAS',
+                'description' => 'Configurar y modificar parámetros, rutas y credenciales de tareas'
+            ],
+            [
+                'name' => 'eliminar-tarea-nas',
+                'module' => 'Migración NAS',
+                'description' => 'Eliminar tareas de migración NAS del sistema'
+            ],
+            [
+                'name' => 'ver-consola-log-nas',
+                'module' => 'Migración NAS',
+                'description' => 'Consultar la consola terminal y salida en tiempo real de las ejecuciones (Ver Consola)'
+            ],
+            [
+                'name' => 'ver-confirmacion-nas',
+                'module' => 'Migración NAS',
+                'description' => 'Consultar el panel de confirmación y cotejo de archivos entre NAS Synology e Inspur'
+            ],
+            [
+                'name' => 'ejecutar-confirmacion-nas',
+                'module' => 'Migración NAS',
+                'description' => 'Iniciar procesos de verificación, comparación y simulación de archivos copiados'
+            ],
+            [
+                'name' => 'exportar-confirmacion-nas',
+                'module' => 'Migración NAS',
+                'description' => 'Exportar reportes de cotejo y verificación de archivos a formato CSV'
+            ],
         ];
 
         // Eliminar permisos antiguos que no pertenezcan a los módulos base

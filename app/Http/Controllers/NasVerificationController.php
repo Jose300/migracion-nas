@@ -1,0 +1,204 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\NasFileVerification;
+use App\Models\NasFileVerificationItem;
+use App\Models\NasMigrationTask;
+use App\Services\NasVerificationService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
+class NasVerificationController extends Controller
+{
+    public function __construct(
+        protected NasVerificationService $verificationService
+    ) {}
+
+    /**
+     * Panel principal de confirmación y cotejo de archivos.
+     */
+    public function index(Request $request): View
+    {
+        $tasks = NasMigrationTask::all();
+        $selectedTaskId = $request->input('task_id', $tasks->first()?->id);
+        $selectedTask = $tasks->firstWhere('id', $selectedTaskId) ?? $tasks->first();
+
+        // Obtener la verificación seleccionada o la más reciente de la tarea
+        if ($request->filled('verification_id')) {
+            $verification = NasFileVerification::with(['task', 'user'])->find($request->verification_id);
+        } elseif ($selectedTask) {
+            $verification = NasFileVerification::with(['task', 'user'])
+                ->where('nas_migration_task_id', $selectedTask->id)
+                ->latest('started_at')
+                ->first();
+        } else {
+            $verification = null;
+        }
+
+        // Historial de las últimas sesiones de verificación
+        $history = NasFileVerification::with(['task', 'user'])
+            ->latest('started_at')
+            ->take(15)
+            ->get();
+
+        // Consulta de items con filtros y paginación
+        if ($verification) {
+            $itemsQuery = $verification->items();
+
+            if ($request->filled('status') && $request->status !== 'all') {
+                $itemsQuery->where('status', $request->status);
+            }
+
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $itemsQuery->where(function ($q) use ($search) {
+                    $q->where('file_name', 'like', "%{$search}%")
+                      ->orWhere('relative_path', 'like', "%{$search}%");
+                });
+            }
+
+            $items = $itemsQuery->paginate(25)->withQueryString();
+        } else {
+            $items = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 25);
+        }
+
+        return view('nas-migracion.confirmacion.index', compact(
+            'tasks',
+            'selectedTask',
+            'selectedTaskId',
+            'verification',
+            'items',
+            'history'
+        ));
+    }
+
+    /**
+     * Inicia la verificación asíncrona en segundo plano sin bloquear el navegador.
+     */
+    public function startVerification(Request $request, NasMigrationTask $task): JsonResponse
+    {
+        // 1. Crear el registro inicial en estado 'running'
+        $verification = NasFileVerification::create([
+            'nas_migration_task_id' => $task->id,
+            'user_id' => auth()->id(),
+            'status' => 'running',
+            'started_at' => now(),
+        ]);
+
+        // 2. Despachar comando Artisan desacoplado en segundo plano
+        $php = PHP_BINARY;
+        $artisan = base_path('artisan');
+        $userId = auth()->id() ?? 0;
+
+        if (PHP_OS_FAMILY === 'Windows') {
+            $command = "start /B \"\" \"{$php}\" \"{$artisan}\" nas:verify {$task->id} --verification_id={$verification->id} --user_id={$userId} > NUL 2>&1";
+            pclose(popen($command, 'r'));
+        } else {
+            $command = "{$php} \"{$artisan}\" nas:verify {$task->id} --verification_id={$verification->id} --user_id={$userId} > /dev/null 2>&1 &";
+            exec($command);
+        }
+
+        return response()->json([
+            'success' => true,
+            'status' => 'running',
+            'verification_id' => $verification->id,
+            'message' => 'El proceso de cotejo y verificación se ha iniciado en segundo plano. Evaluando archivos entre Synology e Inspur.',
+        ]);
+    }
+
+    /**
+     * Consulta el estado de una verificación en tiempo real para el polling del frontend.
+     */
+    public function checkStatus(NasFileVerification $verification): JsonResponse
+    {
+        $verification->refresh();
+
+        return response()->json([
+            'id' => $verification->id,
+            'status' => $verification->status,
+            'duration' => $verification->duration_formatted,
+            'total_files' => $verification->total_files_synology,
+            'confirmed' => $verification->total_confirmed,
+            'mismatched_size' => $verification->total_mismatched_size,
+            'mismatched_date' => $verification->total_mismatched_date,
+            'missing' => $verification->total_missing_in_target,
+            'percentage' => $verification->confirmed_percentage,
+            'error_message' => $verification->error_message,
+        ]);
+    }
+
+    /**
+     * Genera una verificación simulada/demostrativa de cotejo Synology vs Inspur.
+     */
+    public function simulate(NasMigrationTask $task): JsonResponse
+    {
+        $verification = $this->verificationService->simulateVerification($task, auth()->id());
+
+        return response()->json([
+            'success' => true,
+            'verification_id' => $verification->id,
+            'message' => 'Simulación de confirmación y corroboración de archivos completada exitosamente.',
+        ]);
+    }
+
+    /**
+     * Exporta el reporte comparativo en formato CSV para descarga directa.
+     */
+    public function export(NasFileVerification $verification): StreamedResponse
+    {
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"reporte_confirmacion_nas_{$verification->id}.csv\"",
+        ];
+
+        return response()->stream(function () use ($verification) {
+            $handle = fopen('php://output', 'w');
+            
+            // BOM UTF-8 para Excel
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // Encabezados
+            fputcsv($handle, [
+                'ID',
+                'Ruta Relativa',
+                'Nombre de Archivo',
+                'Synology Tamaño (Bytes)',
+                'Synology Tamaño',
+                'Synology Fecha Modificación',
+                'Inspur Tamaño (Bytes)',
+                'Inspur Tamaño',
+                'Inspur Fecha Modificación',
+                'Nombre Coincide',
+                'Tamaño Coincide',
+                'Fecha Coincide',
+                'Estado Veredicto',
+            ]);
+
+            $verification->items()->chunk(1000, function ($items) use ($handle) {
+                foreach ($items as $item) {
+                    fputcsv($handle, [
+                        $item->id,
+                        $item->relative_path,
+                        $item->file_name,
+                        $item->synology_size,
+                        $item->human_synology_size,
+                        $item->synology_mtime ? $item->synology_mtime->format('d/m/Y H:i:s') : '-',
+                        $item->inspur_size !== null ? $item->inspur_size : 'No existe',
+                        $item->human_inspur_size,
+                        $item->inspur_mtime ? $item->inspur_mtime->format('d/m/Y H:i:s') : '-',
+                        $item->name_match ? 'SI' : 'NO',
+                        $item->size_match ? 'SI' : 'NO',
+                        $item->date_match ? 'SI' : 'NO',
+                        $item->status_label,
+                    ]);
+                }
+            });
+
+            fclose($handle);
+        }, 200, $headers);
+    }
+}
+
