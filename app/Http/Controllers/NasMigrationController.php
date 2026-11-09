@@ -102,9 +102,12 @@ class NasMigrationController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        $validated['target_path'] = $validated['target_path'] ?: '/volume1/dae-RowData/MIGRACION_SYNOLOGY/';
-        $validated['inspur_base_path'] = $validated['inspur_base_path'] ?: '/HS_IPS_PRIVATE/RDP_FTP/RAWDATA';
-        $validated['inspur_shared_folder'] = $validated['inspur_shared_folder'] ?: '/HS_SHARE/MIGRACION_SYNOLOGY';
+        $validated['target_path'] = (!empty($validated['target_path'])) ? $validated['target_path'] : '/volume1/dae-RowData/MIGRACION_SYNOLOGY/';
+        $validated['inspur_base_path'] = (!empty($validated['inspur_base_path'])) ? $validated['inspur_base_path'] : '/HS_IPS_PRIVATE/RDP_FTP/RAWDATA';
+        $validated['inspur_shared_folder'] = (!empty($validated['inspur_shared_folder'])) ? $validated['inspur_shared_folder'] : '/HS_SHARE/MIGRACION_SYNOLOGY';
+        $validated['inspur_host'] = (!empty($validated['inspur_host'])) ? $validated['inspur_host'] : '192.168.10.180';
+        $validated['inspur_port'] = (!empty($validated['inspur_port'])) ? (int)$validated['inspur_port'] : 22;
+        $validated['inspur_user'] = (!empty($validated['inspur_user'])) ? $validated['inspur_user'] : 'root';
         $validated['delete_after_sync'] = $request->has('delete_after_sync');
         $validated['auto_move_to_inspur'] = $request->boolean('auto_move_to_inspur', true);
         $validated['is_active'] = $request->has('is_active');
@@ -153,9 +156,12 @@ class NasMigrationController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        $validated['target_path'] = $validated['target_path'] ?: '/volume1/dae-RowData/MIGRACION_SYNOLOGY/';
-        $validated['inspur_base_path'] = $validated['inspur_base_path'] ?: '/HS_IPS_PRIVATE/RDP_FTP/RAWDATA';
-        $validated['inspur_shared_folder'] = $validated['inspur_shared_folder'] ?: '/HS_SHARE/MIGRACION_SYNOLOGY';
+        $validated['target_path'] = (!empty($validated['target_path'])) ? $validated['target_path'] : '/volume1/dae-RowData/MIGRACION_SYNOLOGY/';
+        $validated['inspur_base_path'] = (!empty($validated['inspur_base_path'])) ? $validated['inspur_base_path'] : '/HS_IPS_PRIVATE/RDP_FTP/RAWDATA';
+        $validated['inspur_shared_folder'] = (!empty($validated['inspur_shared_folder'])) ? $validated['inspur_shared_folder'] : '/HS_SHARE/MIGRACION_SYNOLOGY';
+        $validated['inspur_host'] = (!empty($validated['inspur_host'])) ? $validated['inspur_host'] : '192.168.10.180';
+        $validated['inspur_port'] = (!empty($validated['inspur_port'])) ? (int)$validated['inspur_port'] : 22;
+        $validated['inspur_user'] = (!empty($validated['inspur_user'])) ? $validated['inspur_user'] : 'root';
         $validated['delete_after_sync'] = $request->has('delete_after_sync');
         $validated['auto_move_to_inspur'] = $request->boolean('auto_move_to_inspur', true);
         $validated['is_active'] = $request->has('is_active');
