@@ -130,5 +130,20 @@ Route::middleware('auth')->group(function () {
             Route::get('/{verification}/exportar', [App\Http\Controllers\NasVerificationController::class, 'export'])
                 ->middleware('permission:exportar-confirmacion-nas')->name('export');
         });
+
+        // Submódulo de Estadísticas de Migración (Resumen por Responsable, Satélite y Nuevo Ejecutor)
+        Route::prefix('estadisticas')->name('estadisticas.')->group(function () {
+            Route::get('/', [App\Http\Controllers\NasStatsController::class, 'index'])
+                ->middleware('permission:ver-estadisticas-nas')->name('index');
+
+            Route::post('/', [App\Http\Controllers\NasStatsController::class, 'store'])
+                ->middleware('permission:crear-estadisticas-nas')->name('store');
+
+            Route::delete('/{stat}', [App\Http\Controllers\NasStatsController::class, 'destroy'])
+                ->middleware('permission:crear-estadisticas-nas')->name('destroy');
+
+            Route::get('/exportar', [App\Http\Controllers\NasStatsController::class, 'export'])
+                ->middleware('permission:exportar-estadisticas-nas')->name('export');
+        });
     });
 });

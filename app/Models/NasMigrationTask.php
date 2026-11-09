@@ -27,12 +27,24 @@ class NasMigrationTask extends Model
     ];
 
     public const SYNOLOGY_AVAILABLE_SOURCES = [
-        '/volume1/dae-Imagenes-VRSS1/',
-        '/volume1/dae-Imagenes-VRSS2/',
-        '/volume1/dae-RowData/',
+        // Volumen 2 IPS y sus subdirectorios recursivos
         '/volume1/dae-Volumen2_IPS/',
-        '/volume1/dae-Volumen4_Respaldo__/',
-        '/volume1/Miranda-25-pbs/',
+        '/volume1/dae-Volumen2_IPS/RAWDATA PRINCIPAL/',
+        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/',
+        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS1/',
+        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/',
+        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2019/',
+        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2020/',
+        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2021/',
+        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2022/',
+        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2023/',
+        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2024/',
+
+        // Volumen 4 Respaldo IPS y sus subdirectorios recursivos
+        '/volume1/dae-Volumen4_Respaldo_IPS/',
+        '/volume1/dae-Volumen4_Respaldo_IPS/RAWDATA BACKUP/',
+        '/volume1/dae-Volumen4_Respaldo_IPS/RAWDATA BACKUP/RAW DATA 2/',
+        '/volume1/dae-Volumen4_Respaldo_IPS/RAWDATA PRINCIPAL/',
     ];
 
     public const SYNOLOGY_AVAILABLE_TARGETS = [
@@ -52,6 +64,8 @@ class NasMigrationTask extends Model
         'target_path',
         'inspur_base_path',
         'inspur_target_dir',
+        'last_migrated_orbit',
+        'last_migrated_orbit_at',
         'inspur_host',
         'inspur_port',
         'inspur_user',

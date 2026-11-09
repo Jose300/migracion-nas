@@ -60,9 +60,9 @@ class NasVerificationController extends Controller
                 });
             }
 
-            $items = $itemsQuery->paginate(25)->withQueryString();
+            $items = $itemsQuery->paginate(10)->withQueryString();
         } else {
-            $items = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 25);
+            $items = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10);
         }
 
         return view('nas-migracion.confirmacion.index', compact(

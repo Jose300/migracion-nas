@@ -1,0 +1,275 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\NasMigrationStat;
+use App\Models\NasMigrationTask;
+use App\Services\AuditService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
+class NasStatsController extends Controller
+{
+    /**
+     * Vista principal del módulo de estadísticas de migración.
+     */
+    public function index(Request $request)
+    {
+        // 1. Métricas Globales
+        $totalGb = (float) NasMigrationStat::sum('tamano_gb');
+        $totalFiles = (int) NasMigrationStat::sum('cantidad_archivos');
+        $totalExecutors = (int) NasMigrationStat::distinct('responsable')->count('responsable');
+
+        $totalVrss1Gb = (float) NasMigrationStat::where('satelite', 'VRSS-1')->sum('tamano_gb');
+        $totalVrss1Files = (int) NasMigrationStat::where('satelite', 'VRSS-1')->sum('cantidad_archivos');
+
+        $totalVrss2Gb = (float) NasMigrationStat::where('satelite', 'VRSS-2')->sum('tamano_gb');
+        $totalVrss2Files = (int) NasMigrationStat::where('satelite', 'VRSS-2')->sum('cantidad_archivos');
+
+        // 2. Resumen por Responsable (Cotejado con hoja "Resumen por Responsable" del Excel)
+        $responsablesStats = NasMigrationStat::select(
+                'responsable',
+                DB::raw('SUM(tamano_gb) as total_gb'),
+                DB::raw('SUM(cantidad_archivos) as total_archivos'),
+                DB::raw('COUNT(*) as total_registros'),
+                DB::raw('MIN(fecha) as fecha_inicio'),
+                DB::raw('MAX(fecha) as fecha_fin')
+            )
+            ->groupBy('responsable')
+            ->orderByDesc('total_gb')
+            ->get()
+            ->map(function ($row) use ($totalGb) {
+                $row->porcentaje = $totalGb > 0 ? round(($row->total_gb / $totalGb) * 100, 2) : 0;
+                $row->satelites = NasMigrationStat::where('responsable', $row->responsable)
+                    ->distinct()
+                    ->pluck('satelite')
+                    ->toArray();
+                return $row;
+            });
+
+        // 3. Preparación de datos para Gráficas ApexCharts
+        // Donut: Distribución de GB por Ejecutor
+        $chartExecutorsLabels = $responsablesStats->pluck('responsable')->toArray();
+        $chartExecutorsSeries = $responsablesStats->map(fn($r) => round((float)$r->total_gb, 2))->toArray();
+
+        // Donut: Satélites (VRSS-1 vs VRSS-2)
+        $chartSatLabels = ['VRSS-1', 'VRSS-2'];
+        $chartSatSeries = [round($totalVrss1Gb, 2), round($totalVrss2Gb, 2)];
+
+        // Serie de Tiempo: GB Migrados por Día
+        $dailyData = NasMigrationStat::select(
+                'fecha',
+                'satelite',
+                DB::raw('SUM(tamano_gb) as dia_gb'),
+                DB::raw('SUM(cantidad_archivos) as dia_archivos')
+            )
+            ->groupBy('fecha', 'satelite')
+            ->orderBy('fecha')
+            ->get();
+
+        $allDates = $dailyData->pluck('fecha')->map(fn($d) => is_string($d) ? substr($d, 0, 10) : $d->format('Y-m-d'))->unique()->values()->toArray();
+        
+        $timelineVrss1 = [];
+        $timelineVrss2 = [];
+        foreach ($allDates as $dateStr) {
+            $v1 = $dailyData->first(fn($item) => (is_string($item->fecha) ? substr($item->fecha, 0, 10) : $item->fecha->format('Y-m-d')) === $dateStr && $item->satelite === 'VRSS-1');
+            $v2 = $dailyData->first(fn($item) => (is_string($item->fecha) ? substr($item->fecha, 0, 10) : $item->fecha->format('Y-m-d')) === $dateStr && $item->satelite === 'VRSS-2');
+            $timelineVrss1[] = $v1 ? round((float)$v1->dia_gb, 2) : 0;
+            $timelineVrss2[] = $v2 ? round((float)$v2->dia_gb, 2) : 0;
+        }
+
+        // 4. Listado Detallado de Registros con Filtros
+        $query = NasMigrationStat::with('task')->latest('fecha')->latest('id');
+
+        if ($request->filled('responsable') && $request->responsable !== 'all') {
+            $query->where('responsable', $request->responsable);
+        }
+
+        if ($request->filled('satelite') && $request->satelite !== 'all') {
+            $query->where('satelite', $request->satelite);
+        }
+
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('fecha', '>=', $request->fecha_desde);
+        }
+
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('fecha', '<=', $request->fecha_hasta);
+        }
+
+        if ($request->filled('search')) {
+            $s = trim($request->search);
+            $query->where(function ($q) use ($s) {
+                $q->where('archivo_id', 'like', "%{$s}%")
+                  ->orWhere('responsable', 'like', "%{$s}%")
+                  ->orWhere('observaciones', 'like', "%{$s}%");
+            });
+        }
+
+        $records = $query->paginate(10)->withQueryString();
+
+        // Lista de ejecutores registrados para selectores y datalists
+        $availableExecutors = NasMigrationStat::distinct()->orderBy('responsable')->pluck('responsable')->toArray();
+
+        return view('nas-migracion.estadisticas.index', compact(
+            'totalGb',
+            'totalFiles',
+            'totalExecutors',
+            'totalVrss1Gb',
+            'totalVrss1Files',
+            'totalVrss2Gb',
+            'totalVrss2Files',
+            'responsablesStats',
+            'chartExecutorsLabels',
+            'chartExecutorsSeries',
+            'chartSatLabels',
+            'chartSatSeries',
+            'allDates',
+            'timelineVrss1',
+            'timelineVrss2',
+            'records',
+            'availableExecutors'
+        ));
+    }
+
+    /**
+     * Registra un nuevo ejecutor o una nueva guardia/lote de migración.
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'responsable' => 'required|string|max:150',
+            'fecha' => 'required|date',
+            'satelite' => 'required|in:VRSS-1,VRSS-2',
+            'modo_registro' => 'required|in:lote,individual',
+            'tamano_gb' => 'required|numeric|min:0.0001|max:999999',
+            'cantidad_archivos' => 'nullable|integer|min:1|max:50000',
+            'archivo_id' => 'nullable|string|max:150',
+            'observaciones' => 'nullable|string|max:500',
+        ]);
+
+        $defaultTask = NasMigrationTask::first();
+
+        // Determinar correlativo para este ejecutor
+        $maxLote = NasMigrationStat::where('responsable', $validated['responsable'])->max('lote_numero') ?: 0;
+
+        if ($validated['modo_registro'] === 'individual') {
+            $archivoId = $validated['archivo_id'] ?: 'IMG_' . date('Ymd_His');
+            $cantidad = 1;
+        } else {
+            $cantidad = $validated['cantidad_archivos'] ?: 1;
+            $archivoId = $validated['archivo_id'] ?: "LOTE_{$cantidad}_ARCHIVOS";
+        }
+
+        $stat = NasMigrationStat::create([
+            'responsable' => trim($validated['responsable']),
+            'fecha' => $validated['fecha'],
+            'satelite' => $validated['satelite'],
+            'archivo_id' => $archivoId,
+            'tamano_gb' => (float) $validated['tamano_gb'],
+            'lote_numero' => $maxLote + 1,
+            'cantidad_archivos' => $cantidad,
+            'observaciones' => $validated['observaciones'] ?: 'Registro manual de guardia',
+            'nas_migration_task_id' => $defaultTask ? $defaultTask->id : null,
+            'user_id' => auth()->id(),
+        ]);
+
+        AuditService::log([
+            'modulo' => 'Migración NAS',
+            'tabla' => 'nas_migration_stats',
+            'accion' => 'CREAR',
+            'registro_id' => $stat->id,
+            'registro_codigo' => $stat->archivo_id,
+            'registro_nombre' => "Estadística Guardia: {$stat->responsable} ({$stat->tamano_gb} GB)",
+            'data_nueva' => $stat->toArray(),
+        ]);
+
+        return redirect()->route('nas-migracion.estadisticas.index')
+            ->with('success', "Ejecutor '{$stat->responsable}' y sus datos de guardia registrados exitosamente ({$stat->tamano_gb} GB migrados).");
+    }
+
+    /**
+     * Elimina un registro de estadística si fue cargado por error.
+     */
+    public function destroy(NasMigrationStat $stat): RedirectResponse
+    {
+        $backup = $stat->toArray();
+        $resp = $stat->responsable;
+        $gb = $stat->tamano_gb;
+
+        $stat->delete();
+
+        AuditService::log([
+            'modulo' => 'Migración NAS',
+            'tabla' => 'nas_migration_stats',
+            'accion' => 'ELIMINAR',
+            'registro_id' => $backup['id'],
+            'registro_codigo' => $backup['archivo_id'],
+            'registro_nombre' => "Eliminada Guardia de {$resp} ({$gb} GB)",
+            'data_anterior' => $backup,
+        ]);
+
+        return redirect()->route('nas-migracion.estadisticas.index')
+            ->with('success', "Registro de {$resp} ({$gb} GB) eliminado correctamente.");
+    }
+
+    /**
+     * Exporta los datos de estadísticas a formato CSV con codificación UTF-8 BOM.
+     */
+    public function export(Request $request): StreamedResponse
+    {
+        $query = NasMigrationStat::orderBy('fecha')->orderBy('id');
+
+        if ($request->filled('responsable') && $request->responsable !== 'all') {
+            $query->where('responsable', $request->responsable);
+        }
+
+        if ($request->filled('satelite') && $request->satelite !== 'all') {
+            $query->where('satelite', $request->satelite);
+        }
+
+        $filename = 'Estadisticas_Migracion_NAS_' . date('Ymd_His') . '.csv';
+
+        return response()->streamDownload(function () use ($query) {
+            $handle = fopen('php://output', 'w');
+            
+            // UTF-8 BOM para que Excel abra acentos y símbolos correctamente
+            fputs($handle, "\xEF\xBB\xBF");
+
+            fputcsv($handle, [
+                '#',
+                'Responsable / Ejecutor',
+                'Fecha',
+                'Satelite',
+                'ID del Archivo',
+                'Tamano (GB)',
+                'Cantidad Archivos',
+                'Observaciones'
+            ], ';');
+
+            $i = 1;
+            $query->chunk(500, function ($rows) use ($handle, &$i) {
+                foreach ($rows as $r) {
+                    fputcsv($handle, [
+                        $i++,
+                        $r->responsable,
+                        is_string($r->fecha) ? substr($r->fecha, 0, 10) : $r->fecha->format('Y-m-d'),
+                        $r->satelite,
+                        $r->archivo_id,
+                        number_format($r->tamano_gb, 4, ',', ''),
+                        $r->cantidad_archivos,
+                        $r->observaciones
+                    ], ';');
+                }
+            });
+
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+}
+

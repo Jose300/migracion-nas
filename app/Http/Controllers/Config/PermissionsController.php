@@ -17,9 +17,9 @@ class PermissionsController extends Controller
             return $idx !== false ? $idx : 99;
         })->values();
 
-        $perPage = (int) $request->get('per_page', 25);
+        $perPage = (int) $request->get('per_page', 10);
         if ($perPage <= 0) {
-            $perPage = 25;
+            $perPage = 10;
         }
 
         $query = Permission::query();

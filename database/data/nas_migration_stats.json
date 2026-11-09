@@ -1,0 +1,4314 @@
+[
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "006956_20190326140607",
+    "tamano_gb": 0.115,
+    "lote_numero": 1
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "006964_20190327022237",
+    "tamano_gb": 21.73,
+    "lote_numero": 2
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "006979_20190328024648",
+    "tamano_gb": 0.23,
+    "lote_numero": 3
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "006986_20190328145358",
+    "tamano_gb": 0.23,
+    "lote_numero": 4
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "007008_20190330015848",
+    "tamano_gb": 0.23,
+    "lote_numero": 5
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "007009_20190330033650",
+    "tamano_gb": 0.46,
+    "lote_numero": 6
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "007015_20190330140601",
+    "tamano_gb": 0.23,
+    "lote_numero": 7
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "007016_20190330154338",
+    "tamano_gb": 0.23,
+    "lote_numero": 8
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "007023_20190331022233",
+    "tamano_gb": 0.23,
+    "lote_numero": 9
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "007038_20190401024643",
+    "tamano_gb": 0.23,
+    "lote_numero": 10
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "007185_20190411015833",
+    "tamano_gb": 9.47,
+    "lote_numero": 11
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "034961_20190324024650",
+    "tamano_gb": 15.96,
+    "lote_numero": 12
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "034975_20190325013536",
+    "tamano_gb": 15.88,
+    "lote_numero": 13
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "034982_20190325134253",
+    "tamano_gb": 6.34,
+    "lote_numero": 14
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "034990_20190326020014",
+    "tamano_gb": 15.85,
+    "lote_numero": 15
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "034998_20190326154505",
+    "tamano_gb": 12.19,
+    "lote_numero": 16
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-08",
+    "satelite": "VRSS-1",
+    "archivo_id": "035167_20190407015839",
+    "tamano_gb": 9.49,
+    "lote_numero": 17
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-10-09",
+    "satelite": "VRSS-1",
+    "archivo_id": "035175_20190407154327",
+    "tamano_gb": 9.48,
+    "lote_numero": 18
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016770_20201119025130",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016777_20201119145837",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016785_20201120031542",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016792_20201120152244",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016799_20201121020332",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016800_20201121034025",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016806_20201121141043",
+    "tamano_gb": 31.34,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016807_20201121154718",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016821_20201122143400",
+    "tamano_gb": 0.542,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016829_20201123025035",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016836_20201123145743",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016844_20201124031445",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016851_20201124152148",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016859_20201125033928",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016865_20201125140958",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016866_20201125154628",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016880_20201126143314",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016888_20201127024947",
+    "tamano_gb": 0.543,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016895_20201127145655",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016903_20201128031357",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016910_20201128152100",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016918_20201129033839",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016924_20201129140905",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016925_20201129154532",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016939_20201130143220",
+    "tamano_gb": 36.23,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016947_20201201024853",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016954_20201201145601",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016962_20201202031425",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016969_20201202152134",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016976_20201203020106",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016983_20201203140817",
+    "tamano_gb": 31.34,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016984_20201203154442",
+    "tamano_gb": 31.45,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "016998_20201204143131",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "017013_20201205145511",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "017021_20201206031212",
+    "tamano_gb": 22.09,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "017028_20201206151915",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "017043_20201207154346",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "017050_20201208022329",
+    "tamano_gb": 22.12,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "017057_20201208143037",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "017065_20201209024710",
+    "tamano_gb": 22.13,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "017072_20201209145419",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "017080_20201210031039",
+    "tamano_gb": 20.13,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "017087_20201210151821",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-03",
+    "satelite": "VRSS-2",
+    "archivo_id": "017095_20201211033557",
+    "tamano_gb": 22.18,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022206_20211122145548",
+    "tamano_gb": 4.64,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022206_20211122150605",
+    "tamano_gb": 18.38,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022530_20211214140035",
+    "tamano_gb": 30.38,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022538_20211215021701",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022545_20211215142351",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022553_20211216024046",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022560_20211216144730",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022568_20211217030454",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022575_20211217151255",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022582_20211218015229",
+    "tamano_gb": 22.83,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022590_20211218153600",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022597_20211219021541",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022604_20211219142228",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022612_20211220023921",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022619_20211220144605",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022627_20211221030326",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022634_20211221151004",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022641_20211222015107",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022648_20211222135756",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022649_20211222153436",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022656_20211223021420",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022663_20211223142107",
+    "tamano_gb": 31.34,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022671_20211224023758",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022678_20211224144442",
+    "tamano_gb": 31.34,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022686_20211225030202",
+    "tamano_gb": 22.83,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022693_20211225150841",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022700_20211226014946",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022701_20211226032639",
+    "tamano_gb": 21.35,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022708_20211226153306",
+    "tamano_gb": 15.72,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022715_20211227021256",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022722_20211227141941",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022730_20211228023632",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022737_20211228144317",
+    "tamano_gb": 31.34,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022745_20211229030035",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022752_20211229150716",
+    "tamano_gb": 31.33,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022759_20211230014825",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022767_20211230153139",
+    "tamano_gb": 31.34,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022774_20211231021132",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022781_20211231141819",
+    "tamano_gb": 31.34,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-04",
+    "satelite": "VRSS-2",
+    "archivo_id": "022206_20211122145548",
+    "tamano_gb": 4.64,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022789_20220101023508",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022796_20220101144153",
+    "tamano_gb": 31.34,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022804_20220102025908",
+    "tamano_gb": 22.83,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022811_20220102150550",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022833_20220104021006",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022840_20220104141655",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022848_20220105023310",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022855_20220105144029",
+    "tamano_gb": 31.34,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022870_20220106150424",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022877_20220107014536",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022878_20220107032211",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022884_20220107135236",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022885_20220107152851",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022892_20220108020848",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022899_20220108141540",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022907_20220109023223",
+    "tamano_gb": 22.83,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022914_20220109143911",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022922_20220110025622",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022929_20220110150305",
+    "tamano_gb": 31.34,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022936_20220111014421",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022937_20220111032047",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022943_20220111135112",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022944_20220111152722",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022951_20220112020723",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022958_20220112141414",
+    "tamano_gb": 31.34,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022966_20220113023044",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022973_20220113143735",
+    "tamano_gb": 31.34,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022981_20220114025456",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022988_20220114150127",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "022995_20220115014246",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "023002_20220115134956",
+    "tamano_gb": 20.93,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "023010_20220116020544",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "023017_20220116141243",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "023025_20220117022916",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "023032_20220117143607",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "023040_20220118025312",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "023047_20220118150002",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "023054_20220119014123",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "023061_20220119134818",
+    "tamano_gb": 6.78,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "023062_20220119152416",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "023076_20220120141116",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "023084_20220121022747",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "023091_20220121143443",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "023099_20220122025140",
+    "tamano_gb": 22.84,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "023106_20220122145833",
+    "tamano_gb": 31.44,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "045789_20260407234106",
+    "tamano_gb": 19.75,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "045797_20260408132207",
+    "tamano_gb": 15.73,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "045804_20260408235943",
+    "tamano_gb": 19.74,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "045811_20260409120414",
+    "tamano_gb": 15.72,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "045819_20260410001837",
+    "tamano_gb": 19.65,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "045826_20260410122308",
+    "tamano_gb": 15.72,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "045834_20260411003747",
+    "tamano_gb": 19.76,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "045841_20260411124212",
+    "tamano_gb": 15.72,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "045849_20260412005717",
+    "tamano_gb": 19.65,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "045863_20260412234011",
+    "tamano_gb": 19.64,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "045871_20260413132113",
+    "tamano_gb": 15.72,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "045878_20260413235846",
+    "tamano_gb": 19.66,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "045885_20260414120322",
+    "tamano_gb": 15.72,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "045893_20260415001740",
+    "tamano_gb": 19.65,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "045900_20260415122221",
+    "tamano_gb": 15.72,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-05",
+    "satelite": "VRSS-2",
+    "archivo_id": "045908_20260416003700",
+    "tamano_gb": 19.65,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045663_20260330120549",
+    "tamano_gb": 15.72,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045671_20260331002014",
+    "tamano_gb": 19.65,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045678_20260331122442",
+    "tamano_gb": 15.72,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045686_20260401003929",
+    "tamano_gb": 19.75,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045693_20260401124401",
+    "tamano_gb": 15.72,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045701_20260402005911",
+    "tamano_gb": 19.75,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045708_20260402130315",
+    "tamano_gb": 15.72,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045715_20260402234156",
+    "tamano_gb": 19.75,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045722_20260403114629",
+    "tamano_gb": 15.72,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045730_20260404000038",
+    "tamano_gb": 19.75,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045731_20260404013952",
+    "tamano_gb": 0.0,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045737_20260404120505",
+    "tamano_gb": 15.72,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045745_20260405001929",
+    "tamano_gb": 19.65,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045752_20260405122358",
+    "tamano_gb": 15.71,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045760_20260406003842",
+    "tamano_gb": 19.75,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045767_20260406124306",
+    "tamano_gb": 15.72,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045775_20260407005858",
+    "tamano_gb": 19.75,
+    "lote_numero": null
+  },
+  {
+    "responsable": "Dayana Sanchez",
+    "fecha": "2026-11-06",
+    "satelite": "VRSS-2",
+    "archivo_id": "045782_20260407130228",
+    "tamano_gb": 15.72,
+    "lote_numero": null
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "035197_20190409024637",
+    "tamano_gb": 15.85,
+    "lote_numero": 1
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "035211_20190410013519",
+    "tamano_gb": 10.52,
+    "lote_numero": 2
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "035234_20190411154321",
+    "tamano_gb": 9.5,
+    "lote_numero": 3
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "035256_20190413024630",
+    "tamano_gb": 9.22,
+    "lote_numero": 4
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "035285_20190415015828",
+    "tamano_gb": 9.47,
+    "lote_numero": 5
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "035293_20190415154315",
+    "tamano_gb": 9.44,
+    "lote_numero": 6
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "035315_20190417024626",
+    "tamano_gb": 5.59,
+    "lote_numero": 7
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "035336_20190418134201",
+    "tamano_gb": 9.46,
+    "lote_numero": 8
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "035352_20190419154256",
+    "tamano_gb": 9.5,
+    "lote_numero": 9
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "035374_20190421024610",
+    "tamano_gb": 12.69,
+    "lote_numero": 10
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "035388_20190422013451",
+    "tamano_gb": 12.67,
+    "lote_numero": 11
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "049701_20211217123701",
+    "tamano_gb": 13.23,
+    "lote_numero": 12
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "049709_20211218005206",
+    "tamano_gb": 9.52,
+    "lote_numero": 13
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "049731_20211219132321",
+    "tamano_gb": 9.53,
+    "lote_numero": 14
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "049738_20211220000400",
+    "tamano_gb": 9.55,
+    "lote_numero": 15
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "049745_20211220121118",
+    "tamano_gb": 6.88,
+    "lote_numero": 16
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "049753_20211221002721",
+    "tamano_gb": 9.53,
+    "lote_numero": 17
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "049768_20211222005107",
+    "tamano_gb": 9.53,
+    "lote_numero": 18
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-13",
+    "satelite": "VRSS-1",
+    "archivo_id": "049775_20211222125827",
+    "tamano_gb": 13.23,
+    "lote_numero": 19
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049783_20211223011535",
+    "tamano_gb": 9.54,
+    "lote_numero": 20
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049790_20211223132235",
+    "tamano_gb": 13.28,
+    "lote_numero": 21
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049804_20211224121025",
+    "tamano_gb": 9.56,
+    "lote_numero": 22
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049812_20211225002638",
+    "tamano_gb": 9.54,
+    "lote_numero": 23
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049819_20211225123344",
+    "tamano_gb": 13.23,
+    "lote_numero": 24
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049856_20211228000221",
+    "tamano_gb": 9.55,
+    "lote_numero": 25
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049864_20211228134613",
+    "tamano_gb": 9.55,
+    "lote_numero": 26
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049871_20211229002540",
+    "tamano_gb": 9.56,
+    "lote_numero": 27
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049878_20211229123243",
+    "tamano_gb": 13.28,
+    "lote_numero": 28
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049886_20211230004925",
+    "tamano_gb": 9.56,
+    "lote_numero": 29
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049893_20211230125627",
+    "tamano_gb": 13.28,
+    "lote_numero": 30
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049901_20211231011337",
+    "tamano_gb": 9.55,
+    "lote_numero": 31
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049908_20211231132035",
+    "tamano_gb": 13.28,
+    "lote_numero": 32
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049915_20220101000124",
+    "tamano_gb": 9.55,
+    "lote_numero": 33
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049923_20220101134511",
+    "tamano_gb": 9.55,
+    "lote_numero": 34
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049930_20220102002441",
+    "tamano_gb": 9.55,
+    "lote_numero": 35
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049945_20220103004826",
+    "tamano_gb": 9.5,
+    "lote_numero": 36
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049960_20220104011238",
+    "tamano_gb": 9.5,
+    "lote_numero": 37
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049967_20220104131933",
+    "tamano_gb": 9.5,
+    "lote_numero": 38
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049975_20220105013647",
+    "tamano_gb": 9.47,
+    "lote_numero": 39
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049981_20220105120728",
+    "tamano_gb": 13.28,
+    "lote_numero": 40
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049989_20220106002343",
+    "tamano_gb": 9.51,
+    "lote_numero": 41
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "049996_20220106123045",
+    "tamano_gb": 13.28,
+    "lote_numero": 42
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-14",
+    "satelite": "VRSS-1",
+    "archivo_id": "050004_20220107004729",
+    "tamano_gb": 9.53,
+    "lote_numero": 43
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050011_20220107125435",
+    "tamano_gb": 9.48,
+    "lote_numero": 44
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050019_20220108011147",
+    "tamano_gb": 9.51,
+    "lote_numero": 45
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050026_20220108131841",
+    "tamano_gb": 9.52,
+    "lote_numero": 46
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050033_20220108235937",
+    "tamano_gb": 9.14,
+    "lote_numero": 47
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050041_20220109134315",
+    "tamano_gb": 9.45,
+    "lote_numero": 48
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050048_20220110002253",
+    "tamano_gb": 9.47,
+    "lote_numero": 49
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050055_20220110122951",
+    "tamano_gb": 13.28,
+    "lote_numero": 50
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050078_20220112011047",
+    "tamano_gb": 0.23,
+    "lote_numero": 51
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050188_20220119125123",
+    "tamano_gb": 13.23,
+    "lote_numero": 52
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050210_20220120235633",
+    "tamano_gb": 77.46,
+    "lote_numero": 53
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050218_20220121133957",
+    "tamano_gb": 9.54,
+    "lote_numero": 54
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050232_20220122122639",
+    "tamano_gb": 13.28,
+    "lote_numero": 55
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050244_20220123125022",
+    "tamano_gb": 0.23,
+    "lote_numero": 56
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050255_20220124010902",
+    "tamano_gb": 9.49,
+    "lote_numero": 57
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050269_20220124235530",
+    "tamano_gb": 9.46,
+    "lote_numero": 58
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050277_20220125133853",
+    "tamano_gb": 9.51,
+    "lote_numero": 59
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050291_20220126122538",
+    "tamano_gb": 0.23,
+    "lote_numero": 60
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "050478_20220208003919",
+    "tamano_gb": 0.23,
+    "lote_numero": 61
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "051140_20220325005030",
+    "tamano_gb": 7.77,
+    "lote_numero": 62
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "051154_20220325233852",
+    "tamano_gb": 7.73,
+    "lote_numero": 63
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "051213_20220329233741",
+    "tamano_gb": 7.74,
+    "lote_numero": 64
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "051258_20220402004801",
+    "tamano_gb": 7.79,
+    "lote_numero": 65
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "051272_20220402233627",
+    "tamano_gb": 7.82,
+    "lote_numero": 66
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "051317_20220406004643",
+    "tamano_gb": 7.8,
+    "lote_numero": 67
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "051376_20220410004526",
+    "tamano_gb": 7.82,
+    "lote_numero": 68
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "051449_20220414233242",
+    "tamano_gb": 7.92,
+    "lote_numero": 69
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "051494_20220418004247",
+    "tamano_gb": 7.94,
+    "lote_numero": 70
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "051553_20220422004127",
+    "tamano_gb": 7.94,
+    "lote_numero": 71
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "051627_20220427010419",
+    "tamano_gb": 7.92,
+    "lote_numero": 72
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-15",
+    "satelite": "VRSS-1",
+    "archivo_id": "051671_20220430003843",
+    "tamano_gb": 3.98,
+    "lote_numero": 73
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052040_20220525005357",
+    "tamano_gb": 7.97,
+    "lote_numero": 74
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "051686_20220501010257",
+    "tamano_gb": 7.98,
+    "lote_numero": 75
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "051745_20220505010152",
+    "tamano_gb": 4.65,
+    "lote_numero": 76
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "051804_20220509010001",
+    "tamano_gb": 7.82,
+    "lote_numero": 77
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "051848_20220512003423",
+    "tamano_gb": 5.21,
+    "lote_numero": 78
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "051922_20220517005704",
+    "tamano_gb": 7.89,
+    "lote_numero": 79
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "051966_20220520003123",
+    "tamano_gb": 5.34,
+    "lote_numero": 80
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052040_20220525005357",
+    "tamano_gb": 7.97,
+    "lote_numero": 81
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052084_20220528002815",
+    "tamano_gb": 5.22,
+    "lote_numero": 82
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052099_20220529005219",
+    "tamano_gb": 7.88,
+    "lote_numero": 83
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052158_20220602005041",
+    "tamano_gb": 7.95,
+    "lote_numero": 84
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052217_20220606004902",
+    "tamano_gb": 7.95,
+    "lote_numero": 85
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052320_20220613002143",
+    "tamano_gb": 4.92,
+    "lote_numero": 86
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052335_20220614004604",
+    "tamano_gb": 7.64,
+    "lote_numero": 87
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052394_20220618004359",
+    "tamano_gb": 7.16,
+    "lote_numero": 88
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052453_20220622004215",
+    "tamano_gb": 7.29,
+    "lote_numero": 89
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052497_20220625001640",
+    "tamano_gb": 4.64,
+    "lote_numero": 90
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052526_20220626232836",
+    "tamano_gb": 7.86,
+    "lote_numero": 91
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052585_20220630232819",
+    "tamano_gb": 5.35,
+    "lote_numero": 92
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052644_20220704232517",
+    "tamano_gb": 7.96,
+    "lote_numero": 93
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052866_20220720002959",
+    "tamano_gb": 0.23,
+    "lote_numero": 94
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052880_20220720231826",
+    "tamano_gb": 7.84,
+    "lote_numero": 95
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "052925_20220724002811",
+    "tamano_gb": 5.95,
+    "lote_numero": 96
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "053876_20220926120448",
+    "tamano_gb": 0.23,
+    "lote_numero": 97
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "054032_20221007010741",
+    "tamano_gb": 7.97,
+    "lote_numero": 98
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "054120_20221013001459",
+    "tamano_gb": 6.13,
+    "lote_numero": 99
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "054135_20221014003906",
+    "tamano_gb": 7.91,
+    "lote_numero": 100
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "054238_20221021001112",
+    "tamano_gb": 5.9,
+    "lote_numero": 101
+  },
+  {
+    "responsable": "José Perera",
+    "fecha": "2026-10-16",
+    "satelite": "VRSS-1",
+    "archivo_id": "007015_20190330140601",
+    "tamano_gb": 0.23,
+    "lote_numero": 102
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "000000_20190331152234",
+    "tamano_gb": 64.47,
+    "lote_numero": 1
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003004_20190327151907",
+    "tamano_gb": 0.00023,
+    "lote_numero": 2
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003011_20190328020101",
+    "tamano_gb": 0.00023,
+    "lote_numero": 3
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003012_20190328033653",
+    "tamano_gb": 0.00023,
+    "lote_numero": 4
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003018_20190328140754",
+    "tamano_gb": 0.00023,
+    "lote_numero": 5
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003019_20190328154334",
+    "tamano_gb": 0.00023,
+    "lote_numero": 6
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003041_20190330024748",
+    "tamano_gb": 0.00023,
+    "lote_numero": 7
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003048_20190330145443",
+    "tamano_gb": 0.00023,
+    "lote_numero": 8
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003056_20190331031155",
+    "tamano_gb": 0.00023,
+    "lote_numero": 9
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003063_20190331151846",
+    "tamano_gb": 0.108,
+    "lote_numero": 10
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003070_20190401020039",
+    "tamano_gb": 0.00023,
+    "lote_numero": 11
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003071_20190401033629",
+    "tamano_gb": 0.00023,
+    "lote_numero": 12
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003078_20190401154311",
+    "tamano_gb": 54.78,
+    "lote_numero": 13
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003092_20190402143042",
+    "tamano_gb": 57.79,
+    "lote_numero": 14
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003122_20190404151822",
+    "tamano_gb": 12.85,
+    "lote_numero": 15
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003151_20190406143020",
+    "tamano_gb": 18.91,
+    "lote_numero": 16
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003166_20190407145359",
+    "tamano_gb": 25.18,
+    "lote_numero": 17
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003181_20190408151801",
+    "tamano_gb": 18.8,
+    "lote_numero": 18
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003196_20190409154226",
+    "tamano_gb": 37.71,
+    "lote_numero": 19
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-19",
+    "satelite": "VRSS-2",
+    "archivo_id": "003204_20190410040055",
+    "tamano_gb": 0.00023,
+    "lote_numero": 20
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "003210_20190410142959",
+    "tamano_gb": 15.72,
+    "lote_numero": 21
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "007827_20190323151927",
+    "tamano_gb": 39.73,
+    "lote_numero": 22
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "007834_20190324020120",
+    "tamano_gb": 23.69,
+    "lote_numero": 23
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "007835_20190324033713",
+    "tamano_gb": 27.19,
+    "lote_numero": 24
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "007841_20190324140813",
+    "tamano_gb": 12.09,
+    "lote_numero": 25
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "007842_20190324154354",
+    "tamano_gb": 36.33,
+    "lote_numero": 26
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "007849_20190325022427",
+    "tamano_gb": 37.5,
+    "lote_numero": 27
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "007850_20190325040231",
+    "tamano_gb": 24.85,
+    "lote_numero": 28
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "007856_20190325143123",
+    "tamano_gb": 35.59,
+    "lote_numero": 29
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "007857_20190325160856",
+    "tamano_gb": 35.38,
+    "lote_numero": 30
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "007864_20190326024932",
+    "tamano_gb": 45.04,
+    "lote_numero": 31
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "007871_20190326145626",
+    "tamano_gb": 39.94,
+    "lote_numero": 32
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "007879_20190327031339",
+    "tamano_gb": 26.03,
+    "lote_numero": 33
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "008005_20190405154217",
+    "tamano_gb": 25.06,
+    "lote_numero": 34
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "008103_20190411145337",
+    "tamano_gb": 15.62,
+    "lote_numero": 35
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "008118_20190412151739",
+    "tamano_gb": 15.72,
+    "lote_numero": 36
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "008133_20190413154205",
+    "tamano_gb": 15.72,
+    "lote_numero": 37
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "008147_20190414142938",
+    "tamano_gb": 10.51,
+    "lote_numero": 38
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "008162_20190415145316",
+    "tamano_gb": 15.72,
+    "lote_numero": 39
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "008177_20190416151717",
+    "tamano_gb": 15.82,
+    "lote_numero": 40
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "008192_20190417154141",
+    "tamano_gb": 31.44,
+    "lote_numero": 41
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "008206_20190418142906",
+    "tamano_gb": 16.78,
+    "lote_numero": 42
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "008221_20190419145244",
+    "tamano_gb": 12.53,
+    "lote_numero": 43
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "008236_20190420151644",
+    "tamano_gb": 12.53,
+    "lote_numero": 44
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "008251_20190421154110",
+    "tamano_gb": 14.65,
+    "lote_numero": 45
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-20",
+    "satelite": "VRSS-2",
+    "archivo_id": "008487_20190507153945",
+    "tamano_gb": 9.46,
+    "lote_numero": 46
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015228_20200806145526",
+    "tamano_gb": 31.44,
+    "lote_numero": 47
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015236_20200807031225",
+    "tamano_gb": 22.83,
+    "lote_numero": 48
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015243_20200807151930",
+    "tamano_gb": 31.44,
+    "lote_numero": 49
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015251_20200808033701",
+    "tamano_gb": 22.84,
+    "lote_numero": 50
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015257_20200808140750",
+    "tamano_gb": 31.44,
+    "lote_numero": 51
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015258_20200808154359",
+    "tamano_gb": 31.44,
+    "lote_numero": 52
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015265_20200809022350",
+    "tamano_gb": 22.84,
+    "lote_numero": 53
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015272_20200809143100",
+    "tamano_gb": 31.44,
+    "lote_numero": 54
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015280_20200810024730",
+    "tamano_gb": 22.84,
+    "lote_numero": 55
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015287_20200810145604",
+    "tamano_gb": 31.44,
+    "lote_numero": 56
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015295_20200811031302",
+    "tamano_gb": 22.84,
+    "lote_numero": 57
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015302_20200811152006",
+    "tamano_gb": 31.44,
+    "lote_numero": 58
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015309_20200812015952",
+    "tamano_gb": 22.84,
+    "lote_numero": 59
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015310_20200812033615",
+    "tamano_gb": 22.84,
+    "lote_numero": 60
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015316_20200812140706",
+    "tamano_gb": 31.44,
+    "lote_numero": 61
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015317_20200812154312",
+    "tamano_gb": 31.44,
+    "lote_numero": 62
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015331_20200813143016",
+    "tamano_gb": 31.44,
+    "lote_numero": 63
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015339_20200814024645",
+    "tamano_gb": 22.84,
+    "lote_numero": 64
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015346_20200814145357",
+    "tamano_gb": 22.84,
+    "lote_numero": 65
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015354_20200815031054",
+    "tamano_gb": 22.84,
+    "lote_numero": 66
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015361_20200815151758",
+    "tamano_gb": 31.44,
+    "lote_numero": 67
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015369_20200816033527",
+    "tamano_gb": 22.84,
+    "lote_numero": 68
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015375_20200816140621",
+    "tamano_gb": 0.00023,
+    "lote_numero": 69
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015376_20200816154225",
+    "tamano_gb": 31.44,
+    "lote_numero": 70
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015383_20200817022220",
+    "tamano_gb": 22.84,
+    "lote_numero": 71
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015390_20200817142929",
+    "tamano_gb": 31.44,
+    "lote_numero": 72
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015398_20200818024600",
+    "tamano_gb": 22.84,
+    "lote_numero": 73
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015405_20200818145307",
+    "tamano_gb": 22.84,
+    "lote_numero": 74
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015413_20200819031004",
+    "tamano_gb": 22.84,
+    "lote_numero": 75
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-21",
+    "satelite": "VRSS-2",
+    "archivo_id": "015420_20200819151711",
+    "tamano_gb": 27.76,
+    "lote_numero": 76
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015427_20200820015828",
+    "tamano_gb": 22.84,
+    "lote_numero": 77
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015428_20200820033442",
+    "tamano_gb": 22.84,
+    "lote_numero": 78
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015434_20200820140537",
+    "tamano_gb": 22.84,
+    "lote_numero": 79
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015435_20200820154138",
+    "tamano_gb": 31.44,
+    "lote_numero": 80
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015449_20200821142845",
+    "tamano_gb": 31.44,
+    "lote_numero": 81
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015457_20200822024516",
+    "tamano_gb": 22.84,
+    "lote_numero": 82
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015464_20200822145221",
+    "tamano_gb": 31.44,
+    "lote_numero": 83
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015479_20200823151623",
+    "tamano_gb": 31.44,
+    "lote_numero": 84
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015486_20200824015745",
+    "tamano_gb": 22.84,
+    "lote_numero": 85
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015487_20200824033354",
+    "tamano_gb": 22.84,
+    "lote_numero": 86
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015493_20200824140451",
+    "tamano_gb": 31.44,
+    "lote_numero": 87
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015494_20200824154048",
+    "tamano_gb": 22.84,
+    "lote_numero": 88
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015508_20200825142758",
+    "tamano_gb": 31.45,
+    "lote_numero": 89
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015516_20200826024429",
+    "tamano_gb": 22.84,
+    "lote_numero": 90
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015523_20200826145136",
+    "tamano_gb": 38.76,
+    "lote_numero": 91
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015531_20200827030835",
+    "tamano_gb": 22.71,
+    "lote_numero": 92
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015538_20200827151535",
+    "tamano_gb": 35.05,
+    "lote_numero": 93
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015545_20200828015700",
+    "tamano_gb": 22.75,
+    "lote_numero": 94
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015552_20200828140406",
+    "tamano_gb": 21.13,
+    "lote_numero": 95
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015553_20200828154000",
+    "tamano_gb": 22.84,
+    "lote_numero": 96
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015567_20200829142711",
+    "tamano_gb": 33.79,
+    "lote_numero": 97
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015568_20200829160503",
+    "tamano_gb": 22.84,
+    "lote_numero": 98
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015575_20200830024334",
+    "tamano_gb": 22.84,
+    "lote_numero": 99
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015582_20200830145047",
+    "tamano_gb": 53.54,
+    "lote_numero": 100
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015590_20200831030747",
+    "tamano_gb": 22.84,
+    "lote_numero": 101
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015597_20200831151445",
+    "tamano_gb": 37.71,
+    "lote_numero": 102
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015605_20200901033219",
+    "tamano_gb": 22.84,
+    "lote_numero": 103
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015611_20200901140318",
+    "tamano_gb": 22.84,
+    "lote_numero": 104
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015612_20200901153909",
+    "tamano_gb": 45.79,
+    "lote_numero": 105
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-22",
+    "satelite": "VRSS-2",
+    "archivo_id": "015626_20200902142627",
+    "tamano_gb": 33.46,
+    "lote_numero": 106
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015634_20200903024302",
+    "tamano_gb": 22.84,
+    "lote_numero": 107
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015641_20200903145002",
+    "tamano_gb": 35.91,
+    "lote_numero": 108
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015649_20200904030704",
+    "tamano_gb": 22.84,
+    "lote_numero": 109
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015656_20200904151401",
+    "tamano_gb": 33.25,
+    "lote_numero": 110
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015663_20200905015535",
+    "tamano_gb": 22.84,
+    "lote_numero": 111
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015671_20200905153822",
+    "tamano_gb": 51.84,
+    "lote_numero": 112
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015678_20200906021840",
+    "tamano_gb": 22.84,
+    "lote_numero": 113
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015685_20200906142539",
+    "tamano_gb": 36.0,
+    "lote_numero": 114
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015686_20200906160322",
+    "tamano_gb": 22.84,
+    "lote_numero": 115
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015693_20200907024214",
+    "tamano_gb": 22.84,
+    "lote_numero": 116
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015700_20200907144913",
+    "tamano_gb": 52.48,
+    "lote_numero": 117
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015708_20200908030615",
+    "tamano_gb": 22.84,
+    "lote_numero": 118
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015715_20200908151310",
+    "tamano_gb": 34.21,
+    "lote_numero": 119
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015722_20200909015449",
+    "tamano_gb": 22.84,
+    "lote_numero": 120
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015730_20200909153735",
+    "tamano_gb": 31.44,
+    "lote_numero": 121
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015744_20200910142453",
+    "tamano_gb": 31.44,
+    "lote_numero": 122
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015752_20200911024131",
+    "tamano_gb": 22.84,
+    "lote_numero": 123
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015759_20200911144826",
+    "tamano_gb": 31.44,
+    "lote_numero": 124
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015767_20200912030530",
+    "tamano_gb": 22.84,
+    "lote_numero": 125
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015774_20200912151222",
+    "tamano_gb": 31.44,
+    "lote_numero": 126
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015782_20200913032959",
+    "tamano_gb": 22.84,
+    "lote_numero": 127
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015789_20200913153644",
+    "tamano_gb": 31.44,
+    "lote_numero": 128
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015803_20200914142403",
+    "tamano_gb": 22.84,
+    "lote_numero": 129
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015811_20200915024042",
+    "tamano_gb": 22.84,
+    "lote_numero": 130
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015826_20200916030441",
+    "tamano_gb": 22.84,
+    "lote_numero": 131
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015833_20200916151136",
+    "tamano_gb": 31.44,
+    "lote_numero": 132
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015840_20200917015325",
+    "tamano_gb": 22.84,
+    "lote_numero": 133
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015841_20200917032913",
+    "tamano_gb": 22.84,
+    "lote_numero": 134
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015848_20200917153555",
+    "tamano_gb": 31.44,
+    "lote_numero": 135
+  },
+  {
+    "responsable": "Jesus Cardiel",
+    "fecha": "2026-10-23",
+    "satelite": "VRSS-2",
+    "archivo_id": "015855_20200918021626",
+    "tamano_gb": 22.84,
+    "lote_numero": 136
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015862_20200918142318",
+    "tamano_gb": 31.44,
+    "lote_numero": 1
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015870_20200919023958",
+    "tamano_gb": 22.84,
+    "lote_numero": 2
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015885_20200920030356",
+    "tamano_gb": 22.84,
+    "lote_numero": 3
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015892_20200920151045",
+    "tamano_gb": 31.34,
+    "lote_numero": 4
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015899_20200921015238",
+    "tamano_gb": 22.84,
+    "lote_numero": 5
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015900_20200921032823",
+    "tamano_gb": 22.84,
+    "lote_numero": 6
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015907_20200921153504",
+    "tamano_gb": 31.34,
+    "lote_numero": 7
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015914_20200922021537",
+    "tamano_gb": 22.84,
+    "lote_numero": 8
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015921_20200922142229",
+    "tamano_gb": 31.44,
+    "lote_numero": 9
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015929_20200923023907",
+    "tamano_gb": 22.84,
+    "lote_numero": 10
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015936_20200923144605",
+    "tamano_gb": 31.44,
+    "lote_numero": 11
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015944_20200924030312",
+    "tamano_gb": 22.84,
+    "lote_numero": 12
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015951_20200924151000",
+    "tamano_gb": 31.45,
+    "lote_numero": 13
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015958_20200925015156",
+    "tamano_gb": 22.84,
+    "lote_numero": 14
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015959_20200925032739",
+    "tamano_gb": 22.84,
+    "lote_numero": 15
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015966_20200925153418",
+    "tamano_gb": 31.44,
+    "lote_numero": 16
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015973_20200926021455",
+    "tamano_gb": 22.84,
+    "lote_numero": 17
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015988_20200927023826",
+    "tamano_gb": 22.84,
+    "lote_numero": 18
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "015995_20200927144516",
+    "tamano_gb": 31.34,
+    "lote_numero": 19
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "016003_20200928030347",
+    "tamano_gb": 22.84,
+    "lote_numero": 20
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "016010_20200928151034",
+    "tamano_gb": 31.44,
+    "lote_numero": 21
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "016017_20200929015111",
+    "tamano_gb": 22.84,
+    "lote_numero": 22
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "016018_20200929032648",
+    "tamano_gb": 22.84,
+    "lote_numero": 23
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "016024_20200929135801",
+    "tamano_gb": 22.84,
+    "lote_numero": 24
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "016025_20200929153328",
+    "tamano_gb": 31.34,
+    "lote_numero": 25
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "016032_20200930021406",
+    "tamano_gb": 22.84,
+    "lote_numero": 26
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "016039_20200930142059",
+    "tamano_gb": 31.44,
+    "lote_numero": 27
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "016047_20201001023739",
+    "tamano_gb": 22.84,
+    "lote_numero": 28
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "016054_20201001144428",
+    "tamano_gb": 22.84,
+    "lote_numero": 29
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-26",
+    "satelite": "VRSS-2",
+    "archivo_id": "016062_20201002030259",
+    "tamano_gb": 22.84,
+    "lote_numero": 30
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016128_20201006150732",
+    "tamano_gb": 31.44,
+    "lote_numero": 31
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016121_20201006030044",
+    "tamano_gb": 22.84,
+    "lote_numero": 32
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016113_20201005144340",
+    "tamano_gb": 31.44,
+    "lote_numero": 33
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016105_20201005023651",
+    "tamano_gb": 22.84,
+    "lote_numero": 34
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016098_20201004142010",
+    "tamano_gb": 0.002,
+    "lote_numero": 35
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016091_20201004021321",
+    "tamano_gb": 22.84,
+    "lote_numero": 36
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016084_20201003153402",
+    "tamano_gb": 31.44,
+    "lote_numero": 37
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016077_20201003032559",
+    "tamano_gb": 22.84,
+    "lote_numero": 38
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016076_20201003015026",
+    "tamano_gb": 22.84,
+    "lote_numero": 39
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016069_20201002150946",
+    "tamano_gb": 31.44,
+    "lote_numero": 40
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016136_20201007032506",
+    "tamano_gb": 22.84,
+    "lote_numero": 41
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016143_20201007153314",
+    "tamano_gb": 31.34,
+    "lote_numero": 42
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016150_20201008021357",
+    "tamano_gb": 22.84,
+    "lote_numero": 43
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016165_20201009023601",
+    "tamano_gb": 22.84,
+    "lote_numero": 44
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016172_20201009144253",
+    "tamano_gb": 31.44,
+    "lote_numero": 45
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016180_20201010025956",
+    "tamano_gb": 22.84,
+    "lote_numero": 46
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016187_20201010150644",
+    "tamano_gb": 31.44,
+    "lote_numero": 47
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016195_20201011032419",
+    "tamano_gb": 22.84,
+    "lote_numero": 48
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016202_20201011153100",
+    "tamano_gb": 31.34,
+    "lote_numero": 49
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016209_20201012021143",
+    "tamano_gb": 22.84,
+    "lote_numero": 50
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016216_20201012141836",
+    "tamano_gb": 31.34,
+    "lote_numero": 51
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016231_20201013144203",
+    "tamano_gb": 31.44,
+    "lote_numero": 52
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016239_20201014025904",
+    "tamano_gb": 22.84,
+    "lote_numero": 53
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016246_20201014150559",
+    "tamano_gb": 31.45,
+    "lote_numero": 54
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016254_20201015032331",
+    "tamano_gb": 22.84,
+    "lote_numero": 55
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016261_20201015153014",
+    "tamano_gb": 31.44,
+    "lote_numero": 56
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016268_20201016021059",
+    "tamano_gb": 22.84,
+    "lote_numero": 57
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016283_20201017023425",
+    "tamano_gb": 22.81,
+    "lote_numero": 58
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016290_20201017144119",
+    "tamano_gb": 31.44,
+    "lote_numero": 59
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-27",
+    "satelite": "VRSS-2",
+    "archivo_id": "016298_20201018025819",
+    "tamano_gb": 22.84,
+    "lote_numero": 60
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016305_20201018150510",
+    "tamano_gb": 31.44,
+    "lote_numero": 61
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016313_20201019032238",
+    "tamano_gb": 22.84,
+    "lote_numero": 62
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016320_20201019152923",
+    "tamano_gb": 31.44,
+    "lote_numero": 63
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016327_20201020021009",
+    "tamano_gb": 22.63,
+    "lote_numero": 64
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016342_20201021023333",
+    "tamano_gb": 22.84,
+    "lote_numero": 65
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016349_20201021144033",
+    "tamano_gb": 31.44,
+    "lote_numero": 66
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016357_20201022025728",
+    "tamano_gb": 22.84,
+    "lote_numero": 67
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016364_20201022150422",
+    "tamano_gb": 31.44,
+    "lote_numero": 68
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016372_20201023032148",
+    "tamano_gb": 22.84,
+    "lote_numero": 69
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016379_20201023152836",
+    "tamano_gb": 31.34,
+    "lote_numero": 70
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016408_20201025143943",
+    "tamano_gb": 31.44,
+    "lote_numero": 71
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016416_20201026025637",
+    "tamano_gb": 22.84,
+    "lote_numero": 72
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016423_20201026150333",
+    "tamano_gb": 31.44,
+    "lote_numero": 73
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016431_20201027032055",
+    "tamano_gb": 22.84,
+    "lote_numero": 74
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016438_20201027152744",
+    "tamano_gb": 31.34,
+    "lote_numero": 75
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016452_20201028141533",
+    "tamano_gb": 31.44,
+    "lote_numero": 76
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016453_20201028155226",
+    "tamano_gb": 15.72,
+    "lote_numero": 77
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016460_20201029023156",
+    "tamano_gb": 22.84,
+    "lote_numero": 78
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016467_20201029144020",
+    "tamano_gb": 31.44,
+    "lote_numero": 79
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-29",
+    "satelite": "VRSS-2",
+    "archivo_id": "016475_20201030025546",
+    "tamano_gb": 22.84,
+    "lote_numero": 80
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016482_20201030150244",
+    "tamano_gb": 31.44,
+    "lote_numero": 81
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016490_20201031032003",
+    "tamano_gb": 22.84,
+    "lote_numero": 82
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016497_20201031152818",
+    "tamano_gb": 31.44,
+    "lote_numero": 83
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016504_20201101020740",
+    "tamano_gb": 22.84,
+    "lote_numero": 84
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016511_20201101141443",
+    "tamano_gb": 22.84,
+    "lote_numero": 85
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016519_20201102023102",
+    "tamano_gb": 22.84,
+    "lote_numero": 86
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016526_20201102143804",
+    "tamano_gb": 31.44,
+    "lote_numero": 87
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016534_20201103025450",
+    "tamano_gb": 22.84,
+    "lote_numero": 88
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016541_20201103150152",
+    "tamano_gb": 31.44,
+    "lote_numero": 89
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016549_20201104031906",
+    "tamano_gb": 22.84,
+    "lote_numero": 90
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016556_20201104152608",
+    "tamano_gb": 31.44,
+    "lote_numero": 91
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016570_20201105141358",
+    "tamano_gb": 31.44,
+    "lote_numero": 92
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016571_20201105155211",
+    "tamano_gb": 31.45,
+    "lote_numero": 93
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016578_20201106023015",
+    "tamano_gb": 22.84,
+    "lote_numero": 94
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016585_20201106143844",
+    "tamano_gb": 31.45,
+    "lote_numero": 95
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016593_20201107025403",
+    "tamano_gb": 22.84,
+    "lote_numero": 96
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016600_20201107150106",
+    "tamano_gb": 31.34,
+    "lote_numero": 97
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016608_20201108031817",
+    "tamano_gb": 22.84,
+    "lote_numero": 98
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016615_20201108152515",
+    "tamano_gb": 31.44,
+    "lote_numero": 99
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016629_20201109141308",
+    "tamano_gb": 31.44,
+    "lote_numero": 100
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016630_20201109154954",
+    "tamano_gb": 31.44,
+    "lote_numero": 101
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016637_20201110022922",
+    "tamano_gb": 22.84,
+    "lote_numero": 102
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016644_20201110143627",
+    "tamano_gb": 31.44,
+    "lote_numero": 103
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016652_20201111025309",
+    "tamano_gb": 22.84,
+    "lote_numero": 104
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016659_20201111150018",
+    "tamano_gb": 0.0,
+    "lote_numero": 105
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016667_20201112031727",
+    "tamano_gb": 0.0,
+    "lote_numero": 106
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016674_20201112152427",
+    "tamano_gb": 31.44,
+    "lote_numero": 107
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016681_20201113020515",
+    "tamano_gb": 22.84,
+    "lote_numero": 108
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016688_20201113141222",
+    "tamano_gb": 31.34,
+    "lote_numero": 109
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016689_20201113154904",
+    "tamano_gb": 31.44,
+    "lote_numero": 110
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016703_20201114143542",
+    "tamano_gb": 22.81,
+    "lote_numero": 111
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016718_20201115145928",
+    "tamano_gb": 31.44,
+    "lote_numero": 112
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016725_20201116014141",
+    "tamano_gb": 22.84,
+    "lote_numero": 113
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016726_20201116031634",
+    "tamano_gb": 0.542,
+    "lote_numero": 114
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016733_20201116152336",
+    "tamano_gb": 31.44,
+    "lote_numero": 115
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016740_20201117020422",
+    "tamano_gb": 22.84,
+    "lote_numero": 116
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016741_20201117034120",
+    "tamano_gb": 22.84,
+    "lote_numero": 117
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016747_20201117141132",
+    "tamano_gb": 31.44,
+    "lote_numero": 118
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016748_20201117154810",
+    "tamano_gb": 31.33,
+    "lote_numero": 119
+  },
+  {
+    "responsable": "Yorfani Arteaga",
+    "fecha": "2026-10-30",
+    "satelite": "VRSS-2",
+    "archivo_id": "016762_20201118143453",
+    "tamano_gb": 31.44,
+    "lote_numero": 120
+  }
+]

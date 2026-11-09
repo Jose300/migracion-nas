@@ -11,6 +11,53 @@ use Illuminate\Support\Facades\Process;
 class NasMigrationService
 {
     /**
+     * Lista directorios de manera recursiva o en vivo desde la NAS Synology.
+     * Si la NAS está accesible por SSH, ejecuta 'find' para leer los subdirectorios reales.
+     * Si no está accesible, devuelve el árbol estático completo de los volúmenes configurados.
+     */
+    public function listSynologyDirectories(NasMigrationTask $task, ?string $baseVolume = null): array
+    {
+        $defaultDirectories = NasMigrationTask::SYNOLOGY_AVAILABLE_SOURCES;
+
+        // Comprobar socket rápido antes de intentar SSH
+        $port = $task->nas_port ?: 22;
+        $fp = @fsockopen($task->nas_host, $port, $errno, $errstr, 2);
+        if (!$fp) {
+            return $defaultDirectories;
+        }
+        fclose($fp);
+
+        // Si el puerto responde, intentar listar por SSH
+        $pathsToScan = $baseVolume
+            ? escapeshellarg(rtrim($baseVolume, '/'))
+            : "'/volume1/dae-Volumen2_IPS' '/volume1/dae-Volumen4_Respaldo_IPS'";
+
+        // Comando que busca directorios hasta profundidad 4 excluyendo @eaDir, #recycle y carpetas del sistema
+        $findCmd = "find {$pathsToScan} -maxdepth 4 -type d ! -path '*/#recycle*' ! -path '*/@eaDir*' ! -path '*/.*' 2>/dev/null | sort";
+
+        try {
+            $result = $this->executeRemoteSsh($task, $findCmd, 10);
+            if ($result['exit_code'] === 0 && !empty(trim($result['output']))) {
+                $lines = explode("\n", trim($result['output']));
+                $dirs = [];
+                foreach ($lines as $line) {
+                    $trimmed = trim($line);
+                    if ($trimmed !== '') {
+                        $dirs[] = rtrim($trimmed, '/') . '/';
+                    }
+                }
+                if (!empty($dirs)) {
+                    return array_values(array_unique($dirs));
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning("No se pudieron listar directorios en vivo vía SSH: " . $e->getMessage());
+        }
+
+        return $defaultDirectories;
+    }
+
+    /**
      * Prueba la conectividad ICMP (Ping) y SSH con el host de la NAS.
      */
     public function testConnection(NasMigrationTask $task): array
@@ -135,20 +182,87 @@ class NasMigrationService
             // Aplicar tamaño de lote (por defecto 500 archivos por clic / sincronización)
             $batchLimit = $limit !== null ? $limit : ($task->batch_size ?: 500);
 
+            // Subdirectorio destino final en Inspur
+            $inspurTargetDir = $overrideInspurDir ?: ($task->inspur_target_dir ?: 'VRSS-1');
+            $inspurFullFinalPath = rtrim($task->inspur_base_path ?: '/HS_IPS_PRIVATE/RDP_FTP/RAWDATA', '/') . '/' . trim($inspurTargetDir, '/') . '/';
+            $inspurSharedFolder = rtrim($task->inspur_shared_folder ?: '/HS_SHARE/MIGRACION_SYNOLOGY', '/') . '/';
+
+            // Última órbita transferida previamente registrada en la tarea
+            $lastOrbit = $task->last_migrated_orbit ? trim($task->last_migrated_orbit) : '';
+
+            // Script de sincronización inteligente:
+            // 1. Identifica órbitas (carpetas 6 dígitos o subdirectorios) en el origen.
+            // 2. Si existe un punto de partida ($lastOrbit), filtra para procesar únicamente las carpetas mayores a ella.
+            // 3. Verifica en el destino Inspur y en la carpeta intermedia para ignorar órbitas ya copiadas.
+            // 4. Selecciona los archivos de las órbitas pendientes hasta alcanzar el lote.
+            // 5. Registra la última órbita procesada para continuar exactamente desde allí.
             if ($batchLimit > 0) {
-                // Sincronización controlada por lotes: selecciona hasta $batchLimit archivos pendientes y los transfiere a MIGRACION_SYNOLOGY
-                $rsyncCommand = "sh -c 'BATCH_FILE=\"/tmp/nas_batch_{$task->id}_\$\$.txt\"; " .
-                    "rsync -r -n --out-format=\"%n\" \"{$source}\" \"{$target}\" | grep -v \"/\$\" | grep -v \"^\$\" | head -n {$batchLimit} > \"\$BATCH_FILE\"; " .
+                $rsyncCommand = "sh -c '" .
+                    "BATCH_FILE=\"/tmp/nas_batch_{$task->id}_\$\$.txt\"; " .
+                    "ORBITS_FILE=\"/tmp/nas_orbits_{$task->id}_\$\$.txt\"; " .
+                    "SRC=\"{$source}\"; " .
+                    "TGT=\"{$target}\"; " .
+                    "INSPUR_FINAL=\"{$inspurFullFinalPath}\"; " .
+                    "INSPUR_SHARED=\"{$inspurSharedFolder}\"; " .
+                    "LAST_ORBIT=\"{$lastOrbit}\"; " .
+                    "echo \"=== INICIANDO DETECCIÓN DE ÓRBITAS Y ARCHIVOS PENDIENTES ===\"; " .
+                    "if [ -n \"\$LAST_ORBIT\" ]; then " .
+                    "  echo \"[ÍNDICE DE REANUDACIÓN] Última órbita previamente copiada: \$LAST_ORBIT\"; " .
+                    "fi; " .
+                    // Obtener lista ordenada de carpetas de primer nivel (órbitas) en origen
+                    "find \"\$SRC\" -mindepth 1 -maxdepth 1 -type d ! -name \"#recycle*\" ! -name \"@eaDir*\" -printf \"%f\\n\" 2>/dev/null | sort > \"\$ORBITS_FILE\"; " .
+                    "PENDING_COUNT=0; " .
+                    "SKIPPED_ORBITS=0; " .
+                    "COPIED_ORBITS=0; " .
+                    "LATEST_PROCESSED_ORBIT=\"\"; " .
+                    "> \"\$BATCH_FILE\"; " .
+                    "while IFS= read -r ORB; do " .
+                    "  [ -z \"\$ORB\" ] && continue; " .
+                    // Si hay un índice de última órbita, saltar las anteriores o iguales en orden alfabético/numérico
+                    "  if [ -n \"\$LAST_ORBIT\" ] && [ \"\$ORB\" \\< \"\$LAST_ORBIT\" -o \"\$ORB\" = \"\$LAST_ORBIT\" ]; then " .
+                    "    continue; " .
+                    "  fi; " .
+                    // Verificar si la órbita ya existe en el destino de Inspur o en la carpeta intermedia
+                    "  if [ -d \"\${INSPUR_FINAL}\${ORB}\" ] || [ -d \"\${INSPUR_SHARED}\${ORB}\" ] || [ -d \"\${TGT}\${ORB}\" ]; then " .
+                    "    SKIPPED_ORBITS=\$((SKIPPED_ORBITS + 1)); " .
+                    "    continue; " .
+                    "  fi; " .
+                    // Si no existe, incluir los archivos de esta órbita en el lote
+                    "  COPIED_ORBITS=\$((COPIED_ORBITS + 1)); " .
+                    "  LATEST_PROCESSED_ORBIT=\"\$ORB\"; " .
+                    "  find \"\$SRC\$ORB\" -type f -printf \"%P\\n\" 2>/dev/null | sed \"s|^|\$ORB/|\" >> \"\$BATCH_FILE\"; " .
+                    "  CURR_FILES=\$(wc -l < \"\$BATCH_FILE\"); " .
+                    "  if [ \"\$CURR_FILES\" -ge {$batchLimit} ]; then " .
+                    "    break; " .
+                    "  fi; " .
+                    "done < \"\$ORBITS_FILE\"; " .
+                    "rm -f \"\$ORBITS_FILE\"; " .
+                    // Si se encontraron archivos por órbitas, recortar al límite del lote
                     "if [ -s \"\$BATCH_FILE\" ]; then " .
-                        "echo \"[LOTE DE {$batchLimit} ARCHIVOS] Transfiriendo a carpeta compartida {$target}...\"; " .
-                        "rsync {$options} --out-format=\"PROGRESS_FILE:%n\" --files-from=\"\$BATCH_FILE\" \"{$source}\" \"{$target}\"; " .
-                        "RC=\$?; rm -f \"\$BATCH_FILE\"; exit \$RC; " .
+                    "  head -n {$batchLimit} \"\$BATCH_FILE\" > \"\${BATCH_FILE}.tmp\" && mv \"\${BATCH_FILE}.tmp\" \"\$BATCH_FILE\"; " .
+                    "  TOTAL_IN_BATCH=\$(wc -l < \"\$BATCH_FILE\"); " .
+                    "  echo \"[ÓRBITAS IGNORADAS POR DUPLICADO EN DESTINO: \$SKIPPED_ORBITS]\"; " .
+                    "  echo \"[ÓRBITAS NUEVAS SELECCIONADAS: \$COPIED_ORBITS]\"; " .
+                    "  echo \"[ÚLTIMA ÓRBITA EN ESTE LOTE: \$LATEST_PROCESSED_ORBIT]\"; " .
+                    "  echo \"[LOTE DE \$TOTAL_IN_BATCH ARCHIVOS] Transfiriendo a carpeta intermedia compartida {\$TGT}...\"; " .
+                    "  rsync {$options} --ignore-existing --out-format=\"PROGRESS_FILE:%n\" --files-from=\"\$BATCH_FILE\" \"\$SRC\" \"\$TGT\"; " .
+                    "  RC=\$?; " .
+                    "  echo \"ORBIT_SUMMARY:last=\$LATEST_PROCESSED_ORBIT:copied=\$COPIED_ORBITS:skipped=\$SKIPPED_ORBITS\"; " .
+                    "  rm -f \"\$BATCH_FILE\"; exit \$RC; " .
                     "else " .
-                        "echo \"[SINCRONIZADO] No hay archivos nuevos o modificados pendientes de transferir en este lote de {$batchLimit}.\"; " .
-                        "rm -f \"\$BATCH_FILE\"; exit 0; " .
+                    // Fallback directo por rsync --ignore-existing si no hay estructura por subcarpetas
+                    "  echo \"[SINCRONIZACIÓN] Verificando archivos individuales omitiendo duplicados...\"; " .
+                    "  rsync -r -n --ignore-existing --out-format=\"%n\" \"\$SRC\" \"\$TGT\" | grep -v \"/\$\" | grep -v \"^\$\" | head -n {$batchLimit} > \"\$BATCH_FILE\"; " .
+                    "  if [ -s \"\$BATCH_FILE\" ]; then " .
+                    "    rsync {$options} --ignore-existing --out-format=\"PROGRESS_FILE:%n\" --files-from=\"\$BATCH_FILE\" \"\$SRC\" \"\$TGT\"; " .
+                    "    RC=\$?; rm -f \"\$BATCH_FILE\"; exit \$RC; " .
+                    "  else " .
+                    "    echo \"[SINCRONIZADO] No hay órbitas o archivos pendientes nuevos en este lote de {$batchLimit} (todos existen en destino o fueron omitidos).\"; " .
+                    "    rm -f \"\$BATCH_FILE\"; exit 0; " .
+                    "  fi; " .
                     "fi'";
             } else {
-                $rsyncCommand = "rsync {$options} --out-format=\"PROGRESS_FILE:%n\" \"{$source}\" \"{$target}\"";
+                $rsyncCommand = "rsync {$options} --ignore-existing --out-format=\"PROGRESS_FILE:%n\" \"{$source}\" \"{$target}\"";
             }
 
             // Contador de archivos en tiempo real para actualización de barra de progreso
@@ -187,6 +301,30 @@ class NasMigrationService
                 $output .= "\n\n[FASE 2 - INSPUR]: Archivos trasladados a /HS_IPS_PRIVATE/RDP_FTP/RAWDATA/{$inspurTargetDir}/ ({$filesMoved} archivos movidos exitosamente).";
             }
 
+            // Parsear datos de órbitas procesadas en la salida
+            $lastProcessedOrbit = null;
+            $orbitsCopied = 0;
+            $orbitsSkipped = 0;
+            if (preg_match('/ORBIT_SUMMARY:last=([^:]*):copied=([0-9]+):skipped=([0-9]+)/', $output, $mOrb)) {
+                $lastProcessedOrbit = !empty(trim($mOrb[1])) ? trim($mOrb[1]) : null;
+                $orbitsCopied = (int) $mOrb[2];
+                $orbitsSkipped = (int) $mOrb[3];
+            }
+
+            // Si se transfirieron archivos con éxito y se detectó una última órbita en el lote, actualizar el índice de la tarea
+            if ($success && $lastProcessedOrbit) {
+                $task->update([
+                    'last_migrated_orbit' => $lastProcessedOrbit,
+                    'last_migrated_orbit_at' => now(),
+                ]);
+            }
+
+            $orbitSummaryText = '';
+            if ($orbitsCopied > 0 || $orbitsSkipped > 0 || $lastProcessedOrbit) {
+                $orbitSummaryText = " | Órbitas transferidas: {$orbitsCopied}, Omitidas (ya existían): {$orbitsSkipped}" .
+                    ($lastProcessedOrbit ? " (Última: {$lastProcessedOrbit})" : '');
+            }
+
             $log->update([
                 'status' => $success ? 'completed' : 'failed',
                 'finished_at' => now(),
@@ -195,10 +333,13 @@ class NasMigrationService
                 'source_path_used' => $source,
                 'inspur_target_dir_used' => $inspurTargetDir,
                 'files_moved' => $filesMoved,
+                'last_migrated_orbit_in_batch' => $lastProcessedOrbit,
+                'orbits_transferred' => $orbitsCopied,
+                'orbits_skipped' => $orbitsSkipped,
                 'total_bytes_transferred' => $stats['total_bytes'],
                 'human_transferred_size' => $stats['human_size'],
                 'speed' => $stats['speed'],
-                'summary' => $stats['summary'] . $moveSummary,
+                'summary' => $stats['summary'] . $moveSummary . $orbitSummaryText,
                 'output' => $output,
                 'error_message' => $success ? null : ($execResult['error'] ?: 'El proceso rsync finalizó con código de error.'),
             ]);
@@ -207,7 +348,6 @@ class NasMigrationService
                 'status' => 'idle',
                 'last_run_status' => $success ? 'completed' : 'failed',
             ]);
-
         } catch (\Throwable $e) {
             $duration = (int) round(microtime(true) - $startTime);
 
@@ -247,16 +387,16 @@ class NasMigrationService
         $moveCmd = "sh -c '" .
             "mkdir -p \"{$targetInspurPath}\"; " .
             "if [ -d \"{$sharedInspurFolder}\" ]; then " .
-                "SRC_DIR=\"{$sharedInspurFolder}\"; " .
+            "SRC_DIR=\"{$sharedInspurFolder}\"; " .
             "else " .
-                "SRC_DIR=\"{$sharedSynologyFolder}\"; " .
+            "SRC_DIR=\"{$sharedSynologyFolder}\"; " .
             "fi; " .
             "COUNT=$(find \"\$SRC_DIR\" -mindepth 1 -maxdepth 1 2>/dev/null | wc -l); " .
             "if [ \"\$COUNT\" -gt 0 ]; then " .
-                "find \"\$SRC_DIR\" -mindepth 1 -maxdepth 1 -exec mv -t \"{$targetInspurPath}/\" {} + 2>/dev/null || true; " .
-                "echo \"[MOVED:\$COUNT]\"; " .
+            "find \"\$SRC_DIR\" -mindepth 1 -maxdepth 1 -exec mv -t \"{$targetInspurPath}/\" {} + 2>/dev/null || true; " .
+            "echo \"[MOVED:\$COUNT]\"; " .
             "else " .
-                "echo \"[MOVED:0]\"; " .
+            "echo \"[MOVED:0]\"; " .
             "fi'";
 
         // Si Inspur tiene un host SSH propio definido diferente a Synology, ejecutar en Inspur
@@ -289,9 +429,12 @@ class NasMigrationService
                 $plinkPath,
                 '-ssh',
                 '-batch',
-                '-P', (string)$port,
-                '-l', $user,
-                '-pw', (string)$password,
+                '-P',
+                (string)$port,
+                '-l',
+                $user,
+                '-pw',
+                (string)$password,
                 $host,
                 $remoteCommand,
             ];
@@ -305,10 +448,14 @@ class NasMigrationService
 
         $cmd = [
             'ssh',
-            '-p', (string)$port,
-            '-o', 'StrictHostKeyChecking=no',
-            '-o', 'ConnectTimeout=5',
-            '-o', 'BatchMode=yes',
+            '-p',
+            (string)$port,
+            '-o',
+            'StrictHostKeyChecking=no',
+            '-o',
+            'ConnectTimeout=5',
+            '-o',
+            'BatchMode=yes',
             "{$user}@{$host}",
             $remoteCommand,
         ];
@@ -346,10 +493,14 @@ class NasMigrationService
         if ($task->ssh_auth_type === 'key' && !empty($keyPath) && file_exists($keyPath)) {
             $cmd = [
                 'ssh',
-                '-i', $keyPath,
-                '-p', (string)$port,
-                '-o', 'StrictHostKeyChecking=no',
-                '-o', 'UserKnownHostsFile=/dev/null',
+                '-i',
+                $keyPath,
+                '-p',
+                (string)$port,
+                '-o',
+                'StrictHostKeyChecking=no',
+                '-o',
+                'UserKnownHostsFile=/dev/null',
                 "{$user}@{$host}",
                 $remoteCommand
             ];
@@ -373,9 +524,12 @@ class NasMigrationService
                 $plinkPath,
                 '-ssh',
                 '-batch',
-                '-P', (string)$port,
-                '-l', $user,
-                '-pw', (string)$password,
+                '-P',
+                (string)$port,
+                '-l',
+                $user,
+                '-pw',
+                (string)$password,
                 $host,
                 $remoteCommand,
             ];
@@ -410,10 +564,14 @@ class NasMigrationService
         // Fallback: Ejecución directa con ssh (usará llaves por defecto o agente local)
         $cmd = [
             'ssh',
-            '-p', (string)$port,
-            '-o', 'StrictHostKeyChecking=no',
-            '-o', 'ConnectTimeout=5',
-            '-o', 'BatchMode=yes',
+            '-p',
+            (string)$port,
+            '-o',
+            'StrictHostKeyChecking=no',
+            '-o',
+            'ConnectTimeout=5',
+            '-o',
+            'BatchMode=yes',
             "{$user}@{$host}",
             $remoteCommand,
         ];

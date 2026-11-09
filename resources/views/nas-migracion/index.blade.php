@@ -15,6 +15,11 @@
                 </h2>
             </div>
             <div class="col-auto ms-auto d-print-none d-flex align-items-center gap-2">
+                @can('ver-estadisticas-nas')
+                <a href="{{ route('nas-migracion.estadisticas.index') }}" class="btn btn-outline-warning btn-sm fw-bold">
+                    <i class="ti ti-chart-bar me-1"></i> Estadísticas
+                </a>
+                @endcan
                 @can('crear-tarea-nas')
                 <button type="button" class="btn btn-primary btn-sm fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modal-nueva-tarea">
                     <i class="ti ti-plus me-1 fs-3"></i> Nueva Tarea de Migración
@@ -231,6 +236,15 @@
                                     <span class="badge bg-teal-lt me-1">RAWDATA</span>
                                     <code class="text-primary fw-bold" title="{{ $task->full_inspur_path }}">{{ $task->inspur_target_dir ?: 'VRSS-1' }}</code>
                                 </div>
+                                <div class="d-flex align-items-center text-truncate mb-1">
+                                    <strong class="text-secondary me-2" style="width: 85px;">ÚLTIMA ÓRBITA:</strong>
+                                    @if($task->last_migrated_orbit)
+                                        <span class="badge bg-green-lt me-1"><i class="ti ti-check me-1"></i>{{ $task->last_migrated_orbit }}</span>
+                                        <small class="text-muted" style="font-size: 0.72rem;">(Continuará desde la siguiente)</small>
+                                    @else
+                                        <span class="text-muted fst-italic" style="font-size: 0.75rem;">Ninguna registrada (Iniciará desde la primera)</span>
+                                    @endif
+                                </div>
                                 <div class="d-flex align-items-center text-truncate text-secondary" style="font-size: 0.74rem;">
                                     <i class="ti ti-arrows-right me-1"></i> Flujo: Synology &rarr; <code>MIGRACION_SYNOLOGY</code> &rarr; <code>/HS_IPS_PRIVATE/RDP_FTP/RAWDATA/{{ $task->inspur_target_dir ?: 'VRSS-1' }}/</code>
                                 </div>
@@ -263,6 +277,7 @@
                                     data-source-path="{{ $task->source_path }}"
                                     data-target-path="{{ $task->target_path }}"
                                     data-inspur-dir="{{ $task->inspur_target_dir ?: 'VRSS-1' }}"
+                                    data-last-orbit="{{ $task->last_migrated_orbit }}"
                                     data-batch-size="{{ $task->batch_size ?? 500 }}"
                                     data-url="{{ route('nas-migracion.tasks.sync', $task) }}"
                                     data-status-url="{{ route('nas-migracion.tasks.status', $task) }}"
@@ -372,16 +387,51 @@
                                         <div class="col-md-6">
                                             <label class="form-label required">Carpeta Origen (Synology)</label>
                                             <select name="source_path" class="form-select" required>
-                                                @foreach($synologyAvailableSources as $src)
-                                                    <option value="{{ $src }}" {{ old('source_path', $task->source_path) === $src ? 'selected' : '' }}>
-                                                        {{ basename(rtrim($src, '/')) }} &nbsp; ({{ $src }})
-                                                    </option>
-                                                @endforeach
+                                                @php
+                                                    $vol2Sources = array_filter($synologyAvailableSources, fn($s) => str_contains($s, 'dae-Volumen2_IPS'));
+                                                    $vol4Sources = array_filter($synologyAvailableSources, fn($s) => str_contains($s, 'dae-Volumen4_Respaldo_IPS'));
+                                                    $otherSources = array_filter($synologyAvailableSources, fn($s) => !str_contains($s, 'dae-Volumen2_IPS') && !str_contains($s, 'dae-Volumen4_Respaldo_IPS'));
+                                                @endphp
+                                                @if(count($vol2Sources) > 0)
+                                                    <optgroup label="Volumen 2 (dae-Volumen2_IPS)">
+                                                        @foreach($vol2Sources as $src)
+                                                            @php
+                                                                $relative = str_replace('/volume1/dae-Volumen2_IPS/', '', $src);
+                                                                $display = empty(trim($relative, '/')) ? 'dae-Volumen2_IPS (Raíz)' : '📁 ' . trim($relative, '/');
+                                                            @endphp
+                                                            <option value="{{ $src }}" {{ old('source_path', $task->source_path) === $src ? 'selected' : '' }}>
+                                                                {{ $display }} &nbsp; ({{ $src }})
+                                                            </option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                @endif
+                                                @if(count($vol4Sources) > 0)
+                                                    <optgroup label="Volumen 4 (dae-Volumen4_Respaldo_IPS)">
+                                                        @foreach($vol4Sources as $src)
+                                                            @php
+                                                                $relative = str_replace('/volume1/dae-Volumen4_Respaldo_IPS/', '', $src);
+                                                                $display = empty(trim($relative, '/')) ? 'dae-Volumen4_Respaldo_IPS (Raíz)' : '📁 ' . trim($relative, '/');
+                                                            @endphp
+                                                            <option value="{{ $src }}" {{ old('source_path', $task->source_path) === $src ? 'selected' : '' }}>
+                                                                {{ $display }} &nbsp; ({{ $src }})
+                                                            </option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                @endif
+                                                @if(count($otherSources) > 0)
+                                                    <optgroup label="Otros Directorios">
+                                                        @foreach($otherSources as $src)
+                                                            <option value="{{ $src }}" {{ old('source_path', $task->source_path) === $src ? 'selected' : '' }}>
+                                                                {{ basename(rtrim($src, '/')) }} &nbsp; ({{ $src }})
+                                                            </option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                @endif
                                                 @if(!in_array($task->source_path, $synologyAvailableSources) && !empty($task->source_path))
                                                     <option value="{{ $task->source_path }}" selected>{{ $task->source_path }}</option>
                                                 @endif
                                             </select>
-                                            <small class="text-secondary">Directorio a migrar desde la NAS Synology (miranda-24).</small>
+                                            <small class="text-secondary">Directorio a migrar desde la NAS Synology (dae-Volumen2_IPS o dae-Volumen4_Respaldo_IPS).</small>
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label required">Carpeta Compartida Intermedia (Destino)</label>
@@ -403,6 +453,11 @@
                                                 @endforeach
                                             </select>
                                             <small class="text-secondary">Ubicación en Inspur: <code>/HS_IPS_PRIVATE/RDP_FTP/RAWDATA/</code></small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Índice Última Órbita Copiada <small class="text-secondary fw-normal">(Punto de reanudación)</small></label>
+                                            <input type="text" name="last_migrated_orbit" class="form-control font-monospace" value="{{ old('last_migrated_orbit', $task->last_migrated_orbit) }}" placeholder="Ej: 045974_20260420122113">
+                                            <small class="text-secondary">Las sincronizaciones ignorarán duplicados y procesarán a partir de este índice.</small>
                                         </div>
                                         <div class="col-md-6 d-flex align-items-center pt-3">
                                             <label class="form-check form-switch m-0">
@@ -525,6 +580,16 @@
                             </td>
                             <td>
                                 <span class="badge bg-secondary-lt fw-bold">{{ number_format($log->files_transferred) }} archivos</span>
+                                @if($log->last_migrated_orbit_in_batch)
+                                    <div class="small text-truncate mt-1" style="max-width: 140px;" title="Última órbita procesada: {{ $log->last_migrated_orbit_in_batch }}">
+                                        <i class="ti ti-check text-success"></i> <code class="small text-success">{{ $log->last_migrated_orbit_in_batch }}</code>
+                                    </div>
+                                @endif
+                                @if($log->orbits_skipped > 0)
+                                    <div class="small text-muted" title="{{ $log->orbits_skipped }} órbitas ya existían en destino">
+                                        <i class="ti ti-arrow-forward-up text-warning"></i> <small>{{ $log->orbits_skipped }} omitidas</small>
+                                    </div>
+                                @endif
                             </td>
                             <td class="fw-bold text-dark">
                                 {{ $log->human_transferred_size ?: '0 B' }}
@@ -570,11 +635,7 @@
                 </table>
             </div>
 
-            @if($logs->hasPages())
-            <div class="card-footer d-flex align-items-center justify-content-between">
-                {{ $logs->links() }}
-            </div>
-            @endif
+            @include('partials.datatable-pagination', ['paginator' => $logs, 'label' => 'registros'])
         </div>
 
     </div>
@@ -635,13 +696,48 @@
                             <label class="form-label required">Carpeta Origen (Synology)</label>
                             <select name="source_path" class="form-select" required>
                                 <option value="" disabled selected>-- Seleccione Carpeta Origen --</option>
-                                @foreach($synologyAvailableSources as $src)
-                                    <option value="{{ $src }}" {{ $src === '/volume1/dae-RowData/' ? 'selected' : '' }}>
-                                        {{ basename(rtrim($src, '/')) }} &nbsp; ({{ $src }})
-                                    </option>
-                                @endforeach
+                                @php
+                                    $vol2Sources = array_filter($synologyAvailableSources, fn($s) => str_contains($s, 'dae-Volumen2_IPS'));
+                                    $vol4Sources = array_filter($synologyAvailableSources, fn($s) => str_contains($s, 'dae-Volumen4_Respaldo_IPS'));
+                                    $otherSources = array_filter($synologyAvailableSources, fn($s) => !str_contains($s, 'dae-Volumen2_IPS') && !str_contains($s, 'dae-Volumen4_Respaldo_IPS'));
+                                @endphp
+                                @if(count($vol2Sources) > 0)
+                                    <optgroup label="Volumen 2 (dae-Volumen2_IPS)">
+                                        @foreach($vol2Sources as $src)
+                                            @php
+                                                $relative = str_replace('/volume1/dae-Volumen2_IPS/', '', $src);
+                                                $display = empty(trim($relative, '/')) ? 'dae-Volumen2_IPS (Raíz)' : '📁 ' . trim($relative, '/');
+                                            @endphp
+                                            <option value="{{ $src }}" {{ $src === '/volume1/dae-Volumen2_IPS/RAWDATA PRINCIPAL/' ? 'selected' : '' }}>
+                                                {{ $display }} &nbsp; ({{ $src }})
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
+                                @if(count($vol4Sources) > 0)
+                                    <optgroup label="Volumen 4 (dae-Volumen4_Respaldo_IPS)">
+                                        @foreach($vol4Sources as $src)
+                                            @php
+                                                $relative = str_replace('/volume1/dae-Volumen4_Respaldo_IPS/', '', $src);
+                                                $display = empty(trim($relative, '/')) ? 'dae-Volumen4_Respaldo_IPS (Raíz)' : '📁 ' . trim($relative, '/');
+                                            @endphp
+                                            <option value="{{ $src }}">
+                                                {{ $display }} &nbsp; ({{ $src }})
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
+                                @if(count($otherSources) > 0)
+                                    <optgroup label="Otros Directorios">
+                                        @foreach($otherSources as $src)
+                                            <option value="{{ $src }}">
+                                                {{ basename(rtrim($src, '/')) }} &nbsp; ({{ $src }})
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
                             </select>
-                            <small class="text-secondary">Directorio a migrar desde la NAS Synology (miranda-24).</small>
+                            <small class="text-secondary">Directorio a migrar desde la NAS Synology (dae-Volumen2_IPS o dae-Volumen4_Respaldo_IPS).</small>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label required">Carpeta Compartida Intermedia (Destino)</label>
@@ -663,6 +759,11 @@
                                 @endforeach
                             </select>
                             <small class="text-secondary">Ubicación en Inspur: <code>/HS_IPS_PRIVATE/RDP_FTP/RAWDATA/</code></small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Índice Última Órbita Copiada <small class="text-secondary fw-normal">(Opcional)</small></label>
+                            <input type="text" name="last_migrated_orbit" class="form-control font-monospace" placeholder="Ej: 045974_20260420122113">
+                            <small class="text-secondary">Omitirá las anteriores y continuará desde la siguiente en orden.</small>
                         </div>
                         <div class="col-md-6 d-flex align-items-center pt-3">
                             <label class="form-check form-switch m-0">
@@ -837,6 +938,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const currentSource = this.getAttribute('data-source-path') || '/volume1/dae-RowData/';
             const currentTarget = this.getAttribute('data-target-path') || '/volume1/dae-RowData/MIGRACION_SYNOLOGY/';
             const currentInspurDir = this.getAttribute('data-inspur-dir') || 'VRSS-1';
+            const currentLastOrbit = this.getAttribute('data-last-orbit') || '';
             const syncUrl = this.getAttribute('data-url');
             const statusUrl = this.getAttribute('data-status-url');
 
@@ -866,6 +968,10 @@ document.addEventListener('DOMContentLoaded', function () {
                                         <span class="badge bg-teal-lt font-monospace fw-bold">${currentInspurDir}</span>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center py-1">
+                                        <span class="text-secondary small fw-semibold"><i class="ti ti-history me-1 text-success"></i> 4. Punto de Inicio (Órbita):</span>
+                                        ${currentLastOrbit ? `<span class="badge bg-green-lt font-monospace fw-bold">${currentLastOrbit} (Reanuda desde siguiente)</span>` : `<span class="text-muted small fst-italic">Desde el inicio (Omite duplicados)</span>`}
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center py-1">
                                         <span class="text-secondary small fw-semibold"><i class="ti ti-files me-1 text-azure"></i> Lote a Transferir:</span>
                                         <span class="badge bg-azure-lt fw-bold">${batchSize} archivos</span>
                                     </div>
@@ -874,7 +980,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
 
                         <div class="text-secondary text-center small">
-                            <i class="ti ti-info-circle me-1 text-info"></i> La transferencia se ejecutará en segundo plano asíncrono.
+                            <i class="ti ti-shield-check me-1 text-success"></i> Se ignoran duplicados existentes en destino automáticamente.
                         </div>
                     </div>
                 `,

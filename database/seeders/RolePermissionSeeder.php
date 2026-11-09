@@ -200,6 +200,21 @@ class RolePermissionSeeder extends Seeder
                 'module' => 'Migración NAS',
                 'description' => 'Exportar reportes de cotejo y verificación de archivos a formato CSV'
             ],
+            [
+                'name' => 'ver-estadisticas-nas',
+                'module' => 'Migración NAS',
+                'description' => 'Consultar el panel de estadísticas y métricas de migración NAS'
+            ],
+            [
+                'name' => 'crear-estadisticas-nas',
+                'module' => 'Migración NAS',
+                'description' => 'Registrar nuevos ejecutores y guardias en las estadísticas de migración'
+            ],
+            [
+                'name' => 'exportar-estadisticas-nas',
+                'module' => 'Migración NAS',
+                'description' => 'Exportar reportes de estadísticas de migración a formato CSV'
+            ],
         ];
 
         // Eliminar permisos antiguos que no pertenezcan a los módulos base

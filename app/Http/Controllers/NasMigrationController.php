@@ -32,7 +32,10 @@ class NasMigrationController extends Controller
 
         // Directorios disponibles en Inspur y Synology
         $inspurAvailableDirs = NasMigrationTask::INSPUR_AVAILABLE_DIRS;
-        $synologyAvailableSources = NasMigrationTask::SYNOLOGY_AVAILABLE_SOURCES;
+        $firstTask = $tasks->first();
+        $synologyAvailableSources = $firstTask 
+            ? $this->migrationService->listSynologyDirectories($firstTask)
+            : NasMigrationTask::SYNOLOGY_AVAILABLE_SOURCES;
         $synologyAvailableTargets = NasMigrationTask::SYNOLOGY_AVAILABLE_TARGETS;
 
         // Logs filtrados
@@ -50,7 +53,7 @@ class NasMigrationController extends Controller
             $logsQuery->where('trigger_type', $request->trigger_type);
         }
 
-        $logs = $logsQuery->paginate(15)->withQueryString();
+        $logs = $logsQuery->paginate(10)->withQueryString();
 
         return view('nas-migracion.index', compact(
             'tasks',
@@ -84,6 +87,7 @@ class NasMigrationController extends Controller
             'target_path' => 'nullable|string|max:255',
             'inspur_base_path' => 'nullable|string|max:255',
             'inspur_target_dir' => 'required|string|max:255',
+            'last_migrated_orbit' => 'nullable|string|max:255',
             'inspur_host' => 'nullable|string|max:100',
             'inspur_port' => 'nullable|integer|min:1|max:65535',
             'inspur_user' => 'nullable|string|max:100',
@@ -134,6 +138,7 @@ class NasMigrationController extends Controller
             'target_path' => 'nullable|string|max:255',
             'inspur_base_path' => 'nullable|string|max:255',
             'inspur_target_dir' => 'required|string|max:255',
+            'last_migrated_orbit' => 'nullable|string|max:255',
             'inspur_host' => 'nullable|string|max:100',
             'inspur_port' => 'nullable|integer|min:1|max:65535',
             'inspur_user' => 'nullable|string|max:100',

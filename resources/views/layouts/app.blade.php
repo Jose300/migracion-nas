@@ -1,28 +1,31 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>@yield('title', 'Dashboard') - {{ setting('app_name', config('app.name', 'Sistema Base')) }}</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @php
-        $faviconAsset = setting('favicon');
+    $faviconAsset = setting('favicon');
     @endphp
-    <link rel="shortcut icon" href="{{ $faviconAsset ? asset('storage/' . $faviconAsset) : asset('favicon.ico') }}" type="image/x-icon"/>
-    
+    <link rel="shortcut icon" href="{{ $faviconAsset ? asset('storage/' . $faviconAsset) : asset('favicon.ico') }}" type="image/x-icon" />
+
     <!-- CSS files -->
-    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css" rel="stylesheet"/>
-    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler-flags.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler-flags.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-    
+
     <style>
         @import url('https://rsms.me/inter/inter.css');
+
         :root {
             --tblr-font-sans-serif: 'Inter var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
             --tblr-navbar-vertical-width: 16.5rem;
         }
+
         body {
             font-feature-settings: "cv03", "cv04", "cv11";
         }
@@ -46,7 +49,7 @@
         }
 
         /* Estilo visual exclusivo para la opción activa (sin alterar márgenes ni posición) */
-        .navbar-vertical .navbar-nav .nav-item.active > .nav-link,
+        .navbar-vertical .navbar-nav .nav-item.active>.nav-link,
         .navbar-vertical .navbar-nav .nav-link.active,
         .navbar-vertical .dropdown-menu .dropdown-item.active {
             background-color: #e0f2fe !important;
@@ -95,6 +98,7 @@
             max-width: 100%;
             overflow: hidden;
         }
+
         .navbar-vertical .navbar-brand a {
             display: inline-flex;
             align-items: center;
@@ -106,6 +110,7 @@
         .swal2-actions {
             gap: 0.5rem;
         }
+
         .swal2-confirm {
             background-color: #2fb344 !important;
             border-color: #2fb344 !important;
@@ -115,12 +120,14 @@
             border-radius: 6px !important;
             padding: 0.55rem 1.25rem !important;
         }
+
         .swal2-confirm:hover,
         .swal2-confirm:focus {
             background-color: #28a03c !important;
             border-color: #28a03c !important;
             box-shadow: 0 2px 6px rgba(47, 179, 68, 0.5) !important;
         }
+
         .swal2-cancel {
             background-color: #d63939 !important;
             border-color: #d63939 !important;
@@ -130,6 +137,7 @@
             border-radius: 6px !important;
             padding: 0.55rem 1.25rem !important;
         }
+
         .swal2-cancel:hover,
         .swal2-cancel:focus {
             background-color: #bd2d2d !important;
@@ -144,15 +152,26 @@
             color: #ffffff !important;
             font-weight: 600 !important;
         }
+
         .modal-footer [data-bs-dismiss="modal"]:not(.btn-success):hover,
         .modal-footer [data-bs-dismiss="modal"]:not(.btn-success):focus {
             background-color: #bd2d2d !important;
             border-color: #bd2d2d !important;
             color: #ffffff !important;
         }
+
+        /* Estilo uniforme para botones de paginación de tablas */
+        .datatable-page-btn {
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+        .datatable-page-btn:hover {
+            background-color: #f1f5f9;
+            color: var(--tblr-primary) !important;
+        }
     </style>
     @stack('css')
 </head>
+
 <body>
     <div class="page">
         <!-- Sidebar -->
@@ -166,7 +185,7 @@
                         @include('components.logo', ['type' => 'navbar'])
                     </a>
                 </div>
-                
+
                 <div class="collapse navbar-collapse" id="sidebar-menu">
                     <ul class="navbar-nav pt-lg-3">
                         <li class="nav-item {{ request()->is('dashboard') ? 'active' : '' }}">
@@ -186,7 +205,7 @@
                             </a>
                         </li>
                         @can('ver-migracion-nas')
-                        <li class="nav-item {{ (request()->is('nas-migracion') || request()->is('nas-migracion/tareas*') || request()->is('nas-migracion/logs*')) && !request()->is('nas-migracion/confirmacion*') ? 'active' : '' }}">
+                        <li class="nav-item {{ (request()->is('nas-migracion') || request()->is('nas-migracion/tareas*') || request()->is('nas-migracion/logs*')) && !request()->is('nas-migracion/confirmacion*') && !request()->is('nas-migracion/estadisticas*') ? 'active' : '' }}">
                             <a class="nav-link" href="{{ route('nas-migracion.index') }}">
                                 <span class="nav-link-icon">
                                     <i class="ti ti-arrows-transfer-down" style="color: #2fb344 !important;"></i>
@@ -202,6 +221,16 @@
                                     <i class="ti ti-checklist" style="color: #0ca678 !important;"></i>
                                 </span>
                                 <span class="nav-link-title">Confirmación de Archivos</span>
+                            </a>
+                        </li>
+                        @endcan
+                        @can('ver-estadisticas-nas')
+                        <li class="nav-item {{ request()->is('nas-migracion/estadisticas*') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('nas-migracion.estadisticas.index') }}">
+                                <span class="nav-link-icon">
+                                    <i class="ti ti-chart-bar" style="color: #f59f00 !important;"></i>
+                                </span>
+                                <span class="nav-link-title">Estadísticas de Migración</span>
                             </a>
                         </li>
                         @endcan
@@ -224,7 +253,7 @@
                                             Usuarios
                                         </a>
                                         @endcan
-                                        
+
                                         @can('ver-roles')
                                         <a class="dropdown-item {{ request()->is('configuracion/roles*') ? 'active' : '' }}" href="{{ route('roles.index') }}">
                                             <span class="nav-link-icon d-md-none d-lg-inline-block me-2">
@@ -233,7 +262,7 @@
                                             Roles
                                         </a>
                                         @endcan
-                                        
+
                                         @can('ver-permisos')
                                         <a class="dropdown-item {{ request()->is('configuracion/permisos*') ? 'active' : '' }}" href="{{ route('permisos.index') }}">
                                             <span class="nav-link-icon d-md-none d-lg-inline-block me-2">
@@ -296,7 +325,7 @@
                 </div>
             </div>
         </aside>
-        
+
         <div class="page-wrapper">
             <!-- Header -->
             <header class="navbar navbar-expand-md navbar-light d-none d-lg-flex d-print-none">
@@ -332,8 +361,8 @@
                                         {{ auth()->user()->getRoleNames()->first() ?? 'Usuario' }}
                                     </div>
                                 </div>
-                                <span class="avatar avatar-sm rounded-circle fw-bold text-info border border-info border-2 bg-white" 
-                                      style="font-size: 0.7rem;">
+                                <span class="avatar avatar-sm rounded-circle fw-bold text-info border border-info border-2 bg-white"
+                                    style="font-size: 0.7rem;">
                                     {{ auth()->user()->initials }}
                                 </span>
                             </a>
@@ -360,7 +389,7 @@
                                 </form>
                             </div>
                         </div>
-                </div>
+                    </div>
             </header>
 
             <div class="page-body">
@@ -368,7 +397,7 @@
                     @yield('content')
                 </div>
             </div>
-            
+
             <footer class="footer footer-transparent d-print-none">
                 <div class="container-xl">
                     <div class="row text-center align-items-center flex-row-reverse">
@@ -386,59 +415,60 @@
             </footer>
         </div>
     </div>
-    
+
     <!-- Libs JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @stack('js')
     @stack('scripts')
-    
+
     @if(request()->is('configuracion/usuarios*'))
-        <script src="{{ asset('js/users.js') }}"></script>
+    <script src="{{ asset('js/users.js') }}"></script>
     @endif
     @if(request()->is('configuracion/roles*'))
-        <script src="{{ asset('js/roles.js') }}"></script>
+    <script src="{{ asset('js/roles.js') }}"></script>
     @endif
 
     <script>
         // Global SweetAlert Handler for Flash Messages
         @if(session('success'))
-            Swal.fire({
-                icon: 'success',
-                title: '¡Operación Exitosa!',
-                text: "{{ session('success') }}",
-                timer: 3000,
-                showConfirmButton: false,
-                confirmButtonColor: '#206bc4'
-            });
+        Swal.fire({
+            icon: 'success',
+            title: '¡Operación Exitosa!',
+            text: "{{ session('success') }}",
+            timer: 3000,
+            showConfirmButton: false,
+            confirmButtonColor: '#206bc4'
+        });
         @endif
 
         @if(session('error'))
-            Swal.fire({
-                icon: 'error',
-                title: '¡Error!',
-                text: "{{ session('error') }}",
-                confirmButtonColor: '#d63939'
-            });
+        Swal.fire({
+            icon: 'error',
+            title: '¡Error!',
+            text: "{{ session('error') }}",
+            confirmButtonColor: '#d63939'
+        });
         @endif
 
         @if(session('warning'))
-            Swal.fire({
-                icon: 'warning',
-                title: '¡Atención!',
-                text: "{{ session('warning') }}",
-                confirmButtonColor: '#f59f00'
-            });
+        Swal.fire({
+            icon: 'warning',
+            title: '¡Atención!',
+            text: "{{ session('warning') }}",
+            confirmButtonColor: '#f59f00'
+        });
         @endif
 
         @if(session('info') || session('status'))
-            Swal.fire({
-                icon: 'info',
-                title: 'Información',
-                text: "{{ session('info') ?? session('status') }}",
-                confirmButtonColor: '#206bc4'
-            });
+        Swal.fire({
+            icon: 'info',
+            title: 'Información',
+            text: "{{ session('info') ?? session('status') }}",
+            confirmButtonColor: '#206bc4'
+        });
         @endif
     </script>
 </body>
+
 </html>

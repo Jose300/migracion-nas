@@ -16,6 +16,11 @@
                 </h2>
             </div>
             <div class="col-auto ms-auto d-print-none d-flex align-items-center gap-2">
+                @can('ver-estadisticas-nas')
+                <a href="{{ route('nas-migracion.estadisticas.index') }}" class="btn btn-outline-warning btn-sm fw-bold">
+                    <i class="ti ti-chart-bar me-1"></i> Estadísticas
+                </a>
+                @endcan
                 @can('exportar-confirmacion-nas')
                 @if($verification)
                 <a href="{{ route('nas-migracion.confirmacion.export', $verification) }}" class="btn btn-outline-primary btn-sm fw-bold">
@@ -378,10 +383,8 @@
                 </table>
             </div>
 
-            @if($items->hasPages())
-            <div class="card-footer d-flex align-items-center justify-content-between">
-                {{ $items->links() }}
-            </div>
+            @if(isset($items) && $verification)
+                @include('partials.datatable-pagination', ['paginator' => $items, 'label' => 'archivos cotejados'])
             @endif
         </div>
 
