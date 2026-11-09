@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             AuditoriaSeeder::class,
             LogErrorSeeder::class,
             NasMigrationStatsSeeder::class,
+            SystemIdentitySeeder::class,
         ]);
     }
 }
