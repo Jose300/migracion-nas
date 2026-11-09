@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             AuditoriaSeeder::class,
             LogErrorSeeder::class,
+            NasMigrationStatsSeeder::class,
         ]);
     }
 }
