@@ -396,9 +396,15 @@
                                             <input type="text" name="ssh_user" class="form-control" value="{{ old('ssh_user', $task->ssh_user) }}" required>
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label text-truncate" title="Dejar vacío si no deseas modificar la contraseña actual">Contraseña SSH <small class="text-secondary fw-normal">(Opcional)</small></label>
+                                            <label class="form-label text-truncate" title="Contraseña SSH configurada en la Synology">Contraseña SSH <small class="text-secondary fw-normal">(Opcional)</small></label>
                                             <div class="input-group input-group-flat">
-                                                <input type="password" name="ssh_password" id="ssh_password_edit_{{ $task->id }}" class="form-control" placeholder="••••••••" title="Dejar vacío para no modificar la actual">
+                                                <input type="password" 
+                                                       name="ssh_password" 
+                                                       id="ssh_password_edit_{{ $task->id }}" 
+                                                       class="form-control" 
+                                                       value="{{ old('ssh_password', $task->ssh_password) }}" 
+                                                       placeholder="••••••••" 
+                                                       title="Contraseña actual guardada. Dejar como está o modificar.">
                                                 <span class="input-group-text">
                                                     <a href="javascript:void(0)" class="link-secondary btn-toggle-password" data-target="ssh_password_edit_{{ $task->id }}" title="Mostrar / ocultar contraseña" tabindex="-1">
                                                         <i class="ti ti-eye"></i>
