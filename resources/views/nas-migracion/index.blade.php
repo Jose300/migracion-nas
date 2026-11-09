@@ -161,34 +161,34 @@
                      data-status-url="{{ route('nas-migracion.tasks.status', $task) }}"
                      data-current-status="{{ $task->status }}">
                     <div class="row align-items-center g-3">
-                        <div class="col-md-4">
+                        <div class="col-lg-4 col-md-12 mb-3 mb-lg-0">
                             <div class="d-flex align-items-center">
-                                <span class="avatar avatar-md bg-azure-lt text-azure rounded me-3">
+                                <span class="avatar avatar-md bg-azure-lt text-azure rounded me-3 flex-shrink-0">
                                     <i class="ti ti-device-floppy fs-2"></i>
                                 </span>
-                                <div>
-                                    <h4 class="mb-0 fw-bold text-dark">{{ $task->name }}</h4>
-                                    <small class="text-secondary">{{ $task->description ?: 'Sin descripción' }}</small>
-                                    <div class="mt-1" id="task-status-container-{{ $task->id }}">
+                                <div class="min-width-0">
+                                    <h4 class="mb-0 fw-bold text-dark text-truncate" title="{{ $task->name }}">{{ $task->name }}</h4>
+                                    <small class="text-secondary d-block text-truncate" title="{{ $task->description }}">{{ $task->description ?: 'Sin descripción' }}</small>
+                                    <div class="mt-1 d-flex flex-wrap gap-1 align-items-center" id="task-status-container-{{ $task->id }}">
                                         @if($task->status === 'running')
                                             <span class="badge bg-warning-lt text-warning fw-bold d-inline-flex align-items-center badge-status-pill">
-                                                <span class="spinner-border spinner-border-sm me-1" role="status"></span> En Proceso de Copia (Segundo Plano)
+                                                <span class="spinner-border spinner-border-sm me-1" role="status"></span> En Proceso
                                             </span>
                                         @elseif($task->last_run_status === 'completed')
                                             <span class="badge bg-green-lt text-green fw-bold badge-status-pill">
-                                                <i class="ti ti-check me-1"></i> Última sincronización OK
+                                                <i class="ti ti-check me-1"></i> Sincronización OK
                                             </span>
                                         @elseif($task->last_run_status === 'failed')
                                             <span class="badge bg-danger-lt text-danger fw-bold badge-status-pill">
-                                                <i class="ti ti-x me-1"></i> Falló en última ejecución
+                                                <i class="ti ti-x me-1"></i> Falló última ejecución
                                             </span>
                                         @else
                                             <span class="badge bg-secondary-lt fw-bold badge-status-pill">En espera</span>
                                         @endif
-                                        <span class="badge bg-purple-lt ms-1">
+                                        <span class="badge bg-purple-lt">
                                             <i class="ti ti-clock me-1"></i> {{ ucfirst($task->schedule_frequency) }}
                                         </span>
-                                        <span class="badge bg-blue-lt ms-1" title="Lote configurado">
+                                        <span class="badge bg-blue-lt" title="Lote configurado">
                                             <i class="ti ti-stack-2 me-1"></i> Lote: {{ $task->batch_size ?? 500 }} arch.
                                         </span>
                                     </div>
@@ -219,40 +219,56 @@
                         </div>
 
                         {{-- Detalle de Rutas y Conexión --}}
-                        <div class="col-md-5">
-                            <div class="bg-light p-2 rounded border" style="font-size: 0.82rem;">
-                                <div class="d-flex align-items-center text-truncate mb-1">
-                                    <strong class="text-secondary me-2" style="width: 85px;">ORIGEN (SYN):</strong>
-                                    <span class="badge bg-blue-lt me-1">{{ $task->nas_host }}</span>
-                                    <code class="text-dark" title="{{ $task->source_path }}">{{ $task->source_path }}</code>
+                        <div class="col-lg-6 col-md-9 mb-3 mb-lg-0">
+                            <div class="bg-light p-2 rounded border" style="font-size: 0.80rem; line-height: 1.5;">
+                                <div class="row g-1 align-items-baseline mb-1">
+                                    <div class="col-auto text-secondary fw-bold" style="min-width: 110px;">
+                                        ORIGEN (SYN):
+                                    </div>
+                                    <div class="col d-flex flex-wrap align-items-center gap-1">
+                                        <span class="badge bg-blue-lt">{{ $task->nas_host }}</span>
+                                        <code class="text-dark bg-white px-2 py-0 rounded border small text-break" title="{{ $task->source_path }}">{{ $task->source_path }}</code>
+                                    </div>
                                 </div>
-                                <div class="d-flex align-items-center text-truncate mb-1">
-                                    <strong class="text-secondary me-2" style="width: 85px;">COMPARTIDA:</strong>
-                                    <span class="badge bg-purple-lt me-1">MIGRACION_SYNOLOGY</span>
-                                    <code class="text-dark" title="{{ $task->target_path }}">{{ $task->target_path }}</code>
+                                <div class="row g-1 align-items-baseline mb-1">
+                                    <div class="col-auto text-secondary fw-bold" style="min-width: 110px;">
+                                        COMPARTIDA:
+                                    </div>
+                                    <div class="col d-flex flex-wrap align-items-center gap-1">
+                                        <span class="badge bg-purple-lt">MIGRACION_SYNOLOGY</span>
+                                        <code class="text-dark bg-white px-2 py-0 rounded border small text-break" title="{{ $task->target_path }}">{{ $task->target_path }}</code>
+                                    </div>
                                 </div>
-                                <div class="d-flex align-items-center text-truncate mb-1">
-                                    <strong class="text-secondary me-2" style="width: 85px;">INSPUR FINAL:</strong>
-                                    <span class="badge bg-teal-lt me-1">RAWDATA</span>
-                                    <code class="text-primary fw-bold" title="{{ $task->full_inspur_path }}">{{ $task->inspur_target_dir ?: 'VRSS-1' }}</code>
+                                <div class="row g-1 align-items-baseline mb-1">
+                                    <div class="col-auto text-secondary fw-bold" style="min-width: 110px;">
+                                        INSPUR FINAL:
+                                    </div>
+                                    <div class="col d-flex flex-wrap align-items-center gap-1">
+                                        <span class="badge bg-teal-lt">RAWDATA</span>
+                                        <span class="badge bg-azure-lt font-monospace fw-bold">{{ $task->inspur_target_dir ?: 'VRSS-1' }}</span>
+                                    </div>
                                 </div>
-                                <div class="d-flex align-items-center text-truncate mb-1">
-                                    <strong class="text-secondary me-2" style="width: 85px;">ÚLTIMA ÓRBITA:</strong>
-                                    @if($task->last_migrated_orbit)
-                                        <span class="badge bg-green-lt me-1"><i class="ti ti-check me-1"></i>{{ $task->last_migrated_orbit }}</span>
-                                        <small class="text-muted" style="font-size: 0.72rem;">(Continuará desde la siguiente)</small>
-                                    @else
-                                        <span class="text-muted fst-italic" style="font-size: 0.75rem;">Ninguna registrada (Iniciará desde la primera)</span>
-                                    @endif
+                                <div class="row g-1 align-items-baseline mb-1">
+                                    <div class="col-auto text-secondary fw-bold" style="min-width: 110px;">
+                                        ÚLTIMA ÓRBITA:
+                                    </div>
+                                    <div class="col d-flex flex-wrap align-items-center gap-1">
+                                        @if($task->last_migrated_orbit)
+                                            <span class="badge bg-green-lt"><i class="ti ti-check me-1"></i>{{ $task->last_migrated_orbit }}</span>
+                                            <span class="text-muted" style="font-size: 0.72rem;">(Continuará desde la siguiente)</span>
+                                        @else
+                                            <span class="text-muted fst-italic" style="font-size: 0.75rem;">Ninguna registrada (Iniciará desde la primera)</span>
+                                        @endif
+                                    </div>
                                 </div>
-                                <div class="d-flex align-items-center text-truncate text-secondary" style="font-size: 0.74rem;">
-                                    <i class="ti ti-arrows-right me-1"></i> Flujo: Synology &rarr; <code>MIGRACION_SYNOLOGY</code> &rarr; <code>/HS_IPS_PRIVATE/RDP_FTP/RAWDATA/{{ $task->inspur_target_dir ?: 'VRSS-1' }}/</code>
+                                <div class="border-top pt-1 mt-1 text-secondary" style="font-size: 0.72rem;">
+                                    <i class="ti ti-arrows-right me-1 text-primary"></i> <span class="fw-semibold">Flujo:</span> Synology &rarr; <code>MIGRACION_SYNOLOGY</code> &rarr; <code>/HS_IPS_PRIVATE/RDP_FTP/RAWDATA/{{ $task->inspur_target_dir ?: 'VRSS-1' }}/</code>
                                 </div>
                             </div>
                         </div>
 
                         {{-- Botones de Acción (Solo Iconos con Tooltip) --}}
-                        <div class="col-md-3 text-md-end d-flex align-items-center justify-content-md-end gap-2">
+                        <div class="col-lg-2 col-md-3 text-end d-flex align-items-center justify-content-end gap-2">
                             {{-- Botón Probar Conexión --}}
                             @can('probar-conexion-nas')
                             <button type="button" 
@@ -340,11 +356,11 @@
                             <form action="{{ route('nas-migracion.tasks.update', $task) }}" method="POST">
                                 @csrf
                                 @method('PUT')
-                                <div class="modal-header">
-                                    <h5 class="modal-title fw-bold">
-                                        <i class="ti ti-edit me-1 text-primary"></i> Editar Tarea: {{ $task->name }}
+                                <div class="modal-header bg-primary text-white">
+                                    <h5 class="modal-title fw-bold text-white">
+                                        <i class="ti ti-edit me-1"></i> Editar Tarea: {{ $task->name }}
                                     </h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div class="row g-3">
@@ -381,7 +397,14 @@
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label text-truncate" title="Dejar vacío si no deseas modificar la contraseña actual">Contraseña SSH <small class="text-secondary fw-normal">(Opcional)</small></label>
-                                            <input type="password" name="ssh_password" class="form-control" placeholder="••••••••" title="Dejar vacío para no modificar la actual">
+                                            <div class="input-group input-group-flat">
+                                                <input type="password" name="ssh_password" id="ssh_password_edit_{{ $task->id }}" class="form-control" placeholder="••••••••" title="Dejar vacío para no modificar la actual">
+                                                <span class="input-group-text">
+                                                    <a href="javascript:void(0)" class="link-secondary btn-toggle-password" data-target="ssh_password_edit_{{ $task->id }}" title="Mostrar / ocultar contraseña" tabindex="-1">
+                                                        <i class="ti ti-eye"></i>
+                                                    </a>
+                                                </span>
+                                            </div>
                                         </div>
 
                                         <div class="col-md-6">
@@ -648,11 +671,11 @@
         <div class="modal-content">
             <form action="{{ route('nas-migracion.tasks.store') }}" method="POST">
                 @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold">
-                        <i class="ti ti-plus me-1 text-primary"></i> Registrar Nueva Tarea de Migración
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold text-white">
+                        <i class="ti ti-plus me-1"></i> Registrar Nueva Tarea de Migración
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
@@ -689,7 +712,14 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label required">Contraseña SSH</label>
-                            <input type="password" name="ssh_password" class="form-control" placeholder="Contraseña de la Synology" required>
+                            <div class="input-group input-group-flat">
+                                <input type="password" name="ssh_password" id="ssh_password_create" class="form-control" placeholder="Contraseña de la Synology" required>
+                                <span class="input-group-text">
+                                    <a href="javascript:void(0)" class="link-secondary btn-toggle-password" data-target="ssh_password_create" title="Mostrar / ocultar contraseña" tabindex="-1">
+                                        <i class="ti ti-eye"></i>
+                                    </a>
+                                </span>
+                            </div>
                         </div>
 
                         <div class="col-md-6">
@@ -862,6 +892,29 @@ document.addEventListener('DOMContentLoaded', function () {
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Toggle visibilidad de contraseña con icono de ojo
+    document.querySelectorAll('.btn-toggle-password').forEach(button => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon = this.querySelector('i');
+            if (input) {
+                const isPassword = input.getAttribute('type') === 'password';
+                input.setAttribute('type', isPassword ? 'text' : 'password');
+                if (icon) {
+                    if (isPassword) {
+                        icon.classList.remove('ti-eye');
+                        icon.classList.add('ti-eye-off');
+                    } else {
+                        icon.classList.remove('ti-eye-off');
+                        icon.classList.add('ti-eye');
+                    }
+                }
+            }
+        });
     });
 
     // 1. Probar Conexión (Ping & SSH)
