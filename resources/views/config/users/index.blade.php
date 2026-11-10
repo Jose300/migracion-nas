@@ -15,10 +15,12 @@
             <!-- Page title actions -->
             <div class="col-auto ms-auto d-print-none">
                 <div class="d-flex">
+                    @can('crear-usuarios')
                     <button class="btn btn-primary d-none d-sm-inline-block btn-add-user" data-url="{{ route('usuarios.store') }}">
                         <i class="ti ti-plus me-1"></i>
                         AGREGAR USUARIO
                     </button>
+                    @endcan
                 </div>
             </div>
         </div>
@@ -79,11 +81,14 @@
                             <td>{{ $user->created_at->format('d/m/Y') }}</td>
                             <td class="text-center">
                                 <div class="btn-group" role="group">
+                                    @can('editar-usuarios')
                                     <button class="btn btn-icon btn-primary me-2 btn-edit-user" 
                                             data-url="{{ route('usuarios.edit', $user->id) }}"
                                             data-update-url="{{ route('usuarios.update', $user->id) }}">
                                         <i class="ti ti-edit fs-2"></i>
                                     </button>
+                                    @endcan
+                                    @can('eliminar-usuarios')
                                     <button class="btn btn-icon btn-danger btn-delete" 
                                             data-bs-toggle="modal" 
                                             data-bs-target="#modal-delete"
@@ -91,6 +96,7 @@
                                             data-url="{{ route('usuarios.destroy', $user->id) }}">
                                         <i class="ti ti-trash fs-2"></i>
                                     </button>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>

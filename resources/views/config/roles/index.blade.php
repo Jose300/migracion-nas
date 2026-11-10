@@ -15,10 +15,12 @@
             <!-- Page title actions -->
             <div class="col-auto ms-auto d-print-none">
                 <div class="d-flex">
+                    @can('crear-roles')
                     <button class="btn btn-primary d-none d-sm-inline-block btn-add-role" data-url="{{ route('roles.store') }}">
                         <i class="ti ti-plus me-1"></i>
                         AGREGAR ROL
                     </button>
+                    @endcan
                 </div>
             </div>
         </div>
@@ -65,11 +67,14 @@
                                     </span>
                                 @else
                                     <div class="btn-group" role="group">
+                                        @can('editar-roles')
                                         <button class="btn btn-icon btn-primary me-2 btn-edit-role" 
                                                 data-url="{{ route('roles.edit', $role->id) }}"
                                                 data-update-url="{{ route('roles.update', $role->id) }}">
                                             <i class="ti ti-edit fs-2"></i>
                                         </button>
+                                        @endcan
+                                        @can('eliminar-roles')
                                         <button class="btn btn-icon btn-danger btn-delete" 
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#modal-delete"
@@ -77,6 +82,7 @@
                                                 data-url="{{ route('roles.destroy', $role->id) }}">
                                             <i class="ti ti-trash fs-2"></i>
                                         </button>
+                                        @endcan
                                     </div>
                                 @endif
                             </td>

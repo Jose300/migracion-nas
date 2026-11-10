@@ -34,26 +34,76 @@ Route::middleware('auth')->group(function () {
 
     // Configuración
     Route::prefix('configuracion')->group(function () {
-        Route::resource('usuarios', App\Http\Controllers\Config\UsersController::class)->names('usuarios');
-        Route::resource('roles', App\Http\Controllers\Config\RolesController::class)->names('roles');
-        Route::get('/permisos', [App\Http\Controllers\Config\PermissionsController::class, 'index'])->name('permisos.index');
-        Route::post('/permisos/toggle', [App\Http\Controllers\Config\PermissionsController::class, 'toggle'])->name('permisos.toggle');
+        // Usuarios
+        Route::resource('usuarios', App\Http\Controllers\Config\UsersController::class)
+            ->names('usuarios')
+            ->middleware([
+                'index'   => 'permission:ver-usuarios',
+                'show'    => 'permission:ver-usuarios',
+                'create'  => 'permission:crear-usuarios',
+                'store'   => 'permission:crear-usuarios',
+                'edit'    => 'permission:editar-usuarios',
+                'update'  => 'permission:editar-usuarios',
+                'destroy' => 'permission:eliminar-usuarios',
+            ]);
+
+        // Roles
+        Route::resource('roles', App\Http\Controllers\Config\RolesController::class)
+            ->names('roles')
+            ->middleware([
+                'index'   => 'permission:ver-roles',
+                'show'    => 'permission:ver-roles',
+                'create'  => 'permission:crear-roles',
+                'store'   => 'permission:crear-roles',
+                'edit'    => 'permission:editar-roles',
+                'update'  => 'permission:editar-roles',
+                'destroy' => 'permission:eliminar-roles',
+            ]);
+
+        // Permisos
+        Route::get('/permisos', [App\Http\Controllers\Config\PermissionsController::class, 'index'])
+            ->name('permisos.index')
+            ->middleware('permission:ver-permisos');
+        Route::post('/permisos/toggle', [App\Http\Controllers\Config\PermissionsController::class, 'toggle'])
+            ->name('permisos.toggle')
+            ->middleware('permission:asignar-permisos');
+
         // Auditoría
-        Route::get('/auditoria', [App\Http\Controllers\Config\AuditController::class, 'index'])->name('auditorias.index');
-        Route::get('/auditoria/exportar', [App\Http\Controllers\Config\AuditController::class, 'export'])->name('auditorias.export');
+        Route::get('/auditoria', [App\Http\Controllers\Config\AuditController::class, 'index'])
+            ->name('auditorias.index')
+            ->middleware('permission:ver-auditoria');
+        Route::get('/auditoria/exportar', [App\Http\Controllers\Config\AuditController::class, 'export'])
+            ->name('auditorias.export')
+            ->middleware('permission:exportar-auditoria');
         // Redirección amigable por si se ingresa la URL anterior de auditoria/errores
         Route::redirect('/auditoria/errores', '/configuracion/log-errores');
-        Route::get('/auditoria/{auditoria}', [App\Http\Controllers\Config\AuditController::class, 'show'])->name('auditorias.show');
+        Route::get('/auditoria/{auditoria}', [App\Http\Controllers\Config\AuditController::class, 'show'])
+            ->name('auditorias.show')
+            ->middleware('permission:ver-auditoria');
 
         // Log de Errores (Módulo independiente fuera de Auditoría)
         Route::prefix('log-errores')->name('log-errores.')->group(function () {
-            Route::get('/', [App\Http\Controllers\Config\ErrorLogController::class, 'index'])->name('index');
-            Route::get('/exportar', [App\Http\Controllers\Config\ErrorLogController::class, 'export'])->name('export');
-            Route::post('/simular', [App\Http\Controllers\Config\ErrorLogController::class, 'simulate'])->name('simulate');
-            Route::post('/limpiar', [App\Http\Controllers\Config\ErrorLogController::class, 'clear'])->name('clear');
-            Route::get('/{error}', [App\Http\Controllers\Config\ErrorLogController::class, 'show'])->name('show');
-            Route::put('/{error}/estado', [App\Http\Controllers\Config\ErrorLogController::class, 'updateEstado'])->name('update-estado');
-            Route::delete('/{error}', [App\Http\Controllers\Config\ErrorLogController::class, 'destroy'])->name('destroy');
+            Route::get('/', [App\Http\Controllers\Config\ErrorLogController::class, 'index'])
+                ->name('index')
+                ->middleware('permission:ver-logs');
+            Route::get('/exportar', [App\Http\Controllers\Config\ErrorLogController::class, 'export'])
+                ->name('export')
+                ->middleware('permission:exportar-logs');
+            Route::post('/simular', [App\Http\Controllers\Config\ErrorLogController::class, 'simulate'])
+                ->name('simulate')
+                ->middleware('permission:gestionar-logs');
+            Route::post('/limpiar', [App\Http\Controllers\Config\ErrorLogController::class, 'clear'])
+                ->name('clear')
+                ->middleware('permission:gestionar-logs');
+            Route::get('/{error}', [App\Http\Controllers\Config\ErrorLogController::class, 'show'])
+                ->name('show')
+                ->middleware('permission:ver-logs');
+            Route::put('/{error}/estado', [App\Http\Controllers\Config\ErrorLogController::class, 'updateEstado'])
+                ->name('update-estado')
+                ->middleware('permission:gestionar-logs');
+            Route::delete('/{error}', [App\Http\Controllers\Config\ErrorLogController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('permission:gestionar-logs');
         });
 
         // Información del Sistema
