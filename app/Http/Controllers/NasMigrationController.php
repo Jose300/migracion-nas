@@ -272,7 +272,17 @@ class NasMigrationController extends Controller
         ]);
 
         // 3. Despachar el comando Artisan de forma desacoplada en segundo plano
+        // En entornos Apache bajo Windows, PHP_BINARY en web devuelve '.../httpd.exe' en mod_php
+        // Por eso aseguramos la ruta exacta a php.exe
         $php = PHP_BINARY;
+        if (PHP_OS_FAMILY === 'Windows' && !str_ends_with(strtolower($php), 'php.exe')) {
+            $candidate = dirname($php) . DIRECTORY_SEPARATOR . 'php.exe';
+            if (file_exists($candidate)) {
+                $php = $candidate;
+            } else {
+                $php = 'php';
+            }
+        }
         $artisan = base_path('artisan');
         $userId = auth()->id() ?? 0;
 
