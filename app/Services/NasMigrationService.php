@@ -698,13 +698,48 @@ class NasMigrationService
             $filesTransferred = (int) str_replace(',', '', $m[1]);
         }
 
-        // Extraer total de bytes transferidos
-        if (preg_match('/Total transferred file size:\s*([0-9,]+)\s*bytes/i', $output, $m)) {
-            $totalBytes = (int) str_replace(',', '', $m[1]);
-            $humanSize = $this->formatBytes($totalBytes);
-        } elseif (preg_match('/Literal data:\s*([0-9,]+)\s*bytes/i', $output, $m)) {
-            $totalBytes = (int) str_replace(',', '', $m[1]);
-            $humanSize = $this->formatBytes($totalBytes);
+        // Extraer total de bytes transferidos (soporta tanto números enteros en bytes como sufijos M/G/T con rsync -h)
+        $parsedBytes = null;
+        if (preg_match('/Total transferred file size:\s*([0-9\.,]+)\s*([KMGT]?)\s*bytes/i', $output, $m)) {
+            $val = (float) str_replace(',', '', $m[1]);
+            $unit = strtoupper($m[2] ?? '');
+            $mult = match($unit) {
+                'K' => 1024,
+                'M' => 1024 * 1024,
+                'G' => 1024 * 1024 * 1024,
+                'T' => 1024 * 1024 * 1024 * 1024,
+                default => 1,
+            };
+            $parsedBytes = (int) round($val * $mult);
+            $humanSize = !empty($unit) ? trim($m[1]) . ' ' . $unit . 'B' : $this->formatBytes($parsedBytes);
+        } elseif (preg_match('/Literal data:\s*([0-9\.,]+)\s*([KMGT]?)\s*bytes/i', $output, $m)) {
+            $val = (float) str_replace(',', '', $m[1]);
+            $unit = strtoupper($m[2] ?? '');
+            $mult = match($unit) {
+                'K' => 1024,
+                'M' => 1024 * 1024,
+                'G' => 1024 * 1024 * 1024,
+                'T' => 1024 * 1024 * 1024 * 1024,
+                default => 1,
+            };
+            $parsedBytes = (int) round($val * $mult);
+            $humanSize = !empty($unit) ? trim($m[1]) . ' ' . $unit . 'B' : $this->formatBytes($parsedBytes);
+        } elseif (preg_match('/sent\s+([0-9\.,]+)\s*([KMGT]?)\s*bytes/i', $output, $m)) {
+            $val = (float) str_replace(',', '', $m[1]);
+            $unit = strtoupper($m[2] ?? '');
+            $mult = match($unit) {
+                'K' => 1024,
+                'M' => 1024 * 1024,
+                'G' => 1024 * 1024 * 1024,
+                'T' => 1024 * 1024 * 1024 * 1024,
+                default => 1,
+            };
+            $parsedBytes = (int) round($val * $mult);
+            $humanSize = !empty($unit) ? trim($m[1]) . ' ' . $unit . 'B' : $this->formatBytes($parsedBytes);
+        }
+
+        if ($parsedBytes !== null) {
+            $totalBytes = $parsedBytes;
         }
 
         // Extraer velocidad si está en la salida
