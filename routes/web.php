@@ -35,30 +35,54 @@ Route::middleware('auth')->group(function () {
     // Configuración
     Route::prefix('configuracion')->group(function () {
         // Usuarios
-        Route::resource('usuarios', App\Http\Controllers\Config\UsersController::class)
-            ->names('usuarios')
-            ->middleware([
-                'index'   => 'permission:ver-usuarios',
-                'show'    => 'permission:ver-usuarios',
-                'create'  => 'permission:crear-usuarios',
-                'store'   => 'permission:crear-usuarios',
-                'edit'    => 'permission:editar-usuarios',
-                'update'  => 'permission:editar-usuarios',
-                'destroy' => 'permission:eliminar-usuarios',
-            ]);
+        Route::get('usuarios', [App\Http\Controllers\Config\UsersController::class, 'index'])
+            ->name('usuarios.index')
+            ->middleware('permission:ver-usuarios');
+        Route::get('usuarios/create', [App\Http\Controllers\Config\UsersController::class, 'create'])
+            ->name('usuarios.create')
+            ->middleware('permission:crear-usuarios');
+        Route::post('usuarios', [App\Http\Controllers\Config\UsersController::class, 'store'])
+            ->name('usuarios.store')
+            ->middleware('permission:crear-usuarios');
+        Route::get('usuarios/{usuario}', [App\Http\Controllers\Config\UsersController::class, 'show'])
+            ->name('usuarios.show')
+            ->middleware('permission:ver-usuarios');
+        Route::get('usuarios/{usuario}/edit', [App\Http\Controllers\Config\UsersController::class, 'edit'])
+            ->name('usuarios.edit')
+            ->middleware('permission:editar-usuarios');
+        Route::put('usuarios/{usuario}', [App\Http\Controllers\Config\UsersController::class, 'update'])
+            ->name('usuarios.update')
+            ->middleware('permission:editar-usuarios');
+        Route::patch('usuarios/{usuario}', [App\Http\Controllers\Config\UsersController::class, 'update'])
+            ->middleware('permission:editar-usuarios');
+        Route::delete('usuarios/{usuario}', [App\Http\Controllers\Config\UsersController::class, 'destroy'])
+            ->name('usuarios.destroy')
+            ->middleware('permission:eliminar-usuarios');
 
         // Roles
-        Route::resource('roles', App\Http\Controllers\Config\RolesController::class)
-            ->names('roles')
-            ->middleware([
-                'index'   => 'permission:ver-roles',
-                'show'    => 'permission:ver-roles',
-                'create'  => 'permission:crear-roles',
-                'store'   => 'permission:crear-roles',
-                'edit'    => 'permission:editar-roles',
-                'update'  => 'permission:editar-roles',
-                'destroy' => 'permission:eliminar-roles',
-            ]);
+        Route::get('roles', [App\Http\Controllers\Config\RolesController::class, 'index'])
+            ->name('roles.index')
+            ->middleware('permission:ver-roles');
+        Route::get('roles/create', [App\Http\Controllers\Config\RolesController::class, 'create'])
+            ->name('roles.create')
+            ->middleware('permission:crear-roles');
+        Route::post('roles', [App\Http\Controllers\Config\RolesController::class, 'store'])
+            ->name('roles.store')
+            ->middleware('permission:crear-roles');
+        Route::get('roles/{role}', [App\Http\Controllers\Config\RolesController::class, 'show'])
+            ->name('roles.show')
+            ->middleware('permission:ver-roles');
+        Route::get('roles/{role}/edit', [App\Http\Controllers\Config\RolesController::class, 'edit'])
+            ->name('roles.edit')
+            ->middleware('permission:editar-roles');
+        Route::put('roles/{role}', [App\Http\Controllers\Config\RolesController::class, 'update'])
+            ->name('roles.update')
+            ->middleware('permission:editar-roles');
+        Route::patch('roles/{role}', [App\Http\Controllers\Config\RolesController::class, 'update'])
+            ->middleware('permission:editar-roles');
+        Route::delete('roles/{role}', [App\Http\Controllers\Config\RolesController::class, 'destroy'])
+            ->name('roles.destroy')
+            ->middleware('permission:eliminar-roles');
 
         // Permisos
         Route::get('/permisos', [App\Http\Controllers\Config\PermissionsController::class, 'index'])
