@@ -331,13 +331,32 @@ class NasMigrationController extends Controller
         $task->refresh();
         $latestLog = $task->latestLog;
 
-        // Auto-recuperación: Si la tarea figura 'running' pero el último log ya finalizó o falló
+        // Auto-recuperación 1: Si la tarea figura 'running' pero el último log ya finalizó o falló
         if ($task->status === 'running' && $latestLog && in_array($latestLog->status, ['completed', 'failed'])) {
             $task->update([
                 'status' => 'idle',
                 'last_run_status' => $latestLog->status,
             ]);
             $task->refresh();
+        }
+
+        // Auto-recuperación 2 (Anti-Cuelgues): Si la tarea o su log llevan más de 2 minutos sin actualizarse y siguen en 'running'
+        if ($task->status === 'running' && $latestLog && $latestLog->status === 'running') {
+            $lastActivity = $latestLog->updated_at ?? $latestLog->started_at;
+            if ($lastActivity && $lastActivity->diffInSeconds(now()) >= 120) {
+                // El proceso en segundo plano probablemente murió o el servidor web no pudo terminar el hilo
+                $latestLog->update([
+                    'status' => 'failed',
+                    'finished_at' => now(),
+                    'error_message' => 'Tiempo de espera agotado (2 minutos sin respuesta del proceso en segundo plano).',
+                ]);
+                $task->update([
+                    'status' => 'idle',
+                    'last_run_status' => 'failed',
+                ]);
+                $task->refresh();
+                $latestLog->refresh();
+            }
         }
 
         $filesTransferred = $latestLog ? (int) ($latestLog->files_transferred ?? 0) : 0;
@@ -353,6 +372,7 @@ class NasMigrationController extends Controller
             'percentage' => $percentage,
             'current_orbit' => $latestLog->latest_processed_orbit ?? $task->last_migrated_orbit,
             'live_output' => $latestLog ? substr($latestLog->output ?? '', -300) : '',
+            'raw_output' => $latestLog ? ($latestLog->output ?? '') : '',
             'latest_log' => $latestLog ? [
                 'id' => $latestLog->id,
                 'status' => $latestLog->status,

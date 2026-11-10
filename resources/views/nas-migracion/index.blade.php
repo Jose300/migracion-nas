@@ -198,7 +198,7 @@
                                         <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.74rem;">
                                             <span class="text-secondary fw-semibold text-truncate me-2">
                                                 <span class="spinner-border spinner-border-sm me-1 text-success" style="width: 11px; height: 11px;" role="status"></span>
-                                                <span id="task-progress-label-{{ $task->id }}">Migrando archivos...</span>
+                                                <span id="task-progress-label-{{ $task->id }}">Iniciando proceso de transferencia...</span>
                                             </span>
                                             <span class="fw-bold text-dark font-monospace flex-shrink-0" id="task-progress-counter-{{ $task->id }}">
                                                 {{ $task->latestLog ? ($task->latestLog->files_transferred ?? 0) : 0 }} / {{ $task->batch_size ?? 500 }} arch. ({{ $task->latestLog && ($task->batch_size ?? 500) > 0 ? min(100, round((($task->latestLog->files_transferred ?? 0) / ($task->batch_size ?? 500)) * 100)) : 0 }}%)
@@ -212,6 +212,19 @@
                                                  aria-valuenow="0" 
                                                  aria-valuemin="0" 
                                                  aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mt-1">
+                                            <small class="text-muted" style="font-size: 0.68rem;" id="task-progress-sub-{{ $task->id }}">
+                                                Conectando por SSH y escaneando órbitas en Synology...
+                                            </small>
+                                            @if($task->latestLog)
+                                            <button type="button" 
+                                                    class="btn btn-link btn-sm p-0 text-primary text-decoration-none btn-view-live-log" 
+                                                    data-log-url="{{ route('nas-migracion.logs.show', $task->latestLog->id) }}"
+                                                    style="font-size: 0.70rem;">
+                                                <i class="ti ti-terminal me-1"></i> Ver registro en vivo
+                                            </button>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -1263,6 +1276,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     progressCounter.textContent = `${currentFiles} / ${batchSize} arch. (${Math.round(pct)}%)`;
                 }
 
+                const subLabel = document.getElementById(`task-progress-sub-${taskId}`);
+                if (subLabel) {
+                    if (data.current_orbit) {
+                        subLabel.innerHTML = `Órbita actual: <code class="text-primary">${data.current_orbit}</code>`;
+                    } else if (data.live_output) {
+                        subLabel.textContent = data.live_output.split("\n").pop() || 'Procesando...';
+                    }
+                }
+
                 if (data.status === 'running') {
                     if (progressLabel) {
                         if (currentFiles > 0) {
@@ -1425,6 +1447,48 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(err => {
                 document.getElementById('log-output-content').textContent = 'Error al cargar el log: ' + err.message;
             });
+        });
+    });
+
+    // Event listener para el botón directo "Ver registro en vivo" en la tarjeta de progreso
+    document.querySelectorAll('.btn-view-live-log').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const logUrl = this.getAttribute('data-log-url');
+            if (logUrl) {
+                const dummyBtn = document.createElement('button');
+                dummyBtn.className = 'btn-view-log';
+                dummyBtn.setAttribute('data-url', logUrl);
+                document.body.appendChild(dummyBtn);
+                // Disparar click reutilizando la lógica
+                document.getElementById('log-task-name').textContent = 'Cargando...';
+                document.getElementById('log-output-content').textContent = 'Cargando salida en vivo...';
+                modalVisor.show();
+                fetch(logUrl, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => res.text())
+                .then(text => {
+                    let data = JSON.parse(text);
+                    document.getElementById('log-task-name').textContent = data.task_name;
+                    document.getElementById('log-started-at').textContent = data.started_at;
+                    document.getElementById('log-duration').textContent = data.duration;
+                    document.getElementById('log-files').textContent = data.files + ' archivos';
+                    document.getElementById('log-size').textContent = data.size || '0 B';
+                    const badge = document.getElementById('log-status-badge');
+                    badge.className = data.status === 'completed' ? 'badge bg-success' : (data.status === 'failed' ? 'badge bg-danger' : 'badge bg-warning');
+                    badge.textContent = (data.status || 'EN CURSO').toUpperCase();
+                    let fullText = data.output || 'Esperando volcado de consola...';
+                    if (data.error_message) {
+                        fullText += "\n\n[ERROR]: " + data.error_message;
+                    }
+                    document.getElementById('log-output-content').textContent = fullText;
+                }).catch(err => {
+                    document.getElementById('log-output-content').textContent = 'Error al cargar el log: ' + err.message;
+                }).finally(() => {
+                    dummyBtn.remove();
+                });
+            }
         });
     });
 
