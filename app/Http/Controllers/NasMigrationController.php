@@ -387,15 +387,22 @@ class NasMigrationController extends Controller
         }
 
         $filesTransferred = $latestLog ? (int) ($latestLog->files_transferred ?? 0) : 0;
-        $batchLimit = (int) ($task->batch_size ?: 500);
-        $percentage = $batchLimit > 0 ? min(100, round(($filesTransferred / $batchLimit) * 100, 1)) : 0;
+        $totalFilesInBatch = $latestLog ? (int) ($latestLog->total_files_in_batch ?? 0) : 0;
+        $batchLimitOrbits = (int) ($task->batch_size ?: 5);
+
+        if ($totalFilesInBatch > 0) {
+            $percentage = min(100, round(($filesTransferred / $totalFilesInBatch) * 100, 1));
+        } else {
+            $percentage = $filesTransferred > 0 ? 10 : 0;
+        }
 
         return response()->json([
             'task_id' => $task->id,
             'status' => $task->status,
             'last_run_status' => $task->last_run_status,
             'files_transferred' => $filesTransferred,
-            'batch_size' => $batchLimit,
+            'total_files_in_batch' => $totalFilesInBatch,
+            'batch_size' => $batchLimitOrbits,
             'percentage' => $percentage,
             'current_orbit' => $latestLog->latest_processed_orbit ?? $task->last_migrated_orbit,
             'live_output' => $latestLog ? substr($latestLog->output ?? '', -300) : '',
@@ -404,9 +411,11 @@ class NasMigrationController extends Controller
                 'id' => $latestLog->id,
                 'status' => $latestLog->status,
                 'files' => $latestLog->files_transferred,
+                'total_files' => $latestLog->total_files_in_batch,
                 'size' => $latestLog->human_transferred_size,
                 'duration' => $latestLog->duration_formatted,
                 'error_message' => $latestLog->error_message,
+                'output' => $latestLog->output,
             ] : null,
         ]);
     }
@@ -444,6 +453,7 @@ class NasMigrationController extends Controller
             'finished_at' => $log->finished_at ? $log->finished_at->format('d/m/Y H:i:s') : '-',
             'duration' => $log->duration_formatted,
             'files' => $log->files_transferred,
+            'total_files' => $log->total_files_in_batch,
             'size' => $log->human_transferred_size,
             'speed' => $log->speed ?: '-',
             'summary' => $log->summary,

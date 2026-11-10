@@ -21,6 +21,7 @@ class NasMigrationLog extends Model
         'finished_at',
         'duration_seconds',
         'files_transferred',
+        'total_files_in_batch',
         'phase_synology_status',
         'phase_inspur_status',
         'phase_details',

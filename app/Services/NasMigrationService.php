@@ -241,6 +241,7 @@ class NasMigrationService
                     // Si se seleccionaron órbitas completas, transferir íntegramente
                     "if [ -s \"\$BATCH_FILE\" ]; then " .
                     "  TOTAL_IN_BATCH=\$(wc -l < \"\$BATCH_FILE\"); " .
+                    "  echo \"TOTAL_BATCH_FILES:\$TOTAL_IN_BATCH\"; " .
                     "  echo \"[ÓRBITAS OMITIDAS POR DUPLICADO EN DESTINO: \$SKIPPED_ORBITS]\"; " .
                     "  echo \"[ÓRBITAS COMPLETAS SELECCIONADAS: \$COPIED_ORBITS (con subcarpetas CH1 y CH2)]\"; " .
                     "  echo \"[TOTAL ARCHIVOS EN ESTAS \$COPIED_ORBITS ÓRBITAS: \$TOTAL_IN_BATCH]\"; " .
@@ -251,6 +252,7 @@ class NasMigrationService
                     "  echo \"ORBIT_SUMMARY:last=\$LATEST_PROCESSED_ORBIT:copied=\$COPIED_ORBITS:skipped=\$SKIPPED_ORBITS\"; " .
                     "  rm -f \"\$BATCH_FILE\"; exit \$RC; " .
                     "else " .
+                    "  echo \"TOTAL_BATCH_FILES:0\"; " .
                     "  echo \"[SINCRONIZADO] No hay órbitas pendientes nuevas (todas las órbitas ya existen en el destino o fueron omitidas).\"; " .
                     "  rm -f \"\$BATCH_FILE\"; exit 0; " .
                     "fi'";
@@ -260,16 +262,34 @@ class NasMigrationService
 
             // Contador de archivos en tiempo real para actualización de barra de progreso
             $filesCount = 0;
+            $totalBatchFiles = 0;
+            $accumulatedOutput = '';
             $lastProgressUpdate = microtime(true);
 
-            $onOutput = function ($type, $buffer) use (&$filesCount, &$lastProgressUpdate, $log) {
+            $onOutput = function ($type, $buffer) use (&$filesCount, &$totalBatchFiles, &$accumulatedOutput, &$lastProgressUpdate, $log) {
+                $accumulatedOutput .= $buffer;
+
+                // Detectar el total de archivos a transferir en este lote
+                if (preg_match('/TOTAL_BATCH_FILES:(\d+)/', $buffer, $mTotal)) {
+                    $totalBatchFiles = (int) $mTotal[1];
+                    $log->update(['total_files_in_batch' => $totalBatchFiles]);
+                }
+
+                $hasNewFiles = false;
                 if (preg_match_all('/PROGRESS_FILE:\s*(.+)/', $buffer, $matches)) {
                     $filesCount += count($matches[1]);
-                    $now = microtime(true);
-                    if ($now - $lastProgressUpdate >= 0.5) {
-                        $log->update(['files_transferred' => $filesCount]);
-                        $lastProgressUpdate = $now;
-                    }
+                    $hasNewFiles = true;
+                }
+
+                $now = microtime(true);
+                // Volcar avance y salida en tiempo real cada 1 segundo o ante nuevos archivos
+                if ($hasNewFiles || ($now - $lastProgressUpdate >= 1.0)) {
+                    $log->update([
+                        'files_transferred' => $filesCount,
+                        'total_files_in_batch' => $totalBatchFiles,
+                        'output' => substr($accumulatedOutput, -5000), // Mantener el log en vivo visible
+                    ]);
+                    $lastProgressUpdate = $now;
                 }
             };
 

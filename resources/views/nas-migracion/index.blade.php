@@ -201,15 +201,19 @@
                                                 <span id="task-progress-label-{{ $task->id }}">Iniciando proceso de transferencia...</span>
                                             </span>
                                             <span class="fw-bold text-dark font-monospace flex-shrink-0" id="task-progress-counter-{{ $task->id }}">
-                                                {{ $task->latestLog ? ($task->latestLog->files_transferred ?? 0) : 0 }} archivos transferidos
+                                                @if($task->latestLog && $task->latestLog->total_files_in_batch > 0)
+                                                    {{ $task->latestLog->files_transferred }} / {{ $task->latestLog->total_files_in_batch }} arch. ({{ round(($task->latestLog->files_transferred / $task->latestLog->total_files_in_batch) * 100) }}%)
+                                                @else
+                                                    {{ $task->latestLog ? ($task->latestLog->files_transferred ?? 0) : 0 }} archivos transferidos
+                                                @endif
                                             </span>
                                         </div>
                                         <div class="progress progress-sm" style="height: 6px;">
                                             <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
                                                  id="task-progress-bar-{{ $task->id }}" 
                                                  role="progressbar" 
-                                                 style="width: {{ $task->status === 'running' ? '100%' : '100%' }};" 
-                                                 aria-valuenow="100" 
+                                                 style="width: {{ $task->latestLog && $task->latestLog->total_files_in_batch > 0 ? min(100, round(($task->latestLog->files_transferred / $task->latestLog->total_files_in_batch) * 100)) : ($task->status === 'running' ? '10%' : '100%') }}%;" 
+                                                 aria-valuenow="0" 
                                                  aria-valuemin="0" 
                                                  aria-valuemax="100"></div>
                                         </div>
@@ -1294,14 +1298,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 const currentFiles = data.files_transferred || 0;
-                const batchSize = data.batch_size || 500;
-                const pct = data.percentage !== undefined ? data.percentage : (batchSize > 0 ? Math.round((currentFiles / batchSize) * 100) : 0);
+                const totalFiles = data.total_files_in_batch || 0;
+                const batchOrbits = data.batch_size || 5;
 
-                if (progressBar) {
-                    progressBar.style.width = '100%';
-                }
-                if (progressCounter) {
-                    progressCounter.textContent = `${currentFiles} archivos transferidos (Lote: ${batchSize} órbitas)`;
+                if (totalFiles > 0) {
+                    const pct = Math.min(100, Math.round((currentFiles / totalFiles) * 100));
+                    if (progressBar) {
+                        progressBar.style.width = Math.max(5, pct) + '%';
+                    }
+                    if (progressCounter) {
+                        progressCounter.textContent = `${currentFiles} / ${totalFiles} arch. (${pct}%)`;
+                    }
+                } else {
+                    if (progressBar) {
+                        progressBar.style.width = currentFiles > 0 ? '50%' : '15%';
+                    }
+                    if (progressCounter) {
+                        progressCounter.textContent = `${currentFiles} arch. en proceso (Lote: ${batchOrbits} órbitas)`;
+                    }
                 }
 
                 const subLabel = document.getElementById(`task-progress-sub-${taskId}`);
@@ -1422,59 +1436,75 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Timer para refrescar modal de visor en vivo automáticamente mientras esté abierto
+    let visorLiveTimer = null;
+    let currentVisorUrl = null;
+
+    function refreshVisorContent() {
+        if (!currentVisorUrl) return;
+        fetch(currentVisorUrl, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('log-task-name').textContent = data.task_name;
+            document.getElementById('log-started-at').textContent = data.started_at;
+            document.getElementById('log-duration').textContent = data.duration;
+            const totalStr = data.total_files ? ` / ${data.total_files}` : '';
+            document.getElementById('log-files').textContent = `${data.files}${totalStr} archivos`;
+            document.getElementById('log-size').textContent = data.size || '0 B';
+
+            const badge = document.getElementById('log-status-badge');
+            if (data.status === 'completed') {
+                badge.className = 'badge bg-success';
+                badge.textContent = 'COMPLETADO';
+            } else if (data.status === 'failed') {
+                badge.className = 'badge bg-danger';
+                badge.textContent = 'FALLIDO';
+            } else {
+                badge.className = 'badge bg-warning';
+                badge.textContent = (data.status || 'EN CURSO').toUpperCase();
+            }
+
+            let fullText = data.output || 'Iniciando proceso de transferencia...';
+            if (data.error_message) {
+                fullText += "\n\n[ERROR]: " + data.error_message;
+            }
+            const logBox = document.getElementById('log-output-content');
+            logBox.textContent = fullText;
+            logBox.scrollTop = logBox.scrollHeight;
+
+            if (data.status !== 'running' && visorLiveTimer) {
+                clearInterval(visorLiveTimer);
+                visorLiveTimer = null;
+            }
+        })
+        .catch(() => {});
+    }
+
+    document.getElementById('modal-visor-log').addEventListener('hidden.bs.modal', function () {
+        if (visorLiveTimer) {
+            clearInterval(visorLiveTimer);
+            visorLiveTimer = null;
+        }
+        currentVisorUrl = null;
+    });
+
     // 4. Ver Consola / Log en Modal
     const modalVisor = new bootstrap.Modal(document.getElementById('modal-visor-log'));
     document.querySelectorAll('.btn-view-log').forEach(button => {
         button.addEventListener('click', function () {
             const url = this.getAttribute('data-url');
+            currentVisorUrl = url;
 
             document.getElementById('log-task-name').textContent = 'Cargando...';
             document.getElementById('log-output-content').textContent = 'Cargando salida de consola...';
 
             modalVisor.show();
+            refreshVisorContent();
 
-            fetch(url, {
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(res => res.text())
-            .then(text => {
-                let data;
-                try {
-                    data = JSON.parse(text);
-                } catch (e) {
-                    console.error("Respuesta no es JSON válido:", text);
-                    throw new Error("Respuesta inválida del servidor: " + text.substring(0, 150));
-                }
-                document.getElementById('log-task-name').textContent = data.task_name;
-                document.getElementById('log-started-at').textContent = data.started_at;
-                document.getElementById('log-duration').textContent = data.duration;
-                document.getElementById('log-files').textContent = data.files + ' archivos';
-                document.getElementById('log-size').textContent = data.size || '0 B';
-
-                const badge = document.getElementById('log-status-badge');
-                if (data.status === 'completed') {
-                    badge.className = 'badge bg-success';
-                    badge.textContent = 'COMPLETADO';
-                } else if (data.status === 'failed') {
-                    badge.className = 'badge bg-danger';
-                    badge.textContent = 'FALLIDO';
-                } else {
-                    badge.className = 'badge bg-warning';
-                    badge.textContent = (data.status || 'EN CURSO').toUpperCase();
-                }
-
-                let fullText = data.output;
-                if (data.error_message) {
-                    fullText += "\n\n[ERROR]: " + data.error_message;
-                }
-                document.getElementById('log-output-content').textContent = fullText;
-            })
-            .catch(err => {
-                document.getElementById('log-output-content').textContent = 'Error al cargar el log: ' + err.message;
-            });
+            if (visorLiveTimer) clearInterval(visorLiveTimer);
+            visorLiveTimer = setInterval(refreshVisorContent, 2000);
         });
     });
 
