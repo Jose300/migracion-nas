@@ -272,15 +272,32 @@ class NasMigrationController extends Controller
         ]);
 
         // 3. Despachar el comando Artisan de forma desacoplada en segundo plano
-        // En entornos Apache bajo Windows, PHP_BINARY en web devuelve '.../httpd.exe' en mod_php
-        // Por eso aseguramos la ruta exacta a php.exe
+        // Localizar de forma robusta el ejecutable de php.exe en Windows (Laragon / Apache mod_php)
         $php = PHP_BINARY;
-        if (PHP_OS_FAMILY === 'Windows' && !str_ends_with(strtolower($php), 'php.exe')) {
-            $candidate = dirname($php) . DIRECTORY_SEPARATOR . 'php.exe';
-            if (file_exists($candidate)) {
-                $php = $candidate;
-            } else {
-                $php = 'php';
+        if (PHP_OS_FAMILY === 'Windows') {
+            if (!str_ends_with(strtolower($php), 'php.exe') || !file_exists($php)) {
+                // 1. Probar desde extension_dir (C:/laragon/bin/php/php-X.X/ext -> C:/laragon/bin/php/php-X.X/php.exe)
+                $extDir = ini_get('extension_dir');
+                if ($extDir) {
+                    $cand = dirname($extDir) . DIRECTORY_SEPARATOR . 'php.exe';
+                    if (file_exists($cand)) {
+                        $php = $cand;
+                    }
+                }
+            }
+
+            // 2. Probar buscar en las carpetas comunes de Laragon si aún no se ha resuelto
+            if (!str_ends_with(strtolower($php), 'php.exe') || !file_exists($php)) {
+                $laragonPhpDirs = glob('C:\\laragon\\bin\\php\\php*\\php.exe');
+                if (!empty($laragonPhpDirs)) {
+                    rsort($laragonPhpDirs); // Tomar la versión más reciente
+                    $php = $laragonPhpDirs[0];
+                }
+            }
+
+            // 3. Fallback a 'php.exe' en caso de que esté en el PATH del sistema
+            if (!file_exists($php)) {
+                $php = 'php.exe';
             }
         }
         $artisan = base_path('artisan');
