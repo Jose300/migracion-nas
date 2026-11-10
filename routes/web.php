@@ -5,6 +5,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('login')->middleware('guest');
 
+// Ruta fallback pública para servir archivos de storage directamente por PHP
+// garantizando visualización si Apache/Nginx no tiene habilitado FollowSymLinks o Junctions en Windows/Linux
+Route::get('/storage/{path}', function (string $path) {
+    $fullPath = storage_path('app/public/' . $path);
+    if (!file_exists($fullPath) || is_dir($fullPath)) {
+        abort(404);
+    }
+    return response()->file($fullPath);
+})->where('path', '.*')->name('storage.serve');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm']);
     Route::post('/', [LoginController::class, 'login']);

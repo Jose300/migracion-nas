@@ -249,8 +249,18 @@
                                 <div class="preview-canvas mb-3">
                                     <div class="preview-real-frame frame-navbar shadow-sm">
                                         <div id="preview-container-navbar" class="text-center d-flex align-items-center justify-content-center" style="max-width: 185px; max-height: 42px;">
-                                            @if($logoNavbar && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoNavbar))
-                                                <img src="{{ asset('storage/' . $logoNavbar) }}" 
+                                            @php
+                                                $navbarImgUrl = null;
+                                                if ($logoNavbar) {
+                                                    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($logoNavbar) || file_exists(storage_path('app/public/' . $logoNavbar))) {
+                                                        $navbarImgUrl = asset('storage/' . $logoNavbar);
+                                                    } elseif (file_exists(public_path('images/' . basename($logoNavbar)))) {
+                                                        $navbarImgUrl = asset('images/' . basename($logoNavbar));
+                                                    }
+                                                }
+                                            @endphp
+                                            @if($navbarImgUrl)
+                                                <img src="{{ $navbarImgUrl }}" 
                                                      id="img-preview-navbar" 
                                                      alt="Logo Navbar" 
                                                      class="img-fluid" 
@@ -362,8 +372,18 @@
                                 <div class="preview-canvas mb-3">
                                     <div class="preview-real-frame frame-login shadow-sm">
                                         <div id="preview-container-login" class="text-center d-flex align-items-center justify-content-center" style="max-width: 340px; max-height: 110px;">
-                                            @if($logoLogin && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoLogin))
-                                                <img src="{{ asset('storage/' . $logoLogin) }}" 
+                                            @php
+                                                $loginImgUrl = null;
+                                                if ($logoLogin) {
+                                                    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($logoLogin) || file_exists(storage_path('app/public/' . $logoLogin))) {
+                                                        $loginImgUrl = asset('storage/' . $logoLogin);
+                                                    } elseif (file_exists(public_path('images/' . basename($logoLogin)))) {
+                                                        $loginImgUrl = asset('images/' . basename($logoLogin));
+                                                    }
+                                                }
+                                            @endphp
+                                            @if($loginImgUrl)
+                                                <img src="{{ $loginImgUrl }}" 
                                                      id="img-preview-login" 
                                                      alt="Logo Login" 
                                                      class="img-fluid" 

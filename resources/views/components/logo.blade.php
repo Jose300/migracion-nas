@@ -13,12 +13,25 @@
     $svgSize   = $isLogin ? '38' : '24';
     $fontSize  = $isLogin ? 'h1' : 'h2';
     $textLimit = $isLogin ? '320px' : '140px';
+
+    $logoUrl = null;
+    if ($customLogo) {
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($customLogo) || file_exists(storage_path('app/public/' . $customLogo))) {
+            $logoUrl = asset('storage/' . $customLogo);
+        } elseif (file_exists(public_path('images/' . basename($customLogo)))) {
+            $logoUrl = asset('images/' . basename($customLogo));
+        } elseif (file_exists(public_path('images/logo-abae.png'))) {
+            $logoUrl = asset('images/logo-abae.png');
+        }
+    } elseif (file_exists(public_path('images/logo-abae.png'))) {
+        $logoUrl = asset('images/logo-abae.png');
+    }
 @endphp
 
-@if($customLogo && \Illuminate\Support\Facades\Storage::disk('public')->exists($customLogo))
+@if($logoUrl)
     <div class="logo-conditioned-wrapper d-inline-flex align-items-center justify-content-center" 
          style="max-width: {{ $maxWidth }}; max-height: {{ $maxHeight }}; width: auto; height: auto; overflow: hidden;">
-        <img src="{{ asset('storage/' . $customLogo) }}" 
+        <img src="{{ $logoUrl }}" 
              alt="{{ $appName }}" 
              class="img-fluid" 
              style="max-height: {{ $maxHeight }}; max-width: {{ $maxWidth }}; width: auto; height: auto; object-fit: contain; display: block;"
