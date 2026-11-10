@@ -367,15 +367,16 @@ class NasMigrationController extends Controller
             $task->refresh();
         }
 
-        // Auto-recuperación 2 (Anti-Cuelgues): Si la tarea o su log llevan más de 2 minutos sin actualizarse y siguen en 'running'
+        // Auto-recuperación 2 (Anti-Cuelgues): Si la tarea lleva más de 5 minutos sin actualizar ningún archivo y sigue en 'running'
         if ($task->status === 'running' && $latestLog && $latestLog->status === 'running') {
             $lastActivity = $latestLog->updated_at ?? $latestLog->started_at;
-            if ($lastActivity && $lastActivity->diffInSeconds(now()) >= 120) {
+            // Damos 5 minutos de inactividad absoluta antes de considerarla colgada
+            if ($lastActivity && $lastActivity->diffInMinutes(now()) >= 5) {
                 // El proceso en segundo plano probablemente murió o el servidor web no pudo terminar el hilo
                 $latestLog->update([
                     'status' => 'failed',
                     'finished_at' => now(),
-                    'error_message' => 'Tiempo de espera agotado (2 minutos sin respuesta del proceso en segundo plano).',
+                    'error_message' => 'Tiempo de espera agotado (5 minutos sin actividad de transferencia en segundo plano).',
                 ]);
                 $task->update([
                     'status' => 'idle',
