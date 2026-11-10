@@ -188,8 +188,8 @@
                                         <span class="badge bg-purple-lt">
                                             <i class="ti ti-clock me-1"></i> {{ ucfirst($task->schedule_frequency) }}
                                         </span>
-                                        <span class="badge bg-blue-lt" title="Lote configurado">
-                                            <i class="ti ti-stack-2 me-1"></i> Lote: {{ $task->batch_size ?? 500 }} arch.
+                                        <span class="badge bg-blue-lt" title="Lote de órbitas configurado">
+                                            <i class="ti ti-stack-2 me-1"></i> Lote: {{ $task->batch_size ?? 5 }} órbitas
                                         </span>
                                     </div>
 
@@ -201,15 +201,15 @@
                                                 <span id="task-progress-label-{{ $task->id }}">Iniciando proceso de transferencia...</span>
                                             </span>
                                             <span class="fw-bold text-dark font-monospace flex-shrink-0" id="task-progress-counter-{{ $task->id }}">
-                                                {{ $task->latestLog ? ($task->latestLog->files_transferred ?? 0) : 0 }} / {{ $task->batch_size ?? 500 }} arch. ({{ $task->latestLog && ($task->batch_size ?? 500) > 0 ? min(100, round((($task->latestLog->files_transferred ?? 0) / ($task->batch_size ?? 500)) * 100)) : 0 }}%)
+                                                {{ $task->latestLog ? ($task->latestLog->files_transferred ?? 0) : 0 }} archivos transferidos
                                             </span>
                                         </div>
                                         <div class="progress progress-sm" style="height: 6px;">
                                             <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
                                                  id="task-progress-bar-{{ $task->id }}" 
                                                  role="progressbar" 
-                                                 style="width: {{ $task->latestLog && ($task->batch_size ?? 500) > 0 ? min(100, round((($task->latestLog->files_transferred ?? 0) / ($task->batch_size ?? 500)) * 100)) : 0 }}%;" 
-                                                 aria-valuenow="0" 
+                                                 style="width: {{ $task->status === 'running' ? '100%' : '100%' }};" 
+                                                 aria-valuenow="100" 
                                                  aria-valuemin="0" 
                                                  aria-valuemax="100"></div>
                                         </div>
@@ -296,7 +296,7 @@
                             </button>
                             @endcan
 
-                            {{-- Botón Sincronizar Ahora (Asíncrono en lote de 500 archivos) --}}
+                            {{-- Botón Sincronizar Ahora (Asíncrono en lote de órbitas) --}}
                             @can('ejecutar-migracion-nas')
                             <button type="button" 
                                     class="btn btn-icon btn-success shadow-sm btn-start-sync {{ $task->status === 'running' ? 'd-none' : '' }}" 
@@ -307,12 +307,12 @@
                                     data-target-path="{{ $task->target_path }}"
                                     data-inspur-dir="{{ $task->inspur_target_dir ?: 'VRSS-1' }}"
                                     data-last-orbit="{{ $task->last_migrated_orbit }}"
-                                    data-batch-size="{{ $task->batch_size ?? 500 }}"
+                                    data-batch-size="{{ $task->batch_size ?? 5 }}"
                                     data-url="{{ route('nas-migracion.tasks.sync', $task) }}"
                                     data-status-url="{{ route('nas-migracion.tasks.status', $task) }}"
                                     data-bs-toggle="tooltip" 
                                     data-bs-placement="top" 
-                                    title="Sincronizar Ahora (Lote de {{ $task->batch_size ?? 500 }} archivos a Inspur)">
+                                    title="Sincronizar Ahora (Lote de {{ $task->batch_size ?? 5 }} órbitas completas)">
                                 <i class="ti ti-player-play fs-2"></i>
                             </button>
 
@@ -516,10 +516,10 @@
                                         <div class="col-md-4">
                                             <label class="form-label required">Lote de Sincronización</label>
                                             <div class="input-group">
-                                                <input type="number" name="batch_size" class="form-control" value="{{ old('batch_size', $task->batch_size ?? 500) }}" min="1" max="10000" required>
-                                                <span class="input-group-text">archivos</span>
+                                                <input type="number" name="batch_size" class="form-control" value="{{ old('batch_size', $task->batch_size ?? 5) }}" min="1" max="1000" required>
+                                                <span class="input-group-text">órbitas</span>
                                             </div>
-                                            <small class="text-secondary">Defecto: 500 archivos por clic.</small>
+                                            <small class="text-secondary">Defecto: 5 órbitas completas (con CH1 y CH2).</small>
                                         </div>
 
                                         <div class="col-md-6 d-flex align-items-center pt-2">
@@ -857,10 +857,10 @@
                         <div class="col-md-4">
                             <label class="form-label required">Lote de Sincronización</label>
                             <div class="input-group">
-                                <input type="number" name="batch_size" class="form-control" value="500" min="1" max="10000" required>
-                                <span class="input-group-text">archivos</span>
+                                <input type="number" name="batch_size" class="form-control" value="5" min="1" max="1000" required>
+                                <span class="input-group-text">órbitas</span>
                             </div>
-                            <small class="text-secondary">Defecto: 500 archivos por clic.</small>
+                            <small class="text-secondary">Defecto: 5 órbitas completas (con CH1 y CH2).</small>
                         </div>
 
                         <div class="col-md-6 d-flex align-items-center pt-2">
@@ -1298,10 +1298,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 const pct = data.percentage !== undefined ? data.percentage : (batchSize > 0 ? Math.round((currentFiles / batchSize) * 100) : 0);
 
                 if (progressBar) {
-                    progressBar.style.width = Math.min(100, Math.max(currentFiles > 0 ? 5 : 2, pct)) + '%';
+                    progressBar.style.width = '100%';
                 }
                 if (progressCounter) {
-                    progressCounter.textContent = `${currentFiles} / ${batchSize} arch. (${Math.round(pct)}%)`;
+                    progressCounter.textContent = `${currentFiles} archivos transferidos (Lote: ${batchSize} órbitas)`;
                 }
 
                 const subLabel = document.getElementById(`task-progress-sub-${taskId}`);
@@ -1339,15 +1339,15 @@ document.addEventListener('DOMContentLoaded', function () {
                             progressLabel.textContent = '¡Lote completado!';
                         }
                         if (progressCounter) {
-                            progressCounter.textContent = `${log.files || currentFiles} / ${batchSize} arch. (100%)`;
+                            progressCounter.textContent = `${log.files || currentFiles} archivos transferidos`;
                         }
 
                         Swal.fire({
                             icon: 'success',
                             title: '¡Sincronización Finalizada con Éxito!',
-                            html: `La tarea <b>${taskName}</b> completó la transferencia del lote.<br><br>
+                            html: `La tarea <b>${taskName}</b> completó la transferencia de las órbitas.<br><br>
                                    <div class="badge bg-green-lt p-2 fs-3">
-                                       Archivos: ${log.files || currentFiles} / ${batchSize} | Tamaño: ${log.size || '0 B'} | Duración: ${log.duration || '-'}
+                                       Archivos: ${log.files || currentFiles} | Tamaño: ${log.size || '0 B'} | Duración: ${log.duration || '-'}
                                    </div>`,
                             confirmButtonText: 'Actualizar Vista',
                             confirmButtonColor: '#2fb344'

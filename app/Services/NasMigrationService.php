@@ -192,10 +192,10 @@ class NasMigrationService
             $lastOrbit = $task->last_migrated_orbit ? trim($task->last_migrated_orbit) : '';
 
             // Script de sincronización inteligente:
-            // 1. Identifica órbitas (carpetas 6 dígitos o subdirectorios) en el origen.
-            // 2. Si existe un punto de partida ($lastOrbit), filtra para procesar únicamente las carpetas mayores a ella.
+            // 1. Identifica órbitas (carpetas de órbitas, compuestas por subdirectorios CH1 y CH2) en origen.
+            // 2. Si existe un punto de partida ($lastOrbit), filtra para procesar únicamente las órbitas mayores a ella.
             // 3. Verifica en el destino Inspur y en la carpeta intermedia para ignorar órbitas ya copiadas.
-            // 4. Selecciona los archivos de las órbitas pendientes hasta alcanzar el lote.
+            // 4. Copia íntegramente las órbitas completas (con sus subdirectorios CH1 y CH2) hasta alcanzar el lote de ÓRBITAS ($batchLimit).
             // 5. Registra la última órbita procesada para continuar exactamente desde allí.
             if ($batchLimit > 0) {
                 $rsyncCommand = "sh -c '" .
@@ -206,13 +206,12 @@ class NasMigrationService
                     "INSPUR_FINAL=\"{$inspurFullFinalPath}\"; " .
                     "INSPUR_SHARED=\"{$inspurSharedFolder}\"; " .
                     "LAST_ORBIT=\"{$lastOrbit}\"; " .
-                    "echo \"=== INICIANDO DETECCIÓN DE ÓRBITAS Y ARCHIVOS PENDIENTES ===\"; " .
+                    "echo \"=== INICIANDO DETECCIÓN DE ÓRBITAS COMPLETAS PENDIENTES ===\"; " .
                     "if [ -n \"\$LAST_ORBIT\" ]; then " .
                     "  echo \"[ÍNDICE DE REANUDACIÓN] Última órbita previamente copiada: \$LAST_ORBIT\"; " .
                     "fi; " .
                     // Obtener lista ordenada de carpetas de primer nivel (órbitas) en origen
                     "find \"\$SRC\" -mindepth 1 -maxdepth 1 -type d ! -name \"#recycle*\" ! -name \"@eaDir*\" -printf \"%f\\n\" 2>/dev/null | sort > \"\$ORBITS_FILE\"; " .
-                    "PENDING_COUNT=0; " .
                     "SKIPPED_ORBITS=0; " .
                     "COPIED_ORBITS=0; " .
                     "LATEST_PROCESSED_ORBIT=\"\"; " .
@@ -228,39 +227,32 @@ class NasMigrationService
                     "    SKIPPED_ORBITS=\$((SKIPPED_ORBITS + 1)); " .
                     "    continue; " .
                     "  fi; " .
-                    // Si no existe, incluir los archivos de esta órbita en el lote
+                    // Si no existe, incluir la órbita completa con todos sus directorios (CH1, CH2, etc.) y archivos
                     "  COPIED_ORBITS=\$((COPIED_ORBITS + 1)); " .
                     "  LATEST_PROCESSED_ORBIT=\"\$ORB\"; " .
+                    // Agregar todos los archivos dentro de la órbita (CH1 y CH2) al archivo por lotes
                     "  find \"\$SRC\$ORB\" -type f -printf \"%P\\n\" 2>/dev/null | sed \"s|^|\$ORB/|\" >> \"\$BATCH_FILE\"; " .
-                    "  CURR_FILES=\$(wc -l < \"\$BATCH_FILE\"); " .
-                    "  if [ \"\$CURR_FILES\" -ge {$batchLimit} ]; then " .
+                    // El límite $batchLimit ahora representa CANTIDAD DE ÓRBITAS COMPLETAS
+                    "  if [ \"\$COPIED_ORBITS\" -ge {$batchLimit} ]; then " .
                     "    break; " .
                     "  fi; " .
                     "done < \"\$ORBITS_FILE\"; " .
                     "rm -f \"\$ORBITS_FILE\"; " .
-                    // Si se encontraron archivos por órbitas, recortar al límite del lote
+                    // Si se seleccionaron órbitas completas, transferir íntegramente
                     "if [ -s \"\$BATCH_FILE\" ]; then " .
-                    "  head -n {$batchLimit} \"\$BATCH_FILE\" > \"\${BATCH_FILE}.tmp\" && mv \"\${BATCH_FILE}.tmp\" \"\$BATCH_FILE\"; " .
                     "  TOTAL_IN_BATCH=\$(wc -l < \"\$BATCH_FILE\"); " .
-                    "  echo \"[ÓRBITAS IGNORADAS POR DUPLICADO EN DESTINO: \$SKIPPED_ORBITS]\"; " .
-                    "  echo \"[ÓRBITAS NUEVAS SELECCIONADAS: \$COPIED_ORBITS]\"; " .
+                    "  echo \"[ÓRBITAS OMITIDAS POR DUPLICADO EN DESTINO: \$SKIPPED_ORBITS]\"; " .
+                    "  echo \"[ÓRBITAS COMPLETAS SELECCIONADAS: \$COPIED_ORBITS (con subcarpetas CH1 y CH2)]\"; " .
+                    "  echo \"[TOTAL ARCHIVOS EN ESTAS \$COPIED_ORBITS ÓRBITAS: \$TOTAL_IN_BATCH]\"; " .
                     "  echo \"[ÚLTIMA ÓRBITA EN ESTE LOTE: \$LATEST_PROCESSED_ORBIT]\"; " .
-                    "  echo \"[LOTE DE \$TOTAL_IN_BATCH ARCHIVOS] Transfiriendo a carpeta intermedia compartida {\$TGT}...\"; " .
+                    "  echo \"[TRANSFIRIENDO LOTE DE \$COPIED_ORBITS ÓRBITAS] Hacia {\$TGT}...\"; " .
                     "  rsync {$options} --ignore-existing --out-format=\"PROGRESS_FILE:%n\" --files-from=\"\$BATCH_FILE\" \"\$SRC\" \"\$TGT\"; " .
                     "  RC=\$?; " .
                     "  echo \"ORBIT_SUMMARY:last=\$LATEST_PROCESSED_ORBIT:copied=\$COPIED_ORBITS:skipped=\$SKIPPED_ORBITS\"; " .
                     "  rm -f \"\$BATCH_FILE\"; exit \$RC; " .
                     "else " .
-                    // Fallback directo por rsync --ignore-existing si no hay estructura por subcarpetas
-                    "  echo \"[SINCRONIZACIÓN] Verificando archivos individuales omitiendo duplicados...\"; " .
-                    "  rsync -r -n --ignore-existing --out-format=\"%n\" \"\$SRC\" \"\$TGT\" | grep -v \"/\$\" | grep -v \"^\$\" | head -n {$batchLimit} > \"\$BATCH_FILE\"; " .
-                    "  if [ -s \"\$BATCH_FILE\" ]; then " .
-                    "    rsync {$options} --ignore-existing --out-format=\"PROGRESS_FILE:%n\" --files-from=\"\$BATCH_FILE\" \"\$SRC\" \"\$TGT\"; " .
-                    "    RC=\$?; rm -f \"\$BATCH_FILE\"; exit \$RC; " .
-                    "  else " .
-                    "    echo \"[SINCRONIZADO] No hay órbitas o archivos pendientes nuevos en este lote de {$batchLimit} (todos existen en destino o fueron omitidos).\"; " .
-                    "    rm -f \"\$BATCH_FILE\"; exit 0; " .
-                    "  fi; " .
+                    "  echo \"[SINCRONIZADO] No hay órbitas pendientes nuevas (todas las órbitas ya existen en el destino o fueron omitidas).\"; " .
+                    "  rm -f \"\$BATCH_FILE\"; exit 0; " .
                     "fi'";
             } else {
                 $rsyncCommand = "rsync {$options} --ignore-existing --out-format=\"PROGRESS_FILE:%n\" \"{$source}\" \"{$target}\"";
@@ -270,12 +262,12 @@ class NasMigrationService
             $filesCount = 0;
             $lastProgressUpdate = microtime(true);
 
-            $onOutput = function ($type, $buffer) use (&$filesCount, &$lastProgressUpdate, $log, $batchLimit) {
+            $onOutput = function ($type, $buffer) use (&$filesCount, &$lastProgressUpdate, $log) {
                 if (preg_match_all('/PROGRESS_FILE:\s*(.+)/', $buffer, $matches)) {
                     $filesCount += count($matches[1]);
                     $now = microtime(true);
-                    if ($now - $lastProgressUpdate >= 0.5 || $filesCount >= $batchLimit) {
-                        $log->update(['files_transferred' => min($batchLimit, $filesCount)]);
+                    if ($now - $lastProgressUpdate >= 0.5) {
+                        $log->update(['files_transferred' => $filesCount]);
                         $lastProgressUpdate = $now;
                     }
                 }
