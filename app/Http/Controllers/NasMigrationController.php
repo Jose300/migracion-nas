@@ -277,8 +277,9 @@ class NasMigrationController extends Controller
         $userId = auth()->id() ?? 0;
 
         if (PHP_OS_FAMILY === 'Windows') {
-            // Comando desacoplado en Windows sin esperar salida
-            $command = "start /B \"\" \"{$php}\" \"{$artisan}\" nas:sync {$task->id} --log_id={$log->id} --user_id={$userId} --limit={$limit} --source=\"{$source}\" --inspur_dir=\"{$inspurDir}\" > NUL 2>&1";
+            // En Apache sobre Windows, popen directo de 'start' no abre cmd.exe; se requiere cmd /c start /B
+            $bgLog = storage_path('logs/nas_sync_background.log');
+            $command = "cmd /c start /B \"\" \"{$php}\" \"{$artisan}\" nas:sync {$task->id} --log_id={$log->id} --user_id={$userId} --limit={$limit} --source=\"{$source}\" --inspur_dir=\"{$inspurDir}\" > \"{$bgLog}\" 2>&1";
             pclose(popen($command, 'r'));
         } else {
             // En Linux / Unix
@@ -350,6 +351,8 @@ class NasMigrationController extends Controller
             'files_transferred' => $filesTransferred,
             'batch_size' => $batchLimit,
             'percentage' => $percentage,
+            'current_orbit' => $latestLog->latest_processed_orbit ?? $task->last_migrated_orbit,
+            'live_output' => $latestLog ? substr($latestLog->output ?? '', -300) : '',
             'latest_log' => $latestLog ? [
                 'id' => $latestLog->id,
                 'status' => $latestLog->status,

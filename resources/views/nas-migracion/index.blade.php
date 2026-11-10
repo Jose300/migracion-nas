@@ -1265,7 +1265,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (data.status === 'running') {
                     if (progressLabel) {
-                        progressLabel.textContent = currentFiles > 0 ? 'Copiando a MIGRACION_SYNOLOGY y trasladando a Inspur (/RAWDATA)...' : 'Preparando lote de transferencia...';
+                        if (currentFiles > 0) {
+                            progressLabel.innerHTML = `<span class="spinner-border spinner-border-sm me-1 text-success" style="width: 11px; height: 11px;"></span> Copiando archivos a <code>MIGRACION_SYNOLOGY</code> y trasladando a Inspur...`;
+                        } else if (data.live_output && data.live_output.includes('INICIANDO')) {
+                            progressLabel.innerHTML = `<span class="spinner-border spinner-border-sm me-1 text-primary" style="width: 11px; height: 11px;"></span> Conectado a Synology: Detectando órbitas y archivos pendientes...`;
+                        } else {
+                            progressLabel.innerHTML = `<span class="spinner-border spinner-border-sm me-1 text-warning" style="width: 11px; height: 11px;"></span> Iniciando proceso de transferencia...`;
+                        }
                     }
                 } else if (data.status === 'idle' || data.status === 'failed' || data.latest_log?.status === 'failed') {
                     // La tarea finalizó o reportó fallo: paralizar polling
