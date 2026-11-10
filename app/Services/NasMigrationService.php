@@ -33,7 +33,8 @@ class NasMigrationService
             : "'/volume2/dae-Volumen2_IPS' '/volume4/dae-Volumen4_Respaldo_IPS'";
 
         // Comando que busca directorios hasta profundidad 4 excluyendo @eaDir, #recycle y carpetas del sistema
-        $findCmd = "find {$pathsToScan} -maxdepth 4 -type d ! -path '*/#recycle*' ! -path '*/@eaDir*' ! -path '*/.*' 2>/dev/null | sort";
+        // y filtrando subcarpetas de órbitas individuales (patrón de 6 dígitos con guión bajo) y canales CH1/CH2
+        $findCmd = "find {$pathsToScan} -maxdepth 4 -type d ! -path '*/#recycle*' ! -path '*/@eaDir*' ! -path '*/.*' 2>/dev/null | grep -vE '/[0-9]{6}_|/CH[0-9]' | sort";
 
         try {
             $result = $this->executeRemoteSsh($task, $findCmd, 10);

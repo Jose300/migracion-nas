@@ -425,7 +425,7 @@
                                                     <optgroup label="Volumen 2 (dae-Volumen2_IPS)">
                                                         @foreach($vol2Sources as $src)
                                                             @php
-                                                                $relative = str_replace('/volume1/dae-Volumen2_IPS/', '', $src);
+                                                                $relative = str_replace(['/volume1/dae-Volumen2_IPS/', '/volume2/dae-Volumen2_IPS/'], '', $src);
                                                                 $display = empty(trim($relative, '/')) ? 'dae-Volumen2_IPS (Raíz)' : '📁 ' . trim($relative, '/');
                                                             @endphp
                                                             <option value="{{ $src }}" {{ old('source_path', $task->source_path) === $src ? 'selected' : '' }}>
@@ -438,7 +438,7 @@
                                                     <optgroup label="Volumen 4 (dae-Volumen4_Respaldo_IPS)">
                                                         @foreach($vol4Sources as $src)
                                                             @php
-                                                                $relative = str_replace('/volume1/dae-Volumen4_Respaldo_IPS/', '', $src);
+                                                                $relative = str_replace(['/volume1/dae-Volumen4_Respaldo_IPS/', '/volume4/dae-Volumen4_Respaldo_IPS/'], '', $src);
                                                                 $display = empty(trim($relative, '/')) ? 'dae-Volumen4_Respaldo_IPS (Raíz)' : '📁 ' . trim($relative, '/');
                                                             @endphp
                                                             <option value="{{ $src }}" {{ old('source_path', $task->source_path) === $src ? 'selected' : '' }}>
@@ -741,10 +741,10 @@
                                     <optgroup label="Volumen 2 (dae-Volumen2_IPS)">
                                         @foreach($vol2Sources as $src)
                                             @php
-                                                $relative = str_replace('/volume1/dae-Volumen2_IPS/', '', $src);
+                                                $relative = str_replace(['/volume1/dae-Volumen2_IPS/', '/volume2/dae-Volumen2_IPS/'], '', $src);
                                                 $display = empty(trim($relative, '/')) ? 'dae-Volumen2_IPS (Raíz)' : '📁 ' . trim($relative, '/');
                                             @endphp
-                                            <option value="{{ $src }}" {{ $src === '/volume1/dae-Volumen2_IPS/RAWDATA PRINCIPAL/' ? 'selected' : '' }}>
+                                            <option value="{{ $src }}" {{ str_contains($src, 'RAWDATA PRINCIPAL') ? 'selected' : '' }}>
                                                 {{ $display }} &nbsp; ({{ $src }})
                                             </option>
                                         @endforeach
@@ -754,7 +754,7 @@
                                     <optgroup label="Volumen 4 (dae-Volumen4_Respaldo_IPS)">
                                         @foreach($vol4Sources as $src)
                                             @php
-                                                $relative = str_replace('/volume1/dae-Volumen4_Respaldo_IPS/', '', $src);
+                                                $relative = str_replace(['/volume1/dae-Volumen4_Respaldo_IPS/', '/volume4/dae-Volumen4_Respaldo_IPS/'], '', $src);
                                                 $display = empty(trim($relative, '/')) ? 'dae-Volumen4_Respaldo_IPS (Raíz)' : '📁 ' . trim($relative, '/');
                                             @endphp
                                             <option value="{{ $src }}">
