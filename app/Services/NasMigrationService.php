@@ -505,6 +505,61 @@ class NasMigrationService
         ];
     }
 
+    /**
+     * Comprueba si existe un proceso activo de rsync o transferencia ejecutándose en la NAS.
+     */
+    public function isTransferProcessRunningOnNas(NasMigrationTask $task): bool
+    {
+        try {
+            $pyScript = "import subprocess\n" .
+                "try:\n" .
+                "    out = subprocess.check_output(['ps', 'aux'], text=True)\n" .
+                "    active = any(('rsync' in l and ('--files-from' in l or 'PROGRESS_FILE' in l)) or 'nas_batch' in l for l in out.splitlines() if 'grep' not in l)\n" .
+                "    print('STATUS_TRANSFER_ACTIVE:' + str(active))\n" .
+                "except Exception:\n" .
+                "    print('STATUS_TRANSFER_ACTIVE:False')\n";
+
+            $b64 = base64_encode($pyScript);
+            $cmd = "python3 -c \"import base64; exec(base64.b64decode('{$b64}'))\"";
+
+            $result = $this->executeRemoteSsh($task, $cmd, 10);
+            return str_contains($result['output'] ?? '', 'STATUS_TRANSFER_ACTIVE:True');
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Intenta matar cualquier proceso de rsync o transferencia huérfana en la NAS para esta tarea.
+     */
+    public function killOrphanTransferProcesses(NasMigrationTask $task): void
+    {
+        try {
+            $pyScript = "import os, subprocess, signal\n" .
+                "try:\n" .
+                "    out = subprocess.check_output(['ps', 'aux'], text=True)\n" .
+                "    for line in out.splitlines():\n" .
+                "        if 'grep' in line:\n" .
+                "            continue\n" .
+                "        if ('rsync' in line and ('--files-from' in line or 'PROGRESS_FILE' in line)) or 'nas_batch' in line:\n" .
+                "            parts = line.split()\n" .
+                "            if len(parts) > 1 and parts[1].isdigit():\n" .
+                "                pid = int(parts[1])\n" .
+                "                try:\n" .
+                "                    os.kill(pid, signal.SIGTERM)\n" .
+                "                except Exception:\n" .
+                "                    pass\n" .
+                "except Exception:\n" .
+                "    pass\n";
+
+            $b64 = base64_encode($pyScript);
+            $cmd = "python3 -c \"import base64; exec(base64.b64decode('{$b64}'))\"";
+            $this->executeRemoteSsh($task, $cmd, 10);
+        } catch (\Throwable $e) {
+            // Silencioso
+        }
+    }
+
     protected function createInitialLog(NasMigrationTask $task, string $triggerType, ?int $userId): NasMigrationLog
     {
         return NasMigrationLog::create([

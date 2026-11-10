@@ -367,22 +367,31 @@ class NasMigrationController extends Controller
             $task->refresh();
         }
 
-        // Auto-recuperación 2 (Anti-Cuelgues): Solo si la tarea lleva más de 30 minutos sin actividad de ningún tipo
+        // Auto-recuperación 2: Detección inteligente por PROCESOS ACTIVOS (sin temporizador fijo)
+        // Solo se paraliza si ya no hay ningún proceso de copiado/rsync ejecutándose en la NAS
         if ($task->status === 'running' && $latestLog && $latestLog->status === 'running') {
             $lastActivity = $latestLog->updated_at ?? $latestLog->started_at;
-            if ($lastActivity && $lastActivity->diffInMinutes(now()) >= 30) {
-                // El proceso en segundo plano probablemente murió
-                $latestLog->update([
-                    'status' => 'failed',
-                    'finished_at' => now(),
-                    'error_message' => 'Tiempo de espera agotado (30 minutos sin respuesta en segundo plano).',
-                ]);
-                $task->update([
-                    'status' => 'idle',
-                    'last_run_status' => 'failed',
-                ]);
-                $task->refresh();
-                $latestLog->refresh();
+            // Verificar cada minuto si hay inactividad en la base de datos
+            if ($lastActivity && $lastActivity->diffInMinutes(now()) >= 1) {
+                $isNasTransferActive = $this->migrationService->isTransferProcessRunningOnNas($task);
+                if ($isNasTransferActive) {
+                    // El proceso de copiado sigue vivo en la NAS transfiriendo; no interrumpir y refrescar marca de vida
+                    $latestLog->touch();
+                } else {
+                    // No hay procesos de copiado ejecutándose en la NAS: matamos y cerramos la tarea huérfana
+                    $this->migrationService->killOrphanTransferProcesses($task);
+                    $latestLog->update([
+                        'status' => 'failed',
+                        'finished_at' => now(),
+                        'error_message' => 'Proceso de sincronización finalizado o inactivo en la NAS remota (sin procesos de copiado activos).',
+                    ]);
+                    $task->update([
+                        'status' => 'idle',
+                        'last_run_status' => 'failed',
+                    ]);
+                    $task->refresh();
+                    $latestLog->refresh();
+                }
             }
         }
 
