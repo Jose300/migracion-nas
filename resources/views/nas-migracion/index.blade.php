@@ -465,8 +465,8 @@
                                         <div class="col-md-6">
                                             <label class="form-label required">Carpeta Compartida Intermedia (Destino)</label>
                                             <select name="target_path" class="form-select" required>
-                                                <option value="/volume1/dae-RowData/MIGRACION_SYNOLOGY/" selected>
-                                                    dae-RowData &gt; MIGRACION_SYNOLOGY (Predeterminada)
+                                                <option value="/volume3/dae-RowData/MIGRACION_SYNOLOGY/" selected>
+                                                    dae-RowData &gt; MIGRACION_SYNOLOGY (/volume3/dae-RowData/MIGRACION_SYNOLOGY/)
                                                 </option>
                                             </select>
                                             <small class="text-secondary">Carpeta compartida entre ambas NAS: <code>MIGRACION_SYNOLOGY</code></small>
@@ -778,8 +778,8 @@
                         <div class="col-md-6">
                             <label class="form-label required">Carpeta Compartida Intermedia (Destino)</label>
                             <select name="target_path" class="form-select" required>
-                                <option value="/volume1/dae-RowData/MIGRACION_SYNOLOGY/" selected>
-                                    dae-RowData &gt; MIGRACION_SYNOLOGY (Predeterminada)
+                                <option value="/volume3/dae-RowData/MIGRACION_SYNOLOGY/" selected>
+                                    dae-RowData &gt; MIGRACION_SYNOLOGY (/volume3/dae-RowData/MIGRACION_SYNOLOGY/)
                                 </option>
                             </select>
                             <small class="text-secondary">Carpeta compartida entre ambas NAS: <code>MIGRACION_SYNOLOGY</code></small>
