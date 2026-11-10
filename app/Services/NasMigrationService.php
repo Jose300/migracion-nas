@@ -400,10 +400,11 @@ class NasMigrationService
             "echo \"[MOVED:0]\"; " .
             "fi'";
 
-        // Si Inspur tiene un host SSH propio definido diferente a Synology, ejecutar en Inspur
-        if (!empty($task->inspur_host) && $task->inspur_host !== $task->nas_host) {
+        // Si Inspur tiene contraseña SSH definida y es un host distinto, intentar ejecutar en Inspur
+        if (!empty($task->inspur_host) && $task->inspur_host !== $task->nas_host && !empty($task->inspur_password)) {
             $result = $this->executeInspurSsh($task, $moveCmd);
         } else {
+            // De lo contrario, se ejecuta directamente en la conexión SSH activa de Synology
             $result = $this->executeRemoteSsh($task, $moveCmd);
         }
 
