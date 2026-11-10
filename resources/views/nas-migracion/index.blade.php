@@ -1379,11 +1379,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
             fetch(url, {
                 headers: {
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(res => res.json())
-            .then(data => {
+            .then(res => res.text())
+            .then(text => {
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error("Respuesta no es JSON válido:", text);
+                    throw new Error("Respuesta inválida del servidor: " + text.substring(0, 150));
+                }
                 document.getElementById('log-task-name').textContent = data.task_name;
                 document.getElementById('log-started-at').textContent = data.started_at;
                 document.getElementById('log-duration').textContent = data.duration;
@@ -1399,7 +1407,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     badge.textContent = 'FALLIDO';
                 } else {
                     badge.className = 'badge bg-warning';
-                    badge.textContent = data.status.toUpperCase();
+                    badge.textContent = (data.status || 'EN CURSO').toUpperCase();
                 }
 
                 let fullText = data.output;

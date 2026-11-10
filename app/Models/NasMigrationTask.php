@@ -28,27 +28,27 @@ class NasMigrationTask extends Model
 
     public const SYNOLOGY_AVAILABLE_SOURCES = [
         // Volumen 2 IPS y sus subdirectorios recursivos
-        '/volume1/dae-Volumen2_IPS/',
-        '/volume1/dae-Volumen2_IPS/RAWDATA PRINCIPAL/',
-        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/',
-        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS1/',
-        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/',
-        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2019/',
-        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2020/',
-        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2021/',
-        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2022/',
-        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2023/',
-        '/volume1/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2024/',
+        '/volume2/dae-Volumen2_IPS/',
+        '/volume2/dae-Volumen2_IPS/RAWDATA PRINCIPAL/',
+        '/volume2/dae-Volumen2_IPS/Respaldo RAWDATA/',
+        '/volume2/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS1/',
+        '/volume2/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/',
+        '/volume2/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2019/',
+        '/volume2/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2020/',
+        '/volume2/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2021/',
+        '/volume2/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2022/',
+        '/volume2/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2023/',
+        '/volume2/dae-Volumen2_IPS/Respaldo RAWDATA/VRSS2/2024/',
 
         // Volumen 4 Respaldo IPS y sus subdirectorios recursivos
-        '/volume1/dae-Volumen4_Respaldo_IPS/',
-        '/volume1/dae-Volumen4_Respaldo_IPS/RAWDATA BACKUP/',
-        '/volume1/dae-Volumen4_Respaldo_IPS/RAWDATA BACKUP/RAW DATA 2/',
-        '/volume1/dae-Volumen4_Respaldo_IPS/RAWDATA PRINCIPAL/',
+        '/volume4/dae-Volumen4_Respaldo_IPS/',
+        '/volume4/dae-Volumen4_Respaldo_IPS/RAWDATA BACKUP/',
+        '/volume4/dae-Volumen4_Respaldo_IPS/RAWDATA BACKUP/RAW DATA 2/',
+        '/volume4/dae-Volumen4_Respaldo_IPS/RAWDATA PRINCIPAL/',
     ];
 
     public const SYNOLOGY_AVAILABLE_TARGETS = [
-        '/volume1/dae-RowData/MIGRACION_SYNOLOGY/',
+        '/volume3/dae-RowData/MIGRACION_SYNOLOGY/',
     ];
 
     protected $fillable = [

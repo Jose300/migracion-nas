@@ -30,7 +30,7 @@ class NasMigrationService
         // Si el puerto responde, intentar listar por SSH
         $pathsToScan = $baseVolume
             ? escapeshellarg(rtrim($baseVolume, '/'))
-            : "'/volume1/dae-Volumen2_IPS' '/volume1/dae-Volumen4_Respaldo_IPS'";
+            : "'/volume2/dae-Volumen2_IPS' '/volume4/dae-Volumen4_Respaldo_IPS'";
 
         // Comando que busca directorios hasta profundidad 4 excluyendo @eaDir, #recycle y carpetas del sistema
         $findCmd = "find {$pathsToScan} -maxdepth 4 -type d ! -path '*/#recycle*' ! -path '*/@eaDir*' ! -path '*/.*' 2>/dev/null | sort";

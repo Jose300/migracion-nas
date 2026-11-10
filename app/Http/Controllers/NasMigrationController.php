@@ -33,7 +33,7 @@ class NasMigrationController extends Controller
         // Directorios disponibles en Inspur y Synology
         $inspurAvailableDirs = NasMigrationTask::INSPUR_AVAILABLE_DIRS;
         $firstTask = $tasks->first();
-        $synologyAvailableSources = $firstTask 
+        $synologyAvailableSources = $firstTask
             ? $this->migrationService->listSynologyDirectories($firstTask)
             : NasMigrationTask::SYNOLOGY_AVAILABLE_SOURCES;
         $synologyAvailableTargets = NasMigrationTask::SYNOLOGY_AVAILABLE_TARGETS;
@@ -102,7 +102,7 @@ class NasMigrationController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        $validated['target_path'] = (!empty($validated['target_path'])) ? $validated['target_path'] : '/volume1/dae-RowData/MIGRACION_SYNOLOGY/';
+        $validated['target_path'] = (!empty($validated['target_path'])) ? $validated['target_path'] : '/volume3/dae-RowData/MIGRACION_SYNOLOGY/';
         $validated['inspur_base_path'] = (!empty($validated['inspur_base_path'])) ? $validated['inspur_base_path'] : '/HS_IPS_PRIVATE/RDP_FTP/RAWDATA';
         $validated['inspur_shared_folder'] = (!empty($validated['inspur_shared_folder'])) ? $validated['inspur_shared_folder'] : '/HS_SHARE/MIGRACION_SYNOLOGY';
         $validated['inspur_host'] = (!empty($validated['inspur_host'])) ? $validated['inspur_host'] : '192.168.10.180';
@@ -156,7 +156,7 @@ class NasMigrationController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        $validated['target_path'] = (!empty($validated['target_path'])) ? $validated['target_path'] : '/volume1/dae-RowData/MIGRACION_SYNOLOGY/';
+        $validated['target_path'] = (!empty($validated['target_path'])) ? $validated['target_path'] : '/volume3/dae-RowData/MIGRACION_SYNOLOGY/';
         $validated['inspur_base_path'] = (!empty($validated['inspur_base_path'])) ? $validated['inspur_base_path'] : '/HS_IPS_PRIVATE/RDP_FTP/RAWDATA';
         $validated['inspur_shared_folder'] = (!empty($validated['inspur_shared_folder'])) ? $validated['inspur_shared_folder'] : '/HS_SHARE/MIGRACION_SYNOLOGY';
         $validated['inspur_host'] = (!empty($validated['inspur_host'])) ? $validated['inspur_host'] : '192.168.10.180';
