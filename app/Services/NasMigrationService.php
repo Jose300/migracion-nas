@@ -291,15 +291,35 @@ class NasMigrationService
             // Extraer estadísticas de rsync
             $stats = $this->parseRsyncStats($output);
 
+            // Determinar estado de la Fase 1 (Synology -> Carpeta Compartida MIGRACION_SYNOLOGY)
+            $phaseSynologyStatus = $success ? 'completed' : 'failed';
+            $phaseInspurStatus = 'skipped';
+            $phaseDetails = [];
+
+            if ($success) {
+                $phaseDetails[] = "Fase 1 (Synology -> MIGRACION_SYNOLOGY): Transferencia OK ({$stats['files_transferred']} archivos, {$stats['human_size']}).";
+            } else {
+                $phaseDetails[] = "Fase 1 (Synology -> MIGRACION_SYNOLOGY): Falló. " . ($execResult['error'] ?: 'Error en proceso rsync.');
+            }
+
             // Fase 2: Mover archivos dentro de NAS Inspur al subdirectorio seleccionado en /HS_IPS_PRIVATE/RDP_FTP/RAWDATA/{dir}
             $inspurTargetDir = $overrideInspurDir ?: ($task->inspur_target_dir ?: 'VRSS-1');
             $filesMoved = 0;
             $moveSummary = '';
 
             if ($success && ($task->auto_move_to_inspur ?? true)) {
-                $filesMoved = $this->moveFilesToInspurRawdata($task, $inspurTargetDir);
+                $moveResult = $this->moveFilesToInspurRawdataDetailed($task, $inspurTargetDir);
+                $filesMoved = $moveResult['moved'];
+                $phaseInspurStatus = $moveResult['success'] ? 'completed' : 'failed';
                 $moveSummary = " | Movidos a Inspur (/HS_IPS_PRIVATE/RDP_FTP/RAWDATA/{$inspurTargetDir}): {$filesMoved}";
-                $output .= "\n\n[FASE 2 - INSPUR]: Archivos trasladados a /HS_IPS_PRIVATE/RDP_FTP/RAWDATA/{$inspurTargetDir}/ ({$filesMoved} archivos movidos exitosamente).";
+                $output .= "\n\n[FASE 2 - INSPUR]: " . $moveResult['message'];
+                $phaseDetails[] = "Fase 2 (Mover a Inspur {$inspurTargetDir}): " . ($moveResult['success'] ? "OK ({$filesMoved} archivos movidos)." : "Falló: " . $moveResult['error']);
+            } elseif (!$success) {
+                $phaseInspurStatus = 'skipped';
+                $phaseDetails[] = "Fase 2 (Inspur): Omitida porque la Fase 1 no concluyó con éxito.";
+            } else {
+                $phaseInspurStatus = 'skipped';
+                $phaseDetails[] = "Fase 2 (Inspur): Desactivada en la configuración de la tarea.";
             }
 
             // Parsear datos de órbitas procesadas en la salida
@@ -326,11 +346,16 @@ class NasMigrationService
                     ($lastProcessedOrbit ? " (Última: {$lastProcessedOrbit})" : '');
             }
 
+            $finalTaskSuccess = $success && ($phaseInspurStatus !== 'failed');
+
             $log->update([
-                'status' => $success ? 'completed' : 'failed',
+                'status' => $finalTaskSuccess ? 'completed' : 'failed',
                 'finished_at' => now(),
                 'duration_seconds' => $duration,
                 'files_transferred' => $stats['files_transferred'],
+                'phase_synology_status' => $phaseSynologyStatus,
+                'phase_inspur_status' => $phaseInspurStatus,
+                'phase_details' => implode("\n", $phaseDetails),
                 'source_path_used' => $source,
                 'inspur_target_dir_used' => $inspurTargetDir,
                 'files_moved' => $filesMoved,
@@ -342,12 +367,12 @@ class NasMigrationService
                 'speed' => $stats['speed'],
                 'summary' => $stats['summary'] . $moveSummary . $orbitSummaryText,
                 'output' => $output,
-                'error_message' => $success ? null : ($execResult['error'] ?: 'El proceso rsync finalizó con código de error.'),
+                'error_message' => $finalTaskSuccess ? null : ($execResult['error'] ?: ($phaseInspurStatus === 'failed' ? 'Error al trasladar archivos en Inspur.' : 'El proceso rsync finalizó con código de error.')),
             ]);
 
             $task->update([
                 'status' => 'idle',
-                'last_run_status' => $success ? 'completed' : 'failed',
+                'last_run_status' => $finalTaskSuccess ? 'completed' : 'failed',
             ]);
         } catch (\Throwable $e) {
             $duration = (int) round(microtime(true) - $startTime);
@@ -374,45 +399,62 @@ class NasMigrationService
     /**
      * Mueve los archivos copiados en la carpeta compartida MIGRACION_SYNOLOGY
      * hacia la ubicación final en NAS INSPUR: /HS_IPS_PRIVATE/RDP_FTP/RAWDATA/{inspurDir}/
+     * Devuelve detalle de éxito y conteo para trazabilidad de fases.
      */
-    public function moveFilesToInspurRawdata(NasMigrationTask $task, string $inspurDir): int
+    public function moveFilesToInspurRawdataDetailed(NasMigrationTask $task, string $inspurDir): array
     {
         $base = rtrim($task->inspur_base_path ?: '/HS_IPS_PRIVATE/RDP_FTP/RAWDATA', '/');
         $cleanSubdir = trim($inspurDir, '/');
         $targetInspurPath = "{$base}/{$cleanSubdir}";
 
         $sharedInspurFolder = rtrim($task->inspur_shared_folder ?: '/HS_SHARE/MIGRACION_SYNOLOGY', '/');
-        $sharedSynologyFolder = rtrim($task->target_path ?: '/volume1/dae-RowData/MIGRACION_SYNOLOGY', '/');
+        $sharedSynologyFolder = rtrim($task->target_path ?: '/volume3/dae-RowData/MIGRACION_SYNOLOGY', '/');
 
-        // Comando que crea la carpeta de destino si no existe y traslada los archivos
-        $moveCmd = "sh -c '" .
-            "mkdir -p \"{$targetInspurPath}\"; " .
-            "if [ -d \"{$sharedInspurFolder}\" ]; then " .
-            "SRC_DIR=\"{$sharedInspurFolder}\"; " .
-            "else " .
-            "SRC_DIR=\"{$sharedSynologyFolder}\"; " .
-            "fi; " .
-            "COUNT=$(find \"\$SRC_DIR\" -mindepth 1 -maxdepth 1 2>/dev/null | wc -l); " .
-            "if [ \"\$COUNT\" -gt 0 ]; then " .
-            "find \"\$SRC_DIR\" -mindepth 1 -maxdepth 1 -exec mv -t \"{$targetInspurPath}/\" {} + 2>/dev/null || true; " .
-            "echo \"[MOVED:\$COUNT]\"; " .
-            "else " .
-            "echo \"[MOVED:0]\"; " .
-            "fi'";
-
-        // Si Inspur tiene contraseña SSH definida y es un host distinto, intentar ejecutar en Inspur
+        // Si tenemos credenciales SSH directas hacia Inspur, trasladamos directamente en Inspur
         if (!empty($task->inspur_host) && $task->inspur_host !== $task->nas_host && !empty($task->inspur_password)) {
-            $result = $this->executeInspurSsh($task, $moveCmd);
-        } else {
-            // De lo contrario, se ejecuta directamente en la conexión SSH activa de Synology
-            $result = $this->executeRemoteSsh($task, $moveCmd);
+            $moveCmd = "sh -c '" .
+                "mkdir -p \"{$targetInspurPath}\"; " .
+                "SRC_DIR=\"{$sharedInspurFolder}\"; " .
+                "if [ ! -d \"\$SRC_DIR\" ]; then SRC_DIR=\"/MIGRACION_SYNOLOGY\"; fi; " .
+                "COUNT=$(find \"\$SRC_DIR\" -mindepth 1 -maxdepth 1 2>/dev/null | wc -l); " .
+                "if [ \"\$COUNT\" -gt 0 ]; then " .
+                "find \"\$SRC_DIR\" -mindepth 1 -maxdepth 1 -exec mv -t \"{$targetInspurPath}/\" {} + 2>&1; " .
+                "echo \"[MOVED:\$COUNT]\"; " .
+                "else echo \"[MOVED:0]\"; fi'";
+
+            $result = $this->executeInspurSsh($task, $moveCmd, 30);
+            if (preg_match('/\[MOVED:(\d+)\]/', $result['output'] ?? '', $m)) {
+                return [
+                    'success' => true,
+                    'moved' => (int) $m[1],
+                    'message' => "Archivos trasladados directamente en Inspur a {$targetInspurPath} ({$m[1]} movidos).",
+                    'error' => null
+                ];
+            }
+
+            return [
+                'success' => false,
+                'moved' => 0,
+                'message' => "No se pudo mover archivos en Inspur.",
+                'error' => trim($result['error'] . ' ' . $result['output'])
+            ];
         }
 
-        if (preg_match('/\[MOVED:(\d+)\]/', $result['output'] ?? '', $m)) {
-            return (int) $m[1];
-        }
+        // Si NO hay contraseña SSH de Inspur configurada:
+        // Los archivos ya están físicamente alojados en Inspur en la exportación NFS (/MIGRACION_SYNOLOGY).
+        // Trasladar a otra partición distinta en Inspur requiere credenciales SSH de Inspur.
+        return [
+            'success' => true,
+            'moved' => 0,
+            'message' => "Archivos resguardados en el recurso compartido NFS de Inspur (MIGRACION_SYNOLOGY). Para mover automáticamente a {$targetInspurPath} se requieren credenciales SSH de Inspur.",
+            'error' => null
+        ];
+    }
 
-        return 0;
+    public function moveFilesToInspurRawdata(NasMigrationTask $task, string $inspurDir): int
+    {
+        $res = $this->moveFilesToInspurRawdataDetailed($task, $inspurDir);
+        return $res['moved'];
     }
 
     /**

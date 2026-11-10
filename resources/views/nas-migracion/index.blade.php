@@ -652,6 +652,34 @@
                                 @else
                                     <span class="badge bg-secondary-lt fw-bold">{{ ucfirst($log->status) }}</span>
                                 @endif
+
+                                {{-- Desglose visual de Fases: Synology Compartida e Inspur --}}
+                                <div class="mt-1 d-flex flex-column gap-1" style="font-size: 0.70rem;">
+                                    <div>
+                                        <span class="text-secondary fw-semibold">Compartida (SYN):</span>
+                                        @if($log->phase_synology_status === 'completed' || ($log->status === 'completed' && !$log->phase_synology_status))
+                                            <span class="badge bg-green-lt py-0 px-1 text-success" title="Archivos transferidos con éxito a MIGRACION_SYNOLOGY"><i class="ti ti-check"></i> OK</span>
+                                        @elseif($log->phase_synology_status === 'failed')
+                                            <span class="badge bg-danger-lt py-0 px-1 text-danger" title="Falló la copia a MIGRACION_SYNOLOGY"><i class="ti ti-x"></i> Error</span>
+                                        @elseif($log->status === 'running')
+                                            <span class="badge bg-warning-lt py-0 px-1 text-warning"><i class="ti ti-loader"></i> Copiando</span>
+                                        @else
+                                            <span class="badge bg-secondary-lt py-0 px-1 text-muted">-</span>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <span class="text-secondary fw-semibold">Inspur (RAWDATA):</span>
+                                        @if($log->phase_inspur_status === 'completed' || ($log->files_moved > 0))
+                                            <span class="badge bg-green-lt py-0 px-1 text-success" title="Archivos trasladados a Inspur RAWDATA"><i class="ti ti-check"></i> OK ({{ $log->files_moved }})</span>
+                                        @elseif($log->phase_inspur_status === 'failed')
+                                            <span class="badge bg-danger-lt py-0 px-1 text-danger" title="Falló el traslado interno en Inspur"><i class="ti ti-x"></i> Error</span>
+                                        @elseif($log->phase_inspur_status === 'skipped')
+                                            <span class="badge bg-azure-lt py-0 px-1 text-azure" title="Resguardado en recurso NFS"><i class="ti ti-cloud"></i> En NFS</span>
+                                        @else
+                                            <span class="badge bg-secondary-lt py-0 px-1 text-muted">-</span>
+                                        @endif
+                                    </div>
+                                </div>
                             </td>
                             <td class="text-end">
                                 @can('ver-consola-log-nas')
