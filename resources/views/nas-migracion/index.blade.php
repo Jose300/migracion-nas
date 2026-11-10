@@ -161,12 +161,12 @@
                      data-status-url="{{ route('nas-migracion.tasks.status', $task) }}"
                      data-current-status="{{ $task->status }}">
                     <div class="row align-items-center g-3">
-                        <div class="col-lg-4 col-md-12 mb-3 mb-lg-0">
+                        <div class="col-xl-4 col-lg-5 col-md-12 mb-2 mb-xl-0">
                             <div class="d-flex align-items-center">
                                 <span class="avatar avatar-md bg-azure-lt text-azure rounded me-3 flex-shrink-0">
                                     <i class="ti ti-device-floppy fs-2"></i>
                                 </span>
-                                <div class="min-width-0">
+                                <div class="flex-grow-1 overflow-hidden">
                                     <h4 class="mb-0 fw-bold text-dark text-truncate" title="{{ $task->name }}">{{ $task->name }}</h4>
                                     <small class="text-secondary d-block text-truncate" title="{{ $task->description }}">{{ $task->description ?: 'Sin descripción' }}</small>
                                     <div class="mt-1 d-flex flex-wrap gap-1 align-items-center" id="task-status-container-{{ $task->id }}">
@@ -196,11 +196,11 @@
                                     {{-- Barra de Progreso en Tiempo Real --}}
                                     <div id="task-progress-box-{{ $task->id }}" class="mt-2 {{ $task->status === 'running' ? '' : 'd-none' }}">
                                         <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.74rem;">
-                                            <span class="text-secondary fw-semibold">
+                                            <span class="text-secondary fw-semibold text-truncate me-2">
                                                 <span class="spinner-border spinner-border-sm me-1 text-success" style="width: 11px; height: 11px;" role="status"></span>
                                                 <span id="task-progress-label-{{ $task->id }}">Migrando archivos...</span>
                                             </span>
-                                            <span class="fw-bold text-dark font-monospace" id="task-progress-counter-{{ $task->id }}">
+                                            <span class="fw-bold text-dark font-monospace flex-shrink-0" id="task-progress-counter-{{ $task->id }}">
                                                 {{ $task->latestLog ? ($task->latestLog->files_transferred ?? 0) : 0 }} / {{ $task->batch_size ?? 500 }} arch. ({{ $task->latestLog && ($task->batch_size ?? 500) > 0 ? min(100, round((($task->latestLog->files_transferred ?? 0) / ($task->batch_size ?? 500)) * 100)) : 0 }}%)
                                             </span>
                                         </div>
@@ -219,7 +219,7 @@
                         </div>
 
                         {{-- Detalle de Rutas y Conexión --}}
-                        <div class="col-lg-6 col-md-9 mb-3 mb-lg-0">
+                        <div class="col-xl-6 col-lg-5 col-md-12 mb-2 mb-xl-0">
                             <div class="bg-light p-2 rounded border" style="font-size: 0.80rem; line-height: 1.5;">
                                 <div class="row g-1 align-items-baseline mb-1">
                                     <div class="col-auto text-secondary fw-bold" style="min-width: 110px;">
@@ -268,7 +268,7 @@
                         </div>
 
                         {{-- Botones de Acción (Solo Iconos con Tooltip) --}}
-                        <div class="col-lg-2 col-md-3 text-end d-flex align-items-center justify-content-end gap-2">
+                        <div class="col-xl-2 col-lg-2 col-md-12 text-xl-end text-lg-end text-start d-flex align-items-center justify-content-xl-end justify-content-lg-end justify-content-start gap-2 flex-wrap">
                             {{-- Botón Probar Conexión --}}
                             @can('probar-conexion-nas')
                             <button type="button" 
