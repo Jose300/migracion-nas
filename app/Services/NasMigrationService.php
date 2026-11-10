@@ -393,14 +393,10 @@ class NasMigrationService
             ]);
 
             // Si la tarea concluyó con éxito y transfirió archivos, registrar automáticamente en Estadísticas
-            // Si fue disparada de forma automática/programada (cron/hourly), se asigna a "bot_pss"
+            // Todas las migraciones gestionadas por las tareas de sincronización se asignan a "bot_pss"
             if ($finalTaskSuccess && $stats['files_transferred'] > 0) {
                 try {
                     $responsableName = 'bot_pss';
-                    if ($triggerType === 'manual' && $userId) {
-                        $userObj = \App\Models\User::find($userId);
-                        $responsableName = $userObj ? $userObj->name : 'bot_pss';
-                    }
 
                     $sateliteName = 'VRSS-1';
                     if (str_contains(strtoupper($inspurTargetDir), 'VRSS-2') || str_contains(strtoupper($source), 'VRSS-2')) {
@@ -423,7 +419,7 @@ class NasMigrationService
                         'tamano_gb' => $gbTransferred,
                         'lote_numero' => $maxLote + 1,
                         'cantidad_archivos' => $stats['files_transferred'],
-                        'observaciones' => "Sincronización NAS ({$triggerType}) - Tarea: {$task->name}" . ($lastProcessedOrbit ? " [Órbita: {$lastProcessedOrbit}]" : ''),
+                        'observaciones' => "Sincronización NAS Tarea Programada - {$task->name}" . ($lastProcessedOrbit ? " [Órbita: {$lastProcessedOrbit}]" : ''),
                         'nas_migration_task_id' => $task->id,
                         'user_id' => $userId ?: 1,
                     ]);
