@@ -253,6 +253,20 @@
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center">
+                                    @if(strtolower($resp->responsable) === 'bot_pss')
+                                    <span class="avatar avatar-sm me-2 bg-purple-lt fw-bold" title="Tarea Programada Automatizada">
+                                        <i class="ti ti-robot"></i>
+                                    </span>
+                                    <div>
+                                        <div class="fw-bold text-purple d-flex align-items-center">
+                                            {{ $resp->responsable }}
+                                            <span class="badge bg-purple-lt ms-2" style="font-size: 0.65rem;">Automático</span>
+                                        </div>
+                                        <div class="text-secondary small">
+                                            Tarea programada (daemon / cron)
+                                        </div>
+                                    </div>
+                                    @else
                                     <span class="avatar avatar-sm me-2 bg-primary-lt fw-bold">
                                         {{ strtoupper(substr($resp->responsable, 0, 2)) }}
                                     </span>
@@ -266,6 +280,7 @@
                                             @endif
                                         </div>
                                     </div>
+                                    @endif
                                 </div>
                             </td>
                             <td class="text-end">

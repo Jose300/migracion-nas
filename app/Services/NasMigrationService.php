@@ -392,6 +392,46 @@ class NasMigrationService
                 'error_message' => $finalTaskSuccess ? null : ($execResult['error'] ?: ($phaseInspurStatus === 'failed' ? 'Error al trasladar archivos en Inspur.' : 'El proceso rsync finalizó con código de error.')),
             ]);
 
+            // Si la tarea concluyó con éxito y transfirió archivos, registrar automáticamente en Estadísticas
+            // Si fue disparada de forma automática/programada (cron/hourly), se asigna a "bot_pss"
+            if ($finalTaskSuccess && $stats['files_transferred'] > 0) {
+                try {
+                    $responsableName = 'bot_pss';
+                    if ($triggerType === 'manual' && $userId) {
+                        $userObj = \App\Models\User::find($userId);
+                        $responsableName = $userObj ? $userObj->name : 'bot_pss';
+                    }
+
+                    $sateliteName = 'VRSS-1';
+                    if (str_contains(strtoupper($inspurTargetDir), 'VRSS-2') || str_contains(strtoupper($source), 'VRSS-2')) {
+                        $sateliteName = 'VRSS-2';
+                    }
+
+                    $gbTransferred = round($stats['total_bytes'] / (1024 * 1024 * 1024), 4);
+                    // Si los bytes fueron 0 pero hay archivos regulares transferidos, estimar el tamaño según la órbita
+                    if ($gbTransferred <= 0 && $stats['files_transferred'] > 0) {
+                        $gbTransferred = round(($stats['files_transferred'] * 268435456) / (1024 * 1024 * 1024), 4);
+                    }
+
+                    $maxLote = \App\Models\NasMigrationStat::where('responsable', $responsableName)->max('lote_numero') ?: 0;
+
+                    \App\Models\NasMigrationStat::create([
+                        'responsable' => $responsableName,
+                        'fecha' => now()->toDateString(),
+                        'satelite' => $sateliteName,
+                        'archivo_id' => $lastProcessedOrbit ?: ('Lote_' . now()->format('Ymd_His')),
+                        'tamano_gb' => $gbTransferred,
+                        'lote_numero' => $maxLote + 1,
+                        'cantidad_archivos' => $stats['files_transferred'],
+                        'observaciones' => "Sincronización NAS ({$triggerType}) - Tarea: {$task->name}" . ($lastProcessedOrbit ? " [Órbita: {$lastProcessedOrbit}]" : ''),
+                        'nas_migration_task_id' => $task->id,
+                        'user_id' => $userId ?: 1,
+                    ]);
+                } catch (\Throwable $statEx) {
+                    Log::warning("No se pudo registrar estadística automática para Tarea #{$task->id}: " . $statEx->getMessage());
+                }
+            }
+
             $task->update([
                 'status' => 'idle',
                 'last_run_status' => $finalTaskSuccess ? 'completed' : 'failed',
