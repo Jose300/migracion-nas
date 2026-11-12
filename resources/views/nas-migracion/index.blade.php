@@ -217,18 +217,18 @@
                                                  aria-valuemin="0" 
                                                  aria-valuemax="100"></div>
                                         </div>
-                                        <div class="d-flex justify-content-between align-items-center mt-1">
-                                            <small class="text-muted" style="font-size: 0.68rem;" id="task-progress-sub-{{ $task->id }}">
-                                                Conectando por SSH y escaneando órbitas en Synology...
+                                        <div class="d-flex justify-content-between align-items-center mt-1 flex-wrap gap-1">
+                                            <small class="text-muted" style="font-size: 0.70rem;" id="task-progress-sub-{{ $task->id }}">
+                                                Copiar desde la órbita: <code class="text-primary fw-bold">{{ $task->last_migrated_orbit ?: 'Primera detectada' }}</code>
                                             </small>
-                                            @if($task->latestLog)
-                                            <button type="button" 
-                                                    class="btn btn-link btn-sm p-0 text-primary text-decoration-none btn-view-live-log" 
-                                                    data-log-url="{{ route('nas-migracion.logs.show', $task->latestLog->id) }}"
-                                                    style="font-size: 0.70rem;">
-                                                <i class="ti ti-terminal me-1"></i> Ver registro en vivo
-                                            </button>
-                                            @endif
+                                            <div class="text-secondary small font-monospace d-flex align-items-center" id="task-progress-timers-{{ $task->id }}" style="font-size: 0.69rem;">
+                                                <span class="badge bg-blue-lt me-1" id="task-timer-elapsed-{{ $task->id }}" title="Tiempo transcurrido">
+                                                    <i class="ti ti-clock me-1"></i> <span class="val-elapsed">00:00</span>
+                                                </span>
+                                                <span class="badge bg-purple-lt" id="task-timer-eta-{{ $task->id }}" title="Tiempo restante estimado">
+                                                    <i class="ti ti-hourglass-low me-1"></i> <span class="val-eta">Estimando...</span>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1388,9 +1388,40 @@ document.addEventListener('DOMContentLoaded', function () {
                 const subLabel = document.getElementById(`task-progress-sub-${taskId}`);
                 if (subLabel) {
                     if (data.current_orbit) {
-                        subLabel.innerHTML = `Órbita actual: <code class="text-primary">${data.current_orbit}</code>`;
+                        subLabel.innerHTML = `Copiar desde la órbita: <code class="text-primary fw-bold">${data.current_orbit}</code>`;
                     } else if (data.live_output) {
                         subLabel.textContent = data.live_output.split("\n").pop() || 'Procesando...';
+                    }
+                }
+
+                // Actualizar Relojes de Tiempo Transcurrido y Tiempo Restante Estimado
+                const elapsedBox = document.getElementById(`task-timer-elapsed-${taskId}`);
+                const etaBox = document.getElementById(`task-timer-eta-${taskId}`);
+
+                if (elapsedBox && data.elapsed_seconds !== undefined) {
+                    const elSec = data.elapsed_seconds;
+                    const elMin = Math.floor(elSec / 60);
+                    const elRemSec = elSec % 60;
+                    const elFmt = (elMin < 10 ? '0' : '') + elMin + ':' + (elRemSec < 10 ? '0' : '') + elRemSec;
+                    elapsedBox.querySelector('.val-elapsed').textContent = elFmt;
+                }
+
+                if (etaBox) {
+                    if (data.estimated_remaining_seconds !== null && data.estimated_remaining_seconds !== undefined) {
+                        const etaSec = data.estimated_remaining_seconds;
+                        if (etaSec > 3600) {
+                            const hours = Math.floor(etaSec / 3600);
+                            const mins = Math.floor((etaSec % 3600) / 60);
+                            etaBox.querySelector('.val-eta').textContent = `~${hours}h ${mins}m restantes`;
+                        } else if (etaSec > 60) {
+                            const mins = Math.floor(etaSec / 60);
+                            const secs = etaSec % 60;
+                            etaBox.querySelector('.val-eta').textContent = `~${mins}m ${secs}s restantes`;
+                        } else {
+                            etaBox.querySelector('.val-eta').textContent = `~${etaSec}s restantes`;
+                        }
+                    } else {
+                        etaBox.querySelector('.val-eta').textContent = 'Calculando ETA...';
                     }
                 }
 

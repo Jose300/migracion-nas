@@ -408,6 +408,18 @@ class NasMigrationController extends Controller
             $percentage = $filesTransferred > 0 ? 10 : 0;
         }
 
+        $startedAtTimestamp = $latestLog && $latestLog->started_at ? $latestLog->started_at->timestamp : null;
+        $elapsedSeconds = $startedAtTimestamp ? max(0, now()->timestamp - $startedAtTimestamp) : 0;
+
+        // Estimación de tiempo restante (ETA) basada en velocidad de archivos procesados
+        $estimatedRemainingSeconds = null;
+        if ($filesTransferred > 0 && $totalFilesInBatch > $filesTransferred && $elapsedSeconds > 3) {
+            $rate = $filesTransferred / $elapsedSeconds; // archivos por segundo
+            if ($rate > 0) {
+                $estimatedRemainingSeconds = (int) round(($totalFilesInBatch - $filesTransferred) / $rate);
+            }
+        }
+
         return response()->json([
             'task_id' => $task->id,
             'status' => $task->status,
@@ -417,11 +429,15 @@ class NasMigrationController extends Controller
             'batch_size' => $batchLimitOrbits,
             'percentage' => $percentage,
             'current_orbit' => $latestLog->latest_processed_orbit ?? $task->last_migrated_orbit,
+            'elapsed_seconds' => $elapsedSeconds,
+            'estimated_remaining_seconds' => $estimatedRemainingSeconds,
             'live_output' => $latestLog ? substr($latestLog->output ?? '', -300) : '',
             'raw_output' => $latestLog ? ($latestLog->output ?? '') : '',
             'latest_log' => $latestLog ? [
                 'id' => $latestLog->id,
                 'status' => $latestLog->status,
+                'started_at' => $latestLog->started_at ? $latestLog->started_at->format('d/m/Y H:i:s') : null,
+                'started_at_ts' => $startedAtTimestamp,
                 'files' => $latestLog->files_transferred,
                 'total_files' => $latestLog->total_files_in_batch,
                 'size' => $latestLog->human_transferred_size,
