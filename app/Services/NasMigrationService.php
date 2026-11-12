@@ -189,8 +189,11 @@ class NasMigrationService
 
             // Subdirectorio destino final en Inspur
             $inspurTargetDir = $overrideInspurDir ?: ($task->inspur_target_dir ?: 'VRSS-1');
-            $inspurFullFinalPath = rtrim($task->inspur_base_path ?: '/HS_IPS_PRIVATE/RDP_FTP/RAWDATA', '/') . '/' . trim($inspurTargetDir, '/') . '/';
+            $cleanSubdir = trim($inspurTargetDir, '/');
+            $inspurFullFinalPath = rtrim($task->inspur_base_path ?: '/HS_IPS_PRIVATE/RDP_FTP/RAWDATA', '/') . '/' . $cleanSubdir . '/';
             $inspurSharedFolder = rtrim($task->inspur_shared_folder ?: '/HS_SHARE/MIGRACION_SYNOLOGY', '/') . '/';
+            // Ruta del montaje NFS en Synology hacia el RAWDATA de Inspur
+            $inspurNfsTarget = "/volume3/dae-RowData/INSPUR_HS_IPS/RDP_FTP/RAWDATA/{$cleanSubdir}";
 
             // Última órbita transferida previamente registrada en la tarea
             $lastOrbit = $task->last_migrated_orbit ? trim($task->last_migrated_orbit) : '';
@@ -202,13 +205,16 @@ class NasMigrationService
                 $pyScript = "import os, sys, subprocess\n\n" .
                     "src = " . var_export($source, true) . "\n" .
                     "tgt = " . var_export($target, true) . "\n" .
+                    "inspur_final = " . var_export($inspurNfsTarget, true) . "\n" .
                     "last_orbit = " . var_export($lastOrbit, true) . "\n" .
                     "limit_orbits = " . (int)$batchLimit . "\n" .
                     "rsync_opts_str = " . var_export($options, true) . "\n" .
                     "batch_file = '/tmp/nas_batch_{$task->id}_' + str(os.getpid()) + '.txt'\n\n" .
-                    "print('=== INICIANDO DETECCION DE ORBITAS Y ARCHIVOS PENDIENTES ===')\n" .
+                    "print('=== INICIANDO DETECCION AUTOMATICA DE ORBITAS Y ARCHIVOS PENDIENTES ===')\n" .
                     "if last_orbit:\n" .
-                    "    print('[INDICE DE REANUDACION] Ultima orbita copiada previamente: ' + last_orbit)\n" .
+                    "    print('[INDICE DE REANUDACION] Ultima orbita registrada: ' + last_orbit)\n" .
+                    "else:\n" .
+                    "    print('[MODO AUTOMATICO] Sin indice manual: escaneando pendientes en RAWDATA e Intermedia...')\n" .
                     "sys.stdout.flush()\n\n" .
                     "if not os.path.exists(src):\n" .
                     "    print('[ERROR] La ruta origen no existe: ' + src)\n" .
@@ -227,8 +233,20 @@ class NasMigrationService
                     "        for f in files:\n" .
                     "            rel = os.path.relpath(os.path.join(root, f), src)\n" .
                     "            orb_files.append(rel)\n" .
-                    "    # Detectar si faltan archivos de esta orbita en el destino\n" .
-                    "    pending = [f for f in orb_files if not os.path.exists(os.path.join(tgt, f))]\n" .
+                    "    # Detectar si faltan archivos considerando tanto la carpeta intermedia como el destino final Inspur RAWDATA\n" .
+                    "    pending = []\n" .
+                    "    for rel_f in orb_files:\n" .
+                    "        full_src = os.path.join(src, rel_f)\n" .
+                    "        full_inter = os.path.join(tgt, rel_f)\n" .
+                    "        full_inspur = os.path.join(inspur_final, rel_f)\n" .
+                    "        src_sz = os.path.getsize(full_src) if os.path.exists(full_src) else -1\n\n" .
+                    "        # Si existe en Inspur RAWDATA con tamano identico -> Ya esta migrado\n" .
+                    "        if os.path.exists(full_inspur) and os.path.getsize(full_inspur) == src_sz:\n" .
+                    "            continue\n" .
+                    "        # Si existe en la carpeta compartida intermedia con tamano identico -> Ya se copio en Fase 1\n" .
+                    "        if os.path.exists(full_inter) and os.path.getsize(full_inter) == src_sz:\n" .
+                    "            continue\n" .
+                    "        pending.append(rel_f)\n\n" .
                     "    if len(pending) == 0:\n" .
                     "        skipped_orbits += 1\n" .
                     "        continue\n" .
