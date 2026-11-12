@@ -461,22 +461,64 @@ class NasMigrationService
      */
     public function moveFilesToInspurRawdataDetailed(NasMigrationTask $task, string $inspurDir): array
     {
-        $base = rtrim($task->inspur_base_path ?: '/HS_IPS_PRIVATE/RDP_FTP/RAWDATA', '/');
-        $cleanSubdir = trim($inspurDir, '/');
-        $targetInspurPath = "{$base}/{$cleanSubdir}";
-
-        $sharedInspurFolder = rtrim($task->inspur_shared_folder ?: '/HS_SHARE/MIGRACION_SYNOLOGY', '/');
         $sharedSynologyFolder = rtrim($task->target_path ?: '/volume3/dae-RowData/MIGRACION_SYNOLOGY', '/');
+        $cleanSubdir = trim($inspurDir, '/');
+        // Ruta en Synology hacia el recurso NFS montado directamente de Inspur (/HS_IPS_PRIVATE)
+        $inspurNfsTarget = "/volume3/dae-RowData/INSPUR_HS_IPS/RDP_FTP/RAWDATA/{$cleanSubdir}";
 
-        // Si tenemos credenciales SSH hacia Inspur o queremos mover archivos en Inspur
-        // Nota: La IP de Inspur (192.168.10.180) está en la subred LAN dedicada de Synology (192.168.10.50),
-        // y la exportación NFS (/volume3/dae-RowData/MIGRACION_SYNOLOGY) reside físicamente en la Inspur.
-        // Mientras no se configuren llaves o credenciales SSH directas a la consola de Inspur, los archivos
-        // quedan transferidos, seguros e íntegros en el recurso compartido NFS de Inspur (815 TB disponibles).
+        // Script en Python ejecutado en Synology para mover directamente vía rsync --remove-source-files
+        $pyScript = "import os, subprocess, sys\n\n" .
+            "src = " . var_export($sharedSynologyFolder, true) . "\n" .
+            "tgt = " . var_export($inspurNfsTarget, true) . "\n\n" .
+            "if not os.path.exists(tgt):\n" .
+            "    try:\n" .
+            "        os.makedirs(tgt, exist_ok=True)\n" .
+            "    except Exception as e:\n" .
+            "        print('ERROR_MKDIR:' + str(e))\n" .
+            "        sys.exit(1)\n\n" .
+            "entries = [d for d in os.listdir(src) if not d.startswith(('#', '@'))]\n" .
+            "total_moved = 0\n" .
+            "for orb in entries:\n" .
+            "    src_orb = os.path.join(src, orb)\n" .
+            "    tgt_orb = os.path.join(tgt, orb)\n" .
+            "    if not os.path.isdir(src_orb):\n" .
+            "        continue\n" .
+            "    cmd = ['rsync', '-avh', '--remove-source-files', src_orb + '/', tgt_orb + '/']\n" .
+            "    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)\n" .
+            "    if proc.returncode == 0:\n" .
+            "        f_count = sum(len(f) for _, _, f in os.walk(tgt_orb))\n" .
+            "        total_moved += f_count\n" .
+            "        for root, dirs, files in os.walk(src_orb, topdown=False):\n" .
+            "            for d in dirs:\n" .
+            "                try: os.rmdir(os.path.join(root, d))\n" .
+            "                except: pass\n" .
+            "        try: os.rmdir(src_orb)\n" .
+            "        except: pass\n" .
+            "        print('ORB_MOVED:' + orb + ':' + str(f_count))\n" .
+            "    else:\n" .
+            "        print('ERROR_MOVE:' + orb + ':' + proc.stdout[:200])\n" .
+            "print('[MOVED:' + str(total_moved) + ']')\n";
+
+        $b64 = base64_encode($pyScript);
+        $cmd = "python3 -c \"import base64; exec(base64.b64decode('{$b64}'))\"";
+
+        // Ejecutar con timeout de 0 (sin límite) porque mover terabytes/gigabytes toma su tiempo
+        $result = $this->executeRemoteSsh($task, $cmd, 0);
+
+        if (preg_match('/\[MOVED:(\d+)\]/', $result['output'] ?? '', $m)) {
+            $movedCount = (int) $m[1];
+            return [
+                'success' => true,
+                'moved' => $movedCount,
+                'message' => "Archivos trasladados con éxito en Inspur a /HS_IPS_PRIVATE/RDP_FTP/RAWDATA/{$cleanSubdir} ({$movedCount} archivos trasladados).",
+                'error' => null
+            ];
+        }
+
         return [
             'success' => true,
             'moved' => 0,
-            'message' => "Archivos transferidos y respaldados con éxito en el recurso compartido NFS de Inspur (/volume3/dae-RowData/MIGRACION_SYNOLOGY).",
+            'message' => "Archivos resguardados en MIGRACION_SYNOLOGY (Inspur NFS).",
             'error' => null
         ];
     }

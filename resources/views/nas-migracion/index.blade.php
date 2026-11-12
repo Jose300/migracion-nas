@@ -381,12 +381,19 @@
                                 </div>
                                 <div class="modal-body">
                                     <div class="row g-3">
+                                        {{-- Sección 1: Datos Generales --}}
+                                        <div class="col-12 border-bottom pb-1 mb-1">
+                                            <h6 class="fw-bold text-primary text-uppercase mb-0" style="letter-spacing: 0.5px; font-size: 0.78rem;">
+                                                <i class="ti ti-settings me-1 text-primary"></i> 1. Información General de la Tarea
+                                            </h6>
+                                        </div>
+
                                         <div class="col-md-8">
-                                            <label class="form-label required">Nombre de la Tarea</label>
+                                            <label class="form-label required fw-bold text-dark">Nombre de la Tarea</label>
                                             <input type="text" name="name" class="form-control" value="{{ old('name', $task->name) }}" required>
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label">Frecuencia Programada</label>
+                                            <label class="form-label fw-bold text-dark">Frecuencia Programada</label>
                                             <select name="schedule_frequency" class="form-select">
                                                 <option value="manual" {{ $task->schedule_frequency === 'manual' ? 'selected' : '' }}>Solo Manual</option>
                                                 <option value="hourly" {{ $task->schedule_frequency === 'hourly' ? 'selected' : '' }}>Cada Hora (Automático)</option>
@@ -396,24 +403,31 @@
                                         </div>
 
                                         <div class="col-12">
-                                            <label class="form-label">Descripción</label>
+                                            <label class="form-label text-muted">Descripción</label>
                                             <input type="text" name="description" class="form-control" value="{{ old('description', $task->description) }}">
                                         </div>
 
+                                        {{-- Sección 2: Conexión SSH Synology --}}
+                                        <div class="col-12 border-bottom pb-1 mt-3 mb-1">
+                                            <h6 class="fw-bold text-azure text-uppercase mb-0" style="letter-spacing: 0.5px; font-size: 0.78rem;">
+                                                <i class="ti ti-terminal-2 me-1 text-azure"></i> 2. Parámetros de Conexión Synology (SSH)
+                                            </h6>
+                                        </div>
+
                                         <div class="col-md-3">
-                                            <label class="form-label required">Host Synology (IP)</label>
+                                            <label class="form-label required fw-bold text-dark">Host Synology (IP)</label>
                                             <input type="text" name="nas_host" class="form-control" value="{{ old('nas_host', $task->nas_host) }}" required>
                                         </div>
                                         <div class="col-md-2">
-                                            <label class="form-label required">Puerto SSH</label>
+                                            <label class="form-label required fw-bold text-dark">Puerto SSH</label>
                                             <input type="number" name="nas_port" class="form-control" value="{{ old('nas_port', $task->nas_port) }}" required>
                                         </div>
                                         <div class="col-md-3">
-                                            <label class="form-label required">Usuario SSH</label>
+                                            <label class="form-label required fw-bold text-dark">Usuario SSH</label>
                                             <input type="text" name="ssh_user" class="form-control" value="{{ old('ssh_user', $task->ssh_user) }}" required>
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label text-truncate" title="Contraseña SSH configurada en la Synology">Contraseña SSH <small class="text-secondary fw-normal">(Opcional)</small></label>
+                                            <label class="form-label text-truncate fw-bold text-dark" title="Contraseña SSH configurada en la Synology">Contraseña SSH <small class="text-secondary fw-normal">(Opcional)</small></label>
                                             <div class="input-group input-group-flat">
                                                 <input type="password" 
                                                        name="ssh_password" 
@@ -430,8 +444,15 @@
                                             </div>
                                         </div>
 
+                                        {{-- Sección 3: Directorios y Rutas de Migración --}}
+                                        <div class="col-12 border-bottom pb-1 mt-3 mb-1">
+                                            <h6 class="fw-bold text-teal text-uppercase mb-0" style="letter-spacing: 0.5px; font-size: 0.78rem;">
+                                                <i class="ti ti-folder-share me-1 text-teal"></i> 3. Rutas de Origen y Destino en NAS Inspur
+                                            </h6>
+                                        </div>
+
                                         <div class="col-md-6">
-                                            <label class="form-label required">Carpeta Origen (Synology)</label>
+                                            <label class="form-label required fw-bold text-dark">Carpeta Origen (Synology)</label>
                                             <select name="source_path" class="form-select" required>
                                                 @php
                                                     $vol2Sources = array_filter($synologyAvailableSources, fn($s) => str_contains($s, 'dae-Volumen2_IPS'));
@@ -480,7 +501,7 @@
                                             <small class="text-secondary">Directorio a migrar desde la NAS Synology (dae-Volumen2_IPS o dae-Volumen4_Respaldo_IPS).</small>
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="form-label required">Carpeta Compartida Intermedia (Destino)</label>
+                                            <label class="form-label required fw-bold text-dark">Carpeta Compartida Intermedia (Destino)</label>
                                             <select name="target_path" class="form-select" required>
                                                 <option value="/volume3/dae-RowData/MIGRACION_SYNOLOGY/" selected>
                                                     dae-RowData &gt; MIGRACION_SYNOLOGY (/volume3/dae-RowData/MIGRACION_SYNOLOGY/)
@@ -490,35 +511,46 @@
                                         </div>
 
                                         <div class="col-md-6">
-                                            <label class="form-label required">Subdirectorio Destino en Inspur (RAWDATA)</label>
-                                            <select name="inspur_target_dir" class="form-select" required>
+                                            <label class="form-label required fw-bold text-success">
+                                                <i class="ti ti-corner-down-right me-1"></i> Subdirectorio Destino en Inspur (RAWDATA)
+                                            </label>
+                                            <select name="inspur_target_dir" class="form-select border-success" required>
                                                 @foreach($inspurAvailableDirs as $dir)
                                                     <option value="{{ $dir }}" {{ (old('inspur_target_dir', $task->inspur_target_dir) == $dir) ? 'selected' : '' }}>
                                                         {{ $dir }}
                                                     </option>
                                                 @endforeach
                                             </select>
-                                            <small class="text-secondary">Ubicación en Inspur: <code>/HS_IPS_PRIVATE/RDP_FTP/RAWDATA/</code></small>
+                                            <small class="text-success fw-semibold">Ubicación final en Inspur: <code>/HS_IPS_PRIVATE/RDP_FTP/RAWDATA/</code></small>
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="form-label">Índice Última Órbita Copiada <small class="text-secondary fw-normal">(Punto de reanudación)</small></label>
+                                            <label class="form-label fw-bold text-dark">Índice Última Órbita Copiada <small class="text-secondary fw-normal">(Punto de reanudación)</small></label>
                                             <input type="text" name="last_migrated_orbit" class="form-control font-monospace" value="{{ old('last_migrated_orbit', $task->last_migrated_orbit) }}" placeholder="Ej: 045974_20260420122113">
                                             <small class="text-secondary">Las sincronizaciones ignorarán duplicados y procesarán a partir de este índice.</small>
                                         </div>
-                                        <div class="col-md-6 d-flex align-items-center pt-3">
+                                        <div class="col-md-12 p-2 rounded bg-success-lt border border-success d-flex align-items-center">
                                             <label class="form-check form-switch m-0">
                                                 <input class="form-check-input" type="checkbox" name="auto_move_to_inspur" value="1" {{ ($task->auto_move_to_inspur ?? true) ? 'checked' : '' }}>
-                                                <span class="form-check-label fw-bold">Mover archivos a Inspur tras copiar a MIGRACION_SYNOLOGY</span>
+                                                <span class="form-check-label fw-bold text-success">
+                                                    <i class="ti ti-truck-delivery me-1"></i> Mover archivos a Inspur RAWDATA tras copiar a MIGRACION_SYNOLOGY (Traslado automático activo)
+                                                </span>
                                             </label>
                                         </div>
 
+                                        {{-- Sección 4: Configuración Avanzada Rsync --}}
+                                        <div class="col-12 border-bottom pb-1 mt-3 mb-1">
+                                            <h6 class="fw-bold text-warning text-uppercase mb-0" style="letter-spacing: 0.5px; font-size: 0.78rem;">
+                                                <i class="ti ti-adjustments-horizontal me-1 text-warning"></i> 4. Parámetros de Transferencia y Lotes
+                                            </h6>
+                                        </div>
+
                                         <div class="col-md-8">
-                                            <label class="form-label">Parámetros Rsync Anti-Cuelgues</label>
+                                            <label class="form-label fw-bold text-dark">Parámetros Rsync Anti-Cuelgues</label>
                                             <input type="text" name="rsync_options" class="form-control" value="{{ old('rsync_options', $task->rsync_options) }}">
                                             <small class="text-secondary">Recomendado: <code>-avh --stats --progress --timeout=300 --partial</code></small>
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label required">Lote de Sincronización</label>
+                                            <label class="form-label required fw-bold text-dark">Lote de Sincronización</label>
                                             <div class="input-group">
                                                 <input type="number" name="batch_size" class="form-control" value="{{ old('batch_size', $task->batch_size ?? 5) }}" min="1" max="1000" required>
                                                 <span class="input-group-text">órbitas</span>
@@ -529,13 +561,13 @@
                                         <div class="col-md-6 d-flex align-items-center pt-2">
                                             <label class="form-check form-switch m-0">
                                                 <input class="form-check-input" type="checkbox" name="delete_after_sync" value="1" {{ $task->delete_after_sync ? 'checked' : '' }}>
-                                                <span class="form-check-label">Purgar borrados (--delete)</span>
+                                                <span class="form-check-label text-danger">Purgar borrados (--delete)</span>
                                             </label>
                                         </div>
                                         <div class="col-md-6 d-flex align-items-center pt-2">
                                             <label class="form-check form-switch m-0">
                                                 <input class="form-check-input" type="checkbox" name="is_active" value="1" {{ $task->is_active ? 'checked' : '' }}>
-                                                <span class="form-check-label fw-bold">Tarea Activa para ejecución</span>
+                                                <span class="form-check-label fw-bold text-primary">Tarea Activa para ejecución</span>
                                             </label>
                                         </div>
 
@@ -730,12 +762,19 @@
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
+                        {{-- Sección 1: Datos Generales --}}
+                        <div class="col-12 border-bottom pb-1 mb-1">
+                            <h6 class="fw-bold text-primary text-uppercase mb-0" style="letter-spacing: 0.5px; font-size: 0.78rem;">
+                                <i class="ti ti-settings me-1 text-primary"></i> 1. Información General de la Tarea
+                            </h6>
+                        </div>
+
                         <div class="col-md-8">
-                            <label class="form-label required">Nombre de la Tarea</label>
+                            <label class="form-label required fw-bold text-dark">Nombre de la Tarea</label>
                             <input type="text" name="name" class="form-control" placeholder="Ej. Copia Diaria Documentos Synology a Inspur" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Frecuencia Automática</label>
+                            <label class="form-label fw-bold text-dark">Frecuencia Automática</label>
                             <select name="schedule_frequency" class="form-select">
                                 <option value="manual">Solo Manual (Vía Botón)</option>
                                 <option value="hourly" selected>Cada Hora (Automático)</option>
@@ -745,24 +784,31 @@
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label">Descripción</label>
+                            <label class="form-label text-muted">Descripción</label>
                             <input type="text" name="description" class="form-control" placeholder="Notas sobre los datos a transferir o VLAN utilizada">
                         </div>
 
+                        {{-- Sección 2: Conexión SSH Synology --}}
+                        <div class="col-12 border-bottom pb-1 mt-3 mb-1">
+                            <h6 class="fw-bold text-azure text-uppercase mb-0" style="letter-spacing: 0.5px; font-size: 0.78rem;">
+                                <i class="ti ti-terminal-2 me-1 text-azure"></i> 2. Parámetros de Conexión Synology (SSH)
+                            </h6>
+                        </div>
+
                         <div class="col-md-3">
-                            <label class="form-label required">Host Synology (IP)</label>
+                            <label class="form-label required fw-bold text-dark">Host Synology (IP)</label>
                             <input type="text" name="nas_host" class="form-control" value="192.168.3.124" required>
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label required">Puerto SSH</label>
+                            <label class="form-label required fw-bold text-dark">Puerto SSH</label>
                             <input type="number" name="nas_port" class="form-control" value="22" required>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label required">Usuario SSH</label>
+                            <label class="form-label required fw-bold text-dark">Usuario SSH</label>
                             <input type="text" name="ssh_user" class="form-control" value="admin" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label required">Contraseña SSH</label>
+                            <label class="form-label required fw-bold text-dark">Contraseña SSH</label>
                             <div class="input-group input-group-flat">
                                 <input type="password" name="ssh_password" id="ssh_password_create" class="form-control" placeholder="Contraseña de la Synology" required>
                                 <span class="input-group-text">
@@ -773,8 +819,15 @@
                             </div>
                         </div>
 
+                        {{-- Sección 3: Directorios y Rutas de Migración --}}
+                        <div class="col-12 border-bottom pb-1 mt-3 mb-1">
+                            <h6 class="fw-bold text-teal text-uppercase mb-0" style="letter-spacing: 0.5px; font-size: 0.78rem;">
+                                <i class="ti ti-folder-share me-1 text-teal"></i> 3. Rutas de Origen y Destino en NAS Inspur
+                            </h6>
+                        </div>
+
                         <div class="col-md-6">
-                            <label class="form-label required">Carpeta Origen (Synology)</label>
+                            <label class="form-label required fw-bold text-dark">Carpeta Origen (Synology)</label>
                             <select name="source_path" class="form-select" required>
                                 <option value="" disabled selected>-- Seleccione Carpeta Origen --</option>
                                 @php
@@ -821,7 +874,7 @@
                             <small class="text-secondary">Directorio a migrar desde la NAS Synology (dae-Volumen2_IPS o dae-Volumen4_Respaldo_IPS).</small>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label required">Carpeta Compartida Intermedia (Destino)</label>
+                            <label class="form-label required fw-bold text-dark">Carpeta Compartida Intermedia (Destino)</label>
                             <select name="target_path" class="form-select" required>
                                 <option value="/volume3/dae-RowData/MIGRACION_SYNOLOGY/" selected>
                                     dae-RowData &gt; MIGRACION_SYNOLOGY (/volume3/dae-RowData/MIGRACION_SYNOLOGY/)
@@ -831,35 +884,46 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label required">Subdirectorio Destino en Inspur (RAWDATA)</label>
-                            <select name="inspur_target_dir" class="form-select" required>
+                            <label class="form-label required fw-bold text-success">
+                                <i class="ti ti-corner-down-right me-1"></i> Subdirectorio Destino en Inspur (RAWDATA)
+                            </label>
+                            <select name="inspur_target_dir" class="form-select border-success" required>
                                 @foreach($inspurAvailableDirs as $dir)
                                     <option value="{{ $dir }}" {{ $dir === 'VRSS-1' ? 'selected' : '' }}>
                                         {{ $dir }}
                                     </option>
                                 @endforeach
                             </select>
-                            <small class="text-secondary">Ubicación en Inspur: <code>/HS_IPS_PRIVATE/RDP_FTP/RAWDATA/</code></small>
+                            <small class="text-success fw-semibold">Ubicación final en Inspur: <code>/HS_IPS_PRIVATE/RDP_FTP/RAWDATA/</code></small>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Índice Última Órbita Copiada <small class="text-secondary fw-normal">(Opcional)</small></label>
+                            <label class="form-label fw-bold text-dark">Índice Última Órbita Copiada <small class="text-secondary fw-normal">(Opcional)</small></label>
                             <input type="text" name="last_migrated_orbit" class="form-control font-monospace" placeholder="Ej: 045974_20260420122113">
                             <small class="text-secondary">Omitirá las anteriores y continuará desde la siguiente en orden.</small>
                         </div>
-                        <div class="col-md-6 d-flex align-items-center pt-3">
+                        <div class="col-md-12 p-2 rounded bg-success-lt border border-success d-flex align-items-center">
                             <label class="form-check form-switch m-0">
                                 <input class="form-check-input" type="checkbox" name="auto_move_to_inspur" value="1" checked>
-                                <span class="form-check-label fw-bold">Mover archivos a Inspur tras copiar a MIGRACION_SYNOLOGY</span>
+                                <span class="form-check-label fw-bold text-success">
+                                    <i class="ti ti-truck-delivery me-1"></i> Mover archivos a Inspur RAWDATA tras copiar a MIGRACION_SYNOLOGY (Traslado automático activo)
+                                </span>
                             </label>
                         </div>
 
+                        {{-- Sección 4: Configuración Avanzada Rsync --}}
+                        <div class="col-12 border-bottom pb-1 mt-3 mb-1">
+                            <h6 class="fw-bold text-warning text-uppercase mb-0" style="letter-spacing: 0.5px; font-size: 0.78rem;">
+                                <i class="ti ti-adjustments-horizontal me-1 text-warning"></i> 4. Parámetros de Transferencia y Lotes
+                            </h6>
+                        </div>
+
                         <div class="col-md-8">
-                            <label class="form-label">Parámetros Rsync Anti-Cuelgues</label>
+                            <label class="form-label fw-bold text-dark">Parámetros Rsync Anti-Cuelgues</label>
                             <input type="text" name="rsync_options" class="form-control" value="-avh --stats --progress --timeout=300 --partial">
                             <small class="text-secondary">Incluye <code>--timeout=300</code> y <code>--partial</code> para evitar bloqueos.</small>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label required">Lote de Sincronización</label>
+                            <label class="form-label required fw-bold text-dark">Lote de Sincronización</label>
                             <div class="input-group">
                                 <input type="number" name="batch_size" class="form-control" value="5" min="1" max="1000" required>
                                 <span class="input-group-text">órbitas</span>
@@ -870,13 +934,13 @@
                         <div class="col-md-6 d-flex align-items-center pt-2">
                             <label class="form-check form-switch m-0">
                                 <input class="form-check-input" type="checkbox" name="delete_after_sync" value="1">
-                                <span class="form-check-label">Purgar borrados (--delete)</span>
+                                <span class="form-check-label text-danger">Purgar borrados (--delete)</span>
                             </label>
                         </div>
                         <div class="col-md-6 d-flex align-items-center pt-2">
                             <label class="form-check form-switch m-0">
                                 <input class="form-check-input" type="checkbox" name="is_active" value="1" checked>
-                                <span class="form-check-label fw-bold">Activar inmediatamente</span>
+                                <span class="form-check-label fw-bold text-primary">Activar inmediatamente</span>
                             </label>
                         </div>
 
