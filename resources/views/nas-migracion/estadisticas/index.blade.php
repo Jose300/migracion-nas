@@ -436,7 +436,18 @@
                                 {{ $records->firstItem() + $index }}
                             </td>
                             <td class="fw-bold text-dark">
-                                {{ $row->responsable }}
+                                @if(strtolower($row->responsable) === 'bot_pss')
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-purple-lt text-purple fw-bold me-1">bot_pss</span>
+                                        @if($row->user)
+                                            <span class="badge bg-light text-dark border small fw-normal" title="Operador que ejecutó la tarea">
+                                                <i class="ti ti-user me-1 text-primary"></i>{{ $row->user->name }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                @else
+                                    {{ $row->responsable }}
+                                @endif
                             </td>
                             <td class="text-secondary small">
                                 <i class="ti ti-calendar me-1"></i>
@@ -1105,11 +1116,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.recent_records && data.recent_records.length > 0) {
                     data.recent_records.forEach(r => {
                         const satBadge = r.satelite === 'VRSS-1' ? 'bg-info-lt' : 'bg-teal-lt';
+                        const operadorBadge = r.operador ? `<span class="badge bg-light text-dark border small ms-1"><i class="ti ti-user me-1 text-primary"></i>${r.operador}</span>` : '';
                         recentTbody.innerHTML += `
                             <tr style="font-size: 0.8rem;">
                                 <td>${r.fecha}</td>
                                 <td><span class="badge ${satBadge} font-monospace" style="font-size: 0.7rem;">${r.satelite}</span></td>
-                                <td><code class="text-primary">${r.archivo_id || '-'}</code></td>
+                                <td><code class="text-primary">${r.archivo_id || '-'}</code> ${operadorBadge}</td>
                                 <td class="text-end font-monospace fw-bold text-dark">${r.tamano_gb}</td>
                                 <td class="text-center font-monospace">${r.cantidad_archivos}</td>
                                 <td class="text-truncate text-secondary" style="max-width: 180px;" title="${r.observaciones}">${r.observaciones}</td>

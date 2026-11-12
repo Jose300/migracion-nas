@@ -82,7 +82,7 @@ class NasStatsController extends Controller
         }
 
         // 4. Listado Detallado de Registros con Filtros
-        $query = NasMigrationStat::with('task')->latest('fecha')->latest('id');
+        $query = NasMigrationStat::with(['task', 'user'])->latest('fecha')->latest('id');
 
         if ($request->filled('responsable') && $request->responsable !== 'all') {
             $query->where('responsable', $request->responsable);
@@ -178,7 +178,8 @@ class NasStatsController extends Controller
             });
 
         // Últimos 8 registros transferidos por este responsable
-        $recentRecords = NasMigrationStat::where('responsable', $responsable)
+        $recentRecords = NasMigrationStat::with('user')
+            ->where('responsable', $responsable)
             ->latest('fecha')
             ->latest('id')
             ->take(8)
@@ -192,6 +193,7 @@ class NasStatsController extends Controller
                     'tamano_gb' => number_format((float) $r->tamano_gb, 4),
                     'cantidad_archivos' => (int) $r->cantidad_archivos,
                     'observaciones' => $r->observaciones ?: 'Sin observaciones',
+                    'operador' => $r->user?->name,
                 ];
             });
 
