@@ -367,15 +367,14 @@ class NasMigrationController extends Controller
             $task->refresh();
         }
 
-        // Auto-recuperación 2: Detección inteligente por PROCESOS ACTIVOS (sin temporizador fijo)
-        // Solo se paraliza si ya no hay ningún proceso de copiado/rsync ejecutándose en la NAS
+        // Auto-recuperación 2: Detección inteligente por PROCESOS ACTIVOS
+        // Solo se paraliza si la tarea lleva más de 3 minutos sin reportar actividad Y no hay ningún proceso en la NAS
         if ($task->status === 'running' && $latestLog && $latestLog->status === 'running') {
             $lastActivity = $latestLog->updated_at ?? $latestLog->started_at;
-            // Verificar cada minuto si hay inactividad en la base de datos
-            if ($lastActivity && $lastActivity->diffInMinutes(now()) >= 1) {
+            if ($lastActivity && $lastActivity->diffInMinutes(now()) >= 3) {
                 $isNasTransferActive = $this->migrationService->isTransferProcessRunningOnNas($task);
                 if ($isNasTransferActive) {
-                    // El proceso de copiado sigue vivo en la NAS transfiriendo; no interrumpir y refrescar marca de vida
+                    // El proceso de copiado/traslado sigue vivo en la NAS transfiriendo; no interrumpir y refrescar marca de vida
                     $latestLog->touch();
                 } else {
                     // No hay procesos de copiado ejecutándose en la NAS: matamos y cerramos la tarea huérfana

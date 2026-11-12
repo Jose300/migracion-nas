@@ -330,7 +330,8 @@ class NasMigrationService
             $moveSummary = '';
 
             if ($success && ($task->auto_move_to_inspur ?? true)) {
-                $moveResult = $this->moveFilesToInspurRawdataDetailed($task, $inspurTargetDir);
+                $log->update(['output' => substr($output . "\n\n[FASE 2 - INSPUR]: Trasladando archivos a RAWDATA/{$inspurTargetDir}...", -5000)]);
+                $moveResult = $this->moveFilesToInspurRawdataDetailed($task, $inspurTargetDir, $log);
                 $filesMoved = $moveResult['moved'];
                 $phaseInspurStatus = $moveResult['success'] ? 'completed' : 'failed';
                 $moveSummary = " | Movidos a Inspur (/HS_IPS_PRIVATE/RDP_FTP/RAWDATA/{$inspurTargetDir}): {$filesMoved}";
@@ -459,7 +460,7 @@ class NasMigrationService
      * hacia la ubicación final en NAS INSPUR: /HS_IPS_PRIVATE/RDP_FTP/RAWDATA/{inspurDir}/
      * Devuelve detalle de éxito y conteo para trazabilidad de fases.
      */
-    public function moveFilesToInspurRawdataDetailed(NasMigrationTask $task, string $inspurDir): array
+    public function moveFilesToInspurRawdataDetailed(NasMigrationTask $task, string $inspurDir, ?NasMigrationLog $log = null): array
     {
         $sharedSynologyFolder = rtrim($task->target_path ?: '/volume3/dae-RowData/MIGRACION_SYNOLOGY', '/');
         $cleanSubdir = trim($inspurDir, '/');
@@ -483,6 +484,8 @@ class NasMigrationService
             "    tgt_orb = os.path.join(tgt, orb)\n" .
             "    if not os.path.isdir(src_orb):\n" .
             "        continue\n" .
+            "    print('TRASLADANDO_ORBITA:' + orb)\n" .
+            "    sys.stdout.flush()\n" .
             "    cmd = ['rsync', '-avh', '--remove-source-files', src_orb + '/', tgt_orb + '/']\n" .
             "    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)\n" .
             "    if proc.returncode == 0:\n" .
@@ -497,13 +500,22 @@ class NasMigrationService
             "        print('ORB_MOVED:' + orb + ':' + str(f_count))\n" .
             "    else:\n" .
             "        print('ERROR_MOVE:' + orb + ':' + proc.stdout[:200])\n" .
-            "print('[MOVED:' + str(total_moved) + ']')\n";
+            "    sys.stdout.flush()\n" .
+            "print('[MOVED:' + str(total_moved) + ']')\n" .
+            "sys.stdout.flush()\n";
 
         $b64 = base64_encode($pyScript);
         $cmd = "python3 -c \"import base64; exec(base64.b64decode('{$b64}'))\"";
 
+        $onMoveOutput = function ($type, $buffer) use ($log) {
+            if ($log) {
+                // Mantener viva la marca de tiempo de la tarea en la BD para que el monitor nunca la confunda con colgada
+                $log->touch();
+            }
+        };
+
         // Ejecutar con timeout de 0 (sin límite) porque mover terabytes/gigabytes toma su tiempo
-        $result = $this->executeRemoteSsh($task, $cmd, 0);
+        $result = $this->executeRemoteSsh($task, $cmd, 0, $onMoveOutput);
 
         if (preg_match('/\[MOVED:(\d+)\]/', $result['output'] ?? '', $m)) {
             $movedCount = (int) $m[1];
@@ -592,7 +604,7 @@ class NasMigrationService
             $pyScript = "import subprocess\n" .
                 "try:\n" .
                 "    out = subprocess.check_output(['ps', 'aux'], text=True)\n" .
-                "    active = any(('rsync' in l and ('--files-from' in l or 'PROGRESS_FILE' in l)) or 'nas_batch' in l for l in out.splitlines() if 'grep' not in l)\n" .
+                "    active = any(('rsync' in l and not l.strip().endswith('--daemon') and 'grep' not in l) or 'nas_batch' in l for l in out.splitlines())\n" .
                 "    print('STATUS_TRANSFER_ACTIVE:' + str(active))\n" .
                 "except Exception:\n" .
                 "    print('STATUS_TRANSFER_ACTIVE:False')\n";
@@ -617,9 +629,9 @@ class NasMigrationService
                 "try:\n" .
                 "    out = subprocess.check_output(['ps', 'aux'], text=True)\n" .
                 "    for line in out.splitlines():\n" .
-                "        if 'grep' in line:\n" .
+                "        if 'grep' in line or line.strip().endswith('--daemon'):\n" .
                 "            continue\n" .
-                "        if ('rsync' in line and ('--files-from' in line or 'PROGRESS_FILE' in line)) or 'nas_batch' in line:\n" .
+                "        if 'rsync' in line or 'nas_batch' in line:\n" .
                 "            parts = line.split()\n" .
                 "            if len(parts) > 1 and parts[1].isdigit():\n" .
                 "                pid = int(parts[1])\n" .
