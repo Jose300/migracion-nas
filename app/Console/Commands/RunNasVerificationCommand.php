@@ -16,7 +16,8 @@ class RunNasVerificationCommand extends Command
     protected $signature = 'nas:verify 
                             {task_id : ID de la tarea de migración a verificar} 
                             {--verification_id= : ID previo del registro de verificación}
-                            {--user_id= : ID del usuario que disparó la verificación}';
+                            {--user_id= : ID del usuario que disparó la verificación}
+                            {--orbit= : Órbita específica a verificar (omite el resto)}';
 
     /**
      * The console command description.
@@ -33,6 +34,8 @@ class RunNasVerificationCommand extends Command
         $taskId = (int) $this->argument('task_id');
         $verificationId = $this->option('verification_id') ? (int) $this->option('verification_id') : null;
         $userId = $this->option('user_id') ? (int) $this->option('user_id') : null;
+        $orbit = $this->option('orbit') ? trim($this->option('orbit')) : null;
+        $specificOrbits = $orbit ? [$orbit] : null;
 
         $task = NasMigrationTask::find($taskId);
 
@@ -41,8 +44,8 @@ class RunNasVerificationCommand extends Command
             return 1;
         }
 
-        $this->info("Iniciando cotejo de archivos para tarea #{$task->id}: {$task->name}...");
-        $verification = $service->runVerification($task, $userId, $verificationId);
+        $this->info("Iniciando cotejo de archivos para tarea #{$task->id}: {$task->name}..." . ($orbit ? " [Órbita: {$orbit}]" : ''));
+        $verification = $service->runVerification($task, $userId, $verificationId, $specificOrbits);
 
         $this->info("Verificación finalizada con estado: {$verification->status}");
         $this->line("Archivos analizados: {$verification->total_files_synology} | Confirmados: {$verification->total_confirmed} ({$verification->confirmed_percentage}%)");

@@ -44,29 +44,41 @@ class NasVerificationController extends Controller
             ->take(15)
             ->get();
 
-        // Consulta de items agrupados por órbita (conglomerado)
+        // Consulta de items agrupados por órbita (conglomerado histórico consolidado)
         $orbitGroups = collect();
-        if ($verification) {
-            $rawItems = $verification->items()->get();
+        if ($selectedTask) {
+            // Traer todos los items de cotejo de esta tarea ordenados cronológicamente
+            // Para que si una órbita fue evaluada en múltiples sesiones, conserve el último estado evaluado
+            $rawItems = NasFileVerificationItem::whereHas('verification', function ($q) use ($selectedTask) {
+                $q->where('nas_migration_task_id', $selectedTask->id);
+            })->latest('id')->get();
 
             $grouped = [];
             foreach ($rawItems as $item) {
                 $parts = explode('/', trim(str_replace('\\', '/', $item->relative_path), '/'));
                 $orbName = $parts[0] ?? 'Varios';
 
+                // Usamos relative_path como clave única para no duplicar archivos si se evaluaron más de una vez
                 if (!isset($grouped[$orbName])) {
                     $grouped[$orbName] = [
                         'orbit' => $orbName,
                         'total_files' => 0,
                         'confirmed_files' => 0,
-                        'failed_files' => 0, // faltantes o discrepancia
+                        'failed_files' => 0,
                         'size_mismatch' => 0,
                         'missing' => 0,
                         'phase1_ok' => 0,
                         'phase2_ok' => 0,
                         'total_bytes' => 0,
+                        'processed_paths' => [],
                     ];
                 }
+
+                // Si este archivo ya se contabilizó desde la sesión más reciente, lo ignoramos
+                if (isset($grouped[$orbName]['processed_paths'][$item->relative_path])) {
+                    continue;
+                }
+                $grouped[$orbName]['processed_paths'][$item->relative_path] = true;
 
                 $grouped[$orbName]['total_files']++;
                 $grouped[$orbName]['total_bytes'] += ($item->synology_size ?: $item->inspur_size ?: 0);
@@ -95,6 +107,7 @@ class NasVerificationController extends Controller
                 $tot = $data['total_files'];
                 $data['percentage'] = $tot > 0 ? round(($data['confirmed_files'] / $tot) * 100, 1) : 0;
                 $data['human_size'] = $this->formatBytes($data['total_bytes']);
+                unset($data['processed_paths']);
                 $orbitGroups->push((object) $data);
             }
 
@@ -140,16 +153,19 @@ class NasVerificationController extends Controller
             'started_at' => now(),
         ]);
 
+        $orbit = $request->input('orbit', $task->last_migrated_orbit);
+        $orbitOpt = !empty($orbit) ? ' --orbit="' . addslashes(trim($orbit)) . '"' : '';
+
         // 2. Despachar comando Artisan desacoplado en segundo plano
         $php = PHP_BINARY;
         $artisan = base_path('artisan');
         $userId = auth()->id() ?? 0;
 
         if (PHP_OS_FAMILY === 'Windows') {
-            $command = "start /B \"\" \"{$php}\" \"{$artisan}\" nas:verify {$task->id} --verification_id={$verification->id} --user_id={$userId} > NUL 2>&1";
+            $command = "start /B \"\" \"{$php}\" \"{$artisan}\" nas:verify {$task->id} --verification_id={$verification->id} --user_id={$userId}{$orbitOpt} > NUL 2>&1";
             pclose(popen($command, 'r'));
         } else {
-            $command = "{$php} \"{$artisan}\" nas:verify {$task->id} --verification_id={$verification->id} --user_id={$userId} > /dev/null 2>&1 &";
+            $command = "{$php} \"{$artisan}\" nas:verify {$task->id} --verification_id={$verification->id} --user_id={$userId}{$orbitOpt} > /dev/null 2>&1 &";
             exec($command);
         }
 
@@ -157,7 +173,7 @@ class NasVerificationController extends Controller
             'success' => true,
             'status' => 'running',
             'verification_id' => $verification->id,
-            'message' => 'El proceso de cotejo y verificación se ha iniciado en segundo plano. Evaluando archivos entre Synology e Inspur.',
+            'message' => 'El proceso de cotejo y verificación se ha iniciado en segundo plano' . (!empty($orbit) ? " para la órbita {$orbit}." : '. Evaluando archivos entre Synology e Inspur.'),
         ]);
     }
 
@@ -168,13 +184,18 @@ class NasVerificationController extends Controller
     {
         $orbitClean = trim($orbit);
         
-        $items = $verification->items()
+        // Buscar los archivos de esta órbita en la sesión indicada o en el histórico de la tarea
+        $items = NasFileVerificationItem::whereHas('verification', function ($q) use ($verification) {
+                $q->where('nas_migration_task_id', $verification->nas_migration_task_id);
+            })
             ->where(function ($q) use ($orbitClean) {
                 $q->where('relative_path', 'like', "{$orbitClean}/%")
                   ->orWhere('relative_path', 'like', "{$orbitClean}\\%")
                   ->orWhere('file_name', 'like', "%{$orbitClean}%");
             })
-            ->get();
+            ->latest('id')
+            ->get()
+            ->unique('relative_path');
 
         $formatted = $items->map(function ($item) {
             return [
