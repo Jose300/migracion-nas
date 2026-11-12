@@ -34,6 +34,13 @@ class NasVerificationService
             $verification = $this->createInitialVerification($task, $userId);
         }
 
+        $activeOrbitLabel = !empty($specificOrbits) ? implode(', ', $specificOrbits) : 'Todas las recientes';
+        $verification->update([
+            'current_orbit' => $activeOrbitLabel,
+            'files_scanned' => 0,
+            'total_files_to_scan' => 0,
+        ]);
+
         $startTime = microtime(true);
 
         try {
@@ -78,9 +85,18 @@ else:
         if os.path.isdir(cand):
             target_dirs.append(cand)
 
+all_files = []
 for sdir in target_dirs:
     for root, dirs, files in os.walk(sdir):
         for f in files:
+            all_files.append((root, f))
+
+total_candidates = len(all_files)
+print(f"VERIFY_TOTAL:{total_candidates}", file=sys.stderr, flush=True)
+
+for idx, (root, f) in enumerate(all_files, 1):
+    if idx % 10 == 0 or idx == total_candidates:
+        print(f"VERIFY_PROGRESS:{idx}:{total_candidates}", file=sys.stderr, flush=True)
             full_src = os.path.join(root, f)
             rel = os.path.relpath(full_src, src).replace('\\', '/')
             full_inter = os.path.join(inter, rel)
@@ -174,7 +190,21 @@ PYEOF;
             $base64Script = base64_encode($pyScript);
             $remoteCmd = "python3 -c \"import base64; exec(base64.b64decode('{$base64Script}').decode('utf-8'))\" \"{$source}\" \"{$intermediate}\" \"{$inspurFinal}\" '{$filterOrbitsJson}'";
 
-            $execResult = $this->migrationService->executeRemoteSsh($task, $remoteCmd, 0);
+            $onVerificationOutput = function ($type, $buffer) use ($verification) {
+                if (preg_match('/VERIFY_TOTAL:(\d+)/', $buffer, $mTot)) {
+                    $verification->update(['total_files_to_scan' => (int) $mTot[1]]);
+                }
+                if (preg_match_all('/VERIFY_PROGRESS:(\d+):(\d+)/', $buffer, $mProg)) {
+                    $lastIdx = end($mProg[1]);
+                    $lastTot = end($mProg[2]);
+                    $verification->update([
+                        'files_scanned' => (int) $lastIdx,
+                        'total_files_to_scan' => (int) $lastTot,
+                    ]);
+                }
+            };
+
+            $execResult = $this->migrationService->executeRemoteSsh($task, $remoteCmd, 0, $onVerificationOutput);
 
             if ($execResult['exit_code'] !== 0 && empty($execResult['output'])) {
                 throw new \Exception($execResult['error'] ?: 'Error de conexión o fallo al ejecutar script en la NAS Synology.');

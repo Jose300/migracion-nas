@@ -153,14 +153,36 @@
         @if($verification->status === 'running')
         <div class="alert alert-warning border-0 shadow-sm mb-4" id="alert-running-box" data-status-url="{{ route('nas-migracion.confirmacion.status', $verification) }}">
             <div class="d-flex align-items-center">
-                <div class="spinner-border text-warning me-3" role="status"></div>
+                <div class="spinner-border text-warning me-3" role="status" style="width: 2.2rem; height: 2.2rem;"></div>
                 <div class="flex-grow-1">
-                    <h4 class="alert-title mb-1 fw-bold">Proceso de Cotejo y Comparación en Curso</h4>
-                    <div class="text-secondary small">
-                        El sistema está leyendo los metadatos de los archivos en la Synology y contrastándolos contra la NAS Inspur. La pantalla se actualizará automáticamente.
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                        <h4 class="alert-title mb-0 fw-bold d-flex align-items-center">
+                            <i class="ti ti-scan me-2 text-warning fs-2"></i>
+                            <span>Proceso de Cotejo y Comparación en Curso</span>
+                            @if($verification->current_orbit)
+                                <span class="badge bg-dark text-white font-monospace ms-2" id="running-orbit-badge">
+                                    <i class="ti ti-satellite me-1 text-warning"></i>Órbita: {{ $verification->current_orbit }}
+                                </span>
+                            @endif
+                        </h4>
+                        <span class="badge bg-warning-lt text-warning fw-bold font-monospace" id="running-progress-counter">
+                            {{ $verification->files_scanned }} / {{ $verification->total_files_to_scan ?: 'Calculando' }} archivos
+                        </span>
                     </div>
-                    <div class="progress progress-sm mt-2">
-                        <div class="progress-bar progress-bar-indeterminate bg-warning"></div>
+
+                    <div class="text-secondary small mb-2" id="running-description-text">
+                        Analizando metadatos e integridad binaria de archivos en <b>NAS Synology</b> frente a <b>Inspur RAWDATA</b>.
+                    </div>
+
+                    @php
+                        $calcPercent = ($verification->total_files_to_scan > 0) 
+                            ? min(100, round(($verification->files_scanned / $verification->total_files_to_scan) * 100)) 
+                            : null;
+                    @endphp
+                    <div class="progress progress-sm">
+                        <div class="progress-bar {{ $calcPercent ? 'bg-warning progress-bar-striped progress-bar-animated' : 'progress-bar-indeterminate bg-warning' }}" 
+                             id="running-progress-bar"
+                             style="width: {{ $calcPercent ? $calcPercent . '%' : '100%' }}"></div>
                     </div>
                 </div>
             </div>
@@ -918,6 +940,24 @@ document.addEventListener('DOMContentLoaded', function () {
             fetch(statusUrl, { headers: { 'Accept': 'application/json' } })
                 .then(res => res.json())
                 .then(data => {
+                    // Actualizar en vivo la órbita activa y el conteo de escaneo
+                    const orbitBadge = document.getElementById('running-orbit-badge');
+                    const counter = document.getElementById('running-progress-counter');
+                    const pbar = document.getElementById('running-progress-bar');
+
+                    if (data.current_orbit && orbitBadge) {
+                        orbitBadge.innerHTML = `<i class="ti ti-satellite me-1 text-warning"></i>Órbita: ${data.current_orbit}`;
+                    }
+
+                    if (counter && data.total_files_to_scan > 0) {
+                        counter.textContent = `${data.files_scanned} / ${data.total_files_to_scan} archivos`;
+                        if (pbar) {
+                            const pct = Math.min(100, Math.round((data.files_scanned / data.total_files_to_scan) * 100));
+                            pbar.className = 'progress-bar bg-warning progress-bar-striped progress-bar-animated';
+                            pbar.style.width = `${pct}%`;
+                        }
+                    }
+
                     if (data.status === 'completed') {
                         clearInterval(pollInterval);
                         Swal.fire({
