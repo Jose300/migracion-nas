@@ -513,7 +513,7 @@
                                             <small class="text-secondary">Carpeta compartida entre ambas NAS: <code>MIGRACION_SYNOLOGY</code></small>
                                         </div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-12">
                                             <label class="form-label required fw-bold text-success text-nowrap d-flex align-items-center">
                                                 <i class="ti ti-corner-down-right me-1"></i> Subdirectorio Destino Inspur (RAWDATA)
                                             </label>
@@ -525,11 +525,6 @@
                                                 @endforeach
                                             </select>
                                             <small class="text-success fw-semibold">Ubicación final en Inspur: <code>/HS_IPS_PRIVATE/RDP_FTP/RAWDATA/</code></small>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label fw-bold text-dark">Índice Última Órbita Copiada <small class="text-secondary fw-normal">(Opcional / Detección Automática)</small></label>
-                                            <input type="text" name="last_migrated_orbit" class="form-control font-monospace" value="{{ old('last_migrated_orbit', $task->last_migrated_orbit) }}" placeholder="En blanco = Auto-detectar pendientes en Inspur">
-                                            <small class="text-secondary">Si se deja en blanco, detecta automáticamente la siguiente órbita pendiente en Inspur RAWDATA.</small>
                                         </div>
                                         <div class="col-md-12 p-2 rounded bg-success-lt border border-success d-flex align-items-center">
                                             <label class="form-check form-switch m-0">
@@ -886,7 +881,7 @@
                             <small class="text-secondary">Carpeta compartida entre ambas NAS: <code>MIGRACION_SYNOLOGY</code></small>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <label class="form-label required fw-bold text-success text-nowrap d-flex align-items-center">
                                 <i class="ti ti-corner-down-right me-1"></i> Subdirectorio Destino Inspur (RAWDATA)
                             </label>
@@ -898,11 +893,6 @@
                                 @endforeach
                             </select>
                             <small class="text-success fw-semibold">Ubicación final en Inspur: <code>/HS_IPS_PRIVATE/RDP_FTP/RAWDATA/</code></small>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark">Índice Última Órbita Copiada <small class="text-secondary fw-normal">(Opcional / Detección Automática)</small></label>
-                            <input type="text" name="last_migrated_orbit" class="form-control font-monospace" placeholder="En blanco = Auto-detectar pendientes en Inspur">
-                            <small class="text-secondary">Si se deja en blanco, detecta automáticamente la siguiente órbita pendiente en Inspur RAWDATA.</small>
                         </div>
                         <div class="col-md-12 p-2 rounded bg-success-lt border border-success d-flex align-items-center">
                             <label class="form-check form-switch m-0">
