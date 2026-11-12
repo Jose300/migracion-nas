@@ -65,8 +65,6 @@ class NasFileVerificationItem extends Model
         }
         return $this->formatBytes($this->inspur_size);
     }
-        return $this->formatBytes($this->inspur_size);
-    }
 
     public function getNameMatchAttribute(): bool
     {
