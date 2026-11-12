@@ -221,35 +221,6 @@ PYEOF;
 
         return $verification;
     }
-            $this->saveVerificationItems($verification, $itemsData);
-
-            $duration = (int) round(microtime(true) - $startTime);
-
-            $verification->update([
-                'status' => 'completed',
-                'finished_at' => now(),
-                'duration_seconds' => $duration,
-                'total_bytes_synology' => $parsed['total_src_bytes'] ?? 0,
-                'total_bytes_inspur' => $parsed['total_tgt_bytes'] ?? 0,
-                'summary' => "Verificación completada: {$verification->total_confirmed} confirmados de {$verification->total_files_synology} archivos examinados.",
-                'error_message' => null,
-            ]);
-
-        } catch (\Throwable $e) {
-            $duration = (int) round(microtime(true) - $startTime);
-
-            $verification->update([
-                'status' => 'failed',
-                'finished_at' => now(),
-                'duration_seconds' => $duration,
-                'error_message' => $e->getMessage(),
-            ]);
-
-            Log::error("Error en verificación NAS [Task #{$task->id}]: " . $e->getMessage());
-        }
-
-        return $verification;
-    }
 
     /**
      * Genera una verificación de prueba/simulación con archivos representativos
