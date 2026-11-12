@@ -211,6 +211,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/{verification}/resumen-orbitas', [App\Http\Controllers\NasVerificationController::class, 'getOrbitSummary'])
                 ->middleware('permission:ver-confirmacion-nas')->name('orbit-summary');
 
+            Route::get('/{verification}/orbitas/{orbit}/archivos', [App\Http\Controllers\NasVerificationController::class, 'getOrbitFiles'])
+                ->middleware('permission:ver-confirmacion-nas')->name('orbit-files');
+
             Route::post('/simular/{task}', [App\Http\Controllers\NasVerificationController::class, 'simulate'])
                 ->middleware('permission:ejecutar-confirmacion-nas')->name('simulate');
 

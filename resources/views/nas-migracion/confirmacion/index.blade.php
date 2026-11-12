@@ -196,17 +196,17 @@
             </div>
         </div>
 
-        {{-- Tabla de Archivos Comparados --}}
+        {{-- Tabla de Cotejo Agrupado por Órbita (Conglomerado) --}}
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white py-3">
                 <div class="row align-items-center g-2">
                     <div class="col-md-4">
                         <h3 class="card-title text-dark fw-bold mb-0 d-flex align-items-center">
-                            <i class="ti ti-table me-2 text-primary fs-2"></i> Cotejo Detallado de Archivos
+                            <i class="ti ti-folders me-2 text-primary fs-2"></i> Resumen de Cotejo por Órbita
                         </h3>
                         @if($verification)
-                        <small class="text-secondary">
-                            Sesión #{{ $verification->id }} &bull; Ejecutado el {{ $verification->started_at->format('d/m/Y H:i:s') }}
+                        <small class="text-secondary d-block mt-1">
+                            Sesión #{{ $verification->id }} &bull; Ejecutado el {{ $verification->started_at ? $verification->started_at->format('d/m/Y H:i:s') : '-' }} 
                             ({{ $verification->duration_formatted }})
                         </small>
                         @endif
@@ -222,15 +222,13 @@
 
                             <div class="input-icon" style="width: 240px;">
                                 <span class="input-icon-addon"><i class="ti ti-search"></i></span>
-                                <input type="text" name="search" class="form-control form-control-sm" placeholder="Buscar por nombre o ruta..." value="{{ request('search') }}">
+                                <input type="text" name="search" class="form-control form-control-sm" placeholder="Buscar por órbita..." value="{{ request('search') }}">
                             </div>
 
                             <select name="status" class="form-select form-select-sm" style="width: 190px;" onchange="this.form.submit()">
-                                <option value="all">Todos los Estados</option>
-                                <option value="confirmed" {{ request('status') === 'confirmed' ? 'selected' : '' }}>✅ Confirmados (Idénticos)</option>
-                                <option value="missing_target" {{ request('status') === 'missing_target' ? 'selected' : '' }}>❌ Faltantes en Inspur</option>
-                                <option value="size_mismatch" {{ request('status') === 'size_mismatch' ? 'selected' : '' }}>⚠️ Diferencia de Tamaño</option>
-                                <option value="date_mismatch" {{ request('status') === 'date_mismatch' ? 'selected' : '' }}>🕒 Diferencia de Fecha</option>
+                                <option value="all">Todas las Órbitas</option>
+                                <option value="confirmed" {{ request('status') === 'confirmed' ? 'selected' : '' }}>✅ 100% Correctas</option>
+                                <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>⚠️ Con Archivos Fallidos</option>
                             </select>
 
                             <button type="submit" class="btn btn-outline-secondary btn-sm">Filtrar</button>
@@ -248,161 +246,137 @@
                 <table class="table table-vcenter table-hover card-table">
                     <thead>
                         <tr>
-                            <th style="min-width: 220px;">Archivo / Ruta Relativa</th>
-                            <th style="min-width: 140px;">1. Synology (Origen)</th>
-                            <th class="text-center" style="min-width: 130px;">
-                                <span class="badge bg-purple-lt text-purple d-block py-1">
-                                    Fase 1: MIGRACION_SYNOLOGY
+                            <th style="min-width: 220px;">Órbita / Directorio</th>
+                            <th class="text-center" style="min-width: 110px;">Total Archivos</th>
+                            <th class="text-center" style="min-width: 110px;">
+                                <span class="badge bg-green-lt text-green d-block py-1">
+                                    <i class="ti ti-check me-1"></i> Correctos
                                 </span>
                             </th>
                             <th class="text-center" style="min-width: 130px;">
-                                <span class="badge bg-teal-lt text-teal d-block py-1">
-                                    Fase 2: Inspur RAWDATA
+                                <span class="badge bg-danger-lt text-danger d-block py-1">
+                                    <i class="ti ti-alert-triangle me-1"></i> Fallidos / Faltantes
                                 </span>
                             </th>
-                            <th class="text-center" style="min-width: 130px;">Parámetros</th>
-                            <th class="text-center" style="min-width: 130px;">Veredicto Final</th>
-                            <th class="text-end" style="width: 70px;">Acción</th>
+                            <th class="text-center" style="min-width: 150px;">Fase 1 (Intermedia)</th>
+                            <th class="text-center" style="min-width: 150px;">Fase 2 (Inspur RAWDATA)</th>
+                            <th class="text-center" style="min-width: 100px;">Tamaño</th>
+                            <th class="text-center" style="min-width: 120px;">Estado</th>
+                            <th class="text-end" style="width: 110px;">Acción</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($items as $item)
+                        @forelse($orbitGroups as $orb)
+                        @php
+                            $isOk = ($orb->failed_files === 0 && $orb->total_files > 0);
+                            $p1Percent = $orb->total_files > 0 ? round(($orb->phase1_ok / $orb->total_files) * 100) : 0;
+                            $p2Percent = $orb->total_files > 0 ? round(($orb->phase2_ok / $orb->total_files) * 100) : 0;
+                        @endphp
                         <tr>
+                            {{-- Órbita --}}
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <span class="avatar avatar-xs bg-azure-lt text-azure rounded me-2">
-                                        <i class="ti ti-file fs-4"></i>
+                                    <span class="avatar avatar-xs bg-primary-lt text-primary rounded me-2">
+                                        <i class="ti ti-satellite fs-4"></i>
                                     </span>
-                                    <div class="text-truncate" style="max-width: 280px;">
-                                        <span class="fw-bold text-dark d-block text-truncate" title="{{ $item->file_name }}">
-                                            {{ $item->file_name }}
+                                    <div>
+                                        <span class="fw-bold font-monospace text-dark d-block" style="font-size: 0.95rem;">
+                                            {{ $orb->orbit }}
                                         </span>
-                                        <code class="text-secondary small text-truncate d-block" title="{{ $item->relative_path }}">
-                                            {{ $item->relative_path }}
-                                        </code>
+                                        <small class="text-secondary">Directorio de órbita</small>
                                     </div>
                                 </div>
                             </td>
 
-                            {{-- Synology (Origen) --}}
+                            {{-- Total Archivos --}}
+                            <td class="text-center">
+                                <span class="badge bg-secondary-lt fw-bold fs-3">
+                                    {{ number_format($orb->total_files) }}
+                                </span>
+                            </td>
+
+                            {{-- Correctos --}}
+                            <td class="text-center">
+                                <span class="badge bg-green-lt text-green fw-bold fs-3">
+                                    <i class="ti ti-circle-check me-1"></i> {{ number_format($orb->confirmed_files) }}
+                                </span>
+                            </td>
+
+                            {{-- Fallidos --}}
+                            <td class="text-center">
+                                @if($orb->failed_files > 0)
+                                    <span class="badge bg-danger text-white fw-bold fs-3">
+                                        <i class="ti ti-alert-triangle me-1"></i> {{ number_format($orb->failed_files) }}
+                                    </span>
+                                @else
+                                    <span class="badge bg-green-lt text-green">0</span>
+                                @endif
+                            </td>
+
+                            {{-- Fase 1 --}}
                             <td>
-                                <div class="fw-semibold text-dark">{{ $item->human_synology_size }}</div>
-                                <div class="text-secondary small font-monospace">
-                                    {{ $item->synology_mtime ? $item->synology_mtime->format('d/m/Y H:i:s') : '-' }}
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <small class="text-secondary">Synology &rarr; Intermedia</small>
+                                    <span class="badge bg-green-lt text-green fw-bold" style="font-size: 0.72rem;">
+                                        {{ $orb->phase1_ok }} / {{ $orb->total_files }}
+                                    </span>
                                 </div>
-                                <small class="text-muted" style="font-size: 0.72rem;">{{ number_format($item->synology_size) }} B</small>
-                            </td>
-
-                            {{-- Fase 1: Synology -> MIGRACION_SYNOLOGY --}}
-                            <td class="text-center">
-                                @if($item->phase1_status === 'confirmed')
-                                    <span class="badge bg-success text-white py-1 px-2 d-inline-flex align-items-center">
-                                        <i class="ti ti-check me-1"></i> Copiado OK
-                                    </span>
-                                    <div class="text-muted small mt-1 font-monospace" style="font-size: 0.7rem;">
-                                        Tamaño verificado
-                                    </div>
-                                @elseif($item->phase1_status === 'size_mismatch')
-                                    <span class="badge bg-danger text-white py-1 px-2">
-                                        <i class="ti ti-alert-triangle me-1"></i> Dif. Tamaño
-                                    </span>
-                                @elseif($item->phase1_status === 'pending')
-                                    <span class="badge bg-warning text-dark py-1 px-2">
-                                        <i class="ti ti-clock me-1"></i> En Proceso
-                                    </span>
-                                @else
-                                    <span class="badge bg-secondary-lt text-secondary py-1 px-2">
-                                        <i class="ti ti-minus me-1"></i> No detectado
-                                    </span>
-                                @endif
-                            </td>
-
-                            {{-- Fase 2: MIGRACION_SYNOLOGY -> Inspur RAWDATA --}}
-                            <td class="text-center">
-                                @if($item->phase2_status === 'confirmed' || $item->status === 'confirmed')
-                                    <span class="badge bg-teal text-white py-1 px-2 d-inline-flex align-items-center">
-                                        <i class="ti ti-circle-check me-1"></i> RAWDATA OK
-                                    </span>
-                                    <div class="text-muted small mt-1 font-monospace" style="font-size: 0.7rem;">
-                                        {{ $item->human_inspur_size }}
-                                    </div>
-                                @elseif($item->phase2_status === 'size_mismatch')
-                                    <span class="badge bg-danger text-white py-1 px-2">
-                                        <i class="ti ti-alert-triangle me-1"></i> Truncado
-                                    </span>
-                                @else
-                                    <span class="badge bg-danger-lt text-danger py-1 px-2">
-                                        <i class="ti ti-x me-1"></i> Pendiente
-                                    </span>
-                                @endif
-                            </td>
-
-                            {{-- Parámetros evaluados --}}
-                            <td class="text-center">
-                                <div class="d-inline-flex gap-1" style="font-size: 0.74rem;">
-                                    <span class="badge bg-green-lt text-green" title="Nombre de archivo idéntico">
-                                        <i class="ti ti-check"></i> Nom
-                                    </span>
-                                    @if($item->size_match || $item->phase2_status === 'confirmed')
-                                        <span class="badge bg-green-lt text-green" title="Tamaño en bytes idéntico">
-                                            <i class="ti ti-check"></i> Tam
-                                        </span>
-                                    @else
-                                        <span class="badge bg-danger-lt text-danger" title="Discrepancia en tamaño">
-                                            <i class="ti ti-x"></i> Tam
-                                        </span>
-                                    @endif
+                                <div class="progress progress-xs">
+                                    <div class="progress-bar bg-success" style="width: {{ $p1Percent }}%"></div>
                                 </div>
                             </td>
 
-                            {{-- Veredicto Final --}}
+                            {{-- Fase 2 --}}
+                            <td>
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <small class="text-secondary">Intermedia &rarr; Inspur</small>
+                                    <span class="badge {{ $p2Percent === 100 ? 'bg-green-lt text-green' : 'bg-azure-lt text-azure' }} fw-bold" style="font-size: 0.72rem;">
+                                        {{ $orb->phase2_ok }} / {{ $orb->total_files }}
+                                    </span>
+                                </div>
+                                <div class="progress progress-xs">
+                                    <div class="progress-bar {{ $p2Percent === 100 ? 'bg-success' : 'bg-primary' }}" style="width: {{ $p2Percent }}%"></div>
+                                </div>
+                            </td>
+
+                            {{-- Tamaño --}}
                             <td class="text-center">
-                                @if($item->status === 'confirmed')
+                                <span class="badge bg-light text-dark border font-monospace fw-bold">{{ $orb->human_size }}</span>
+                            </td>
+
+                            {{-- Estado --}}
+                            <td class="text-center">
+                                @if($isOk)
                                     <span class="badge bg-green-lt text-green fw-bold px-2 py-1">
-                                        <i class="ti ti-circle-check me-1"></i> 100% Confirmado
-                                    </span>
-                                @elseif($item->status === 'pending_move')
-                                    <span class="badge bg-azure-lt text-azure fw-bold px-2 py-1">
-                                        <i class="ti ti-arrow-right me-1"></i> En Carpeta Intermedia
-                                    </span>
-                                @elseif($item->status === 'size_mismatch')
-                                    <span class="badge bg-danger-lt text-danger fw-bold px-2 py-1">
-                                        <i class="ti ti-alert-triangle me-1"></i> Error Tamaño
+                                        <i class="ti ti-check me-1"></i> 100% OK
                                     </span>
                                 @else
-                                    <span class="badge bg-danger-lt text-danger fw-bold px-2 py-1">
-                                        <i class="ti ti-circle-x me-1"></i> Faltante
+                                    <span class="badge bg-warning-lt text-warning fw-bold px-2 py-1">
+                                        <i class="ti ti-alert-triangle me-1"></i> Incompleta ({{ $orb->percentage }}%)
                                     </span>
                                 @endif
                             </td>
 
-                            {{-- Acción / Modal Detalle --}}
+                            {{-- Acción: Ver detalle de archivos de la órbita --}}
                             <td class="text-end">
                                 <button type="button" 
-                                        class="btn btn-outline-info btn-sm btn-inspect-file"
-                                        data-name="{{ $item->file_name }}"
-                                        data-path="{{ $item->relative_path }}"
-                                        data-src-size="{{ $item->human_synology_size }} ({{ number_format($item->synology_size) }} bytes)"
-                                        data-src-date="{{ $item->synology_mtime ? $item->synology_mtime->format('d/m/Y H:i:s') : '-' }}"
-                                        data-tgt-size="{{ $item->human_inspur_size }} ({{ $item->inspur_size !== null ? number_format($item->inspur_size) . ' bytes' : 'N/A' }})"
-                                        data-tgt-date="{{ $item->inspur_mtime ? $item->inspur_mtime->format('d/m/Y H:i:s') : '-' }}"
-                                        data-status-label="{{ $item->status_label }}"
-                                        data-status-class="{{ $item->status_badge_class }}"
-                                        title="Ver comparación técnica detallada">
-                                    <i class="ti ti-eye"></i>
+                                        class="btn btn-outline-primary btn-sm fw-bold btn-ver-detalle-orbita"
+                                        data-orbit="{{ $orb->orbit }}"
+                                        data-url="{{ route('nas-migracion.confirmacion.orbit-files', ['verification' => $verification->id, 'orbit' => $orb->orbit]) }}">
+                                    <i class="ti ti-list-details me-1"></i> Ver Detalle
                                 </button>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-secondary">
+                            <td colspan="9" class="text-center py-5 text-secondary">
                                 @if(!$verification)
                                     <i class="ti ti-scan text-secondary fs-1 mb-2 d-block"></i>
                                     <p class="fw-semibold mb-1">Aún no se ha realizado ninguna verificación para esta tarea.</p>
                                     <small class="text-muted">Haz clic en <strong>"Verificar y Comparar Ahora"</strong> o <strong>"Simular Cotejo"</strong> para contrastar los archivos.</small>
                                 @else
-                                    <i class="ti ti-file-search text-secondary fs-1 mb-2 d-block"></i>
-                                    <p class="fw-semibold mb-0">No se encontraron archivos que coincidan con los filtros aplicados.</p>
+                                    <i class="ti ti-folder-off text-secondary fs-1 mb-2 d-block"></i>
+                                    <p class="fw-semibold mb-0">No se encontraron órbitas que coincidan con los filtros aplicados.</p>
                                 @endif
                             </td>
                         </tr>
@@ -410,10 +384,6 @@
                     </tbody>
                 </table>
             </div>
-
-            @if(isset($items) && $verification)
-                @include('partials.datatable-pagination', ['paginator' => $items, 'label' => 'archivos cotejados'])
-            @endif
         </div>
 
         {{-- Historial de Verificaciones Previas --}}
@@ -655,6 +625,118 @@
                                     </tr>
                                 </thead>
                                 <tbody id="m-orbit-tbody">
+                                    {{-- Se rellena vía JS --}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white">
+                <button type="button" class="btn btn-danger fw-bold" data-bs-dismiss="modal">
+                    <i class="ti ti-x me-1"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Detalle de Archivos de una Órbita Específica --}}
+<div class="modal fade" id="modal-detalle-archivos-orbita" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-primary text-white py-3">
+                <div>
+                    <h5 class="modal-title fw-bold d-flex align-items-center mb-0">
+                        <i class="ti ti-satellite me-2 fs-2"></i> 
+                        Detalle de Archivos: <span id="m-det-orbit-title" class="font-monospace ms-2 text-warning"></span>
+                    </h5>
+                    <small class="text-white-50">Listado exhaustivo de archivos cotejados, estados de replicación y fallos individuales</small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                {{-- Spinner de carga --}}
+                <div id="m-det-loader" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="text-secondary mt-3 fw-bold">Obteniendo archivos de la órbita...</p>
+                </div>
+
+                {{-- Contenido cuando está listo --}}
+                <div id="m-det-content" style="display: none;">
+                    {{-- KPIs de la Órbita --}}
+                    <div class="row g-3 mb-3">
+                        <div class="col-sm-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <span class="text-secondary small fw-bold text-uppercase d-block">Total Archivos</span>
+                                        <h3 class="text-dark fw-bold mb-0" id="m-det-total">0</h3>
+                                    </div>
+                                    <span class="avatar avatar-md bg-secondary-lt text-secondary rounded">
+                                        <i class="ti ti-files fs-2"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <span class="text-secondary small fw-bold text-uppercase d-block">Correctos (100% OK)</span>
+                                        <h3 class="text-success fw-bold mb-0" id="m-det-correct">0</h3>
+                                    </div>
+                                    <span class="avatar avatar-md bg-green-lt text-green rounded">
+                                        <i class="ti ti-circle-check fs-2"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <span class="text-secondary small fw-bold text-uppercase d-block">Fallidos / Con Diferencias</span>
+                                        <h3 class="text-danger fw-bold mb-0" id="m-det-failed">0</h3>
+                                    </div>
+                                    <span class="avatar avatar-md bg-danger-lt text-danger rounded">
+                                        <i class="ti ti-alert-triangle fs-2"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Filtro rápido de la tabla en vivo --}}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary active btn-filter-orbit-files" data-filter="all">Todos (<span id="count-all">0</span>)</button>
+                            <button type="button" class="btn btn-outline-danger btn-filter-orbit-files" data-filter="failed">Solo Fallidos (<span id="count-failed">0</span>)</button>
+                            <button type="button" class="btn btn-outline-success btn-filter-orbit-files" data-filter="ok">Solo Correctos (<span id="count-ok">0</span>)</button>
+                        </div>
+                        <div class="input-icon" style="width: 250px;">
+                            <span class="input-icon-addon"><i class="ti ti-search"></i></span>
+                            <input type="text" id="m-det-search-input" class="form-control form-control-sm" placeholder="Buscar en esta órbita...">
+                        </div>
+                    </div>
+
+                    {{-- Tabla de Archivos Individuales --}}
+                    <div class="card border-0 shadow-sm">
+                        <div class="table-responsive" style="max-height: 480px;">
+                            <table class="table table-vcenter table-hover mb-0 card-table" id="m-det-table">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th>Archivo / Subcanal</th>
+                                        <th>Synology (Origen)</th>
+                                        <th class="text-center">Fase 1 (Intermedia)</th>
+                                        <th class="text-center">Fase 2 (Inspur RAWDATA)</th>
+                                        <th class="text-center">Parámetros</th>
+                                        <th class="text-center">Veredicto</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="m-det-tbody">
                                     {{-- Se rellena vía JS --}}
                                 </tbody>
                             </table>
@@ -993,6 +1075,162 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 });
         });
+    });
+
+    // 6. Modal Detalle de Archivos de una Órbita (conglomerado -> archivos individuales)
+    const detailModalEl = document.getElementById('modal-detalle-archivos-orbita');
+    const detailModal = new bootstrap.Modal(detailModalEl);
+    let currentOrbitFiles = [];
+    let currentActiveFilter = 'all';
+
+    function renderDetailTable() {
+        const tbody = document.getElementById('m-det-tbody');
+        tbody.innerHTML = '';
+        const searchVal = (document.getElementById('m-det-search-input').value || '').toLowerCase().trim();
+
+        let filtered = currentOrbitFiles.filter(f => {
+            if (currentActiveFilter === 'ok' && f.is_failed) return false;
+            if (currentActiveFilter === 'failed' && !f.is_failed) return false;
+            if (searchVal && !f.file_name.toLowerCase().includes(searchVal) && !f.relative_path.toLowerCase().includes(searchVal)) {
+                return false;
+            }
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-secondary">
+                        <i class="ti ti-file-search fs-1 d-block mb-2 text-muted"></i>
+                        No hay archivos que coincidan con el filtro actual.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        filtered.forEach(item => {
+            const tr = document.createElement('tr');
+            if (item.is_failed) {
+                tr.classList.add('table-danger');
+            }
+
+            // Fase 1 badge
+            let f1Badge = `<span class="badge bg-secondary-lt text-secondary">No detectado</span>`;
+            if (item.phase1_status === 'confirmed') {
+                f1Badge = `<span class="badge bg-success text-white py-1 px-2"><i class="ti ti-check me-1"></i> Copiado OK</span>`;
+            } else if (item.phase1_status === 'size_mismatch') {
+                f1Badge = `<span class="badge bg-danger text-white py-1 px-2"><i class="ti ti-alert-triangle me-1"></i> Dif. Tamaño</span>`;
+            } else if (item.phase1_status === 'moved_to_inspur') {
+                f1Badge = `<span class="badge bg-teal-lt text-teal py-1 px-2"><i class="ti ti-truck-delivery me-1"></i> Trasladado a Inspur</span>`;
+            }
+
+            // Fase 2 badge
+            let f2Badge = `<span class="badge bg-danger-lt text-danger py-1 px-2"><i class="ti ti-x me-1"></i> Pendiente</span>`;
+            if (item.phase2_status === 'confirmed') {
+                f2Badge = `<span class="badge bg-teal text-white py-1 px-2"><i class="ti ti-circle-check me-1"></i> RAWDATA OK</span><div class="small text-muted font-monospace mt-1">${item.human_inspur_size}</div>`;
+            } else if (item.phase2_status === 'size_mismatch') {
+                f2Badge = `<span class="badge bg-danger text-white py-1 px-2"><i class="ti ti-alert-triangle me-1"></i> Truncado</span>`;
+            }
+
+            // Veredicto
+            let verdictBadge = item.is_failed
+                ? `<span class="badge bg-danger text-white fw-bold px-2 py-1"><i class="ti ti-alert-triangle me-1"></i> Fallido</span>`
+                : `<span class="badge bg-green-lt text-green fw-bold px-2 py-1"><i class="ti ti-circle-check me-1"></i> 100% OK</span>`;
+
+            tr.innerHTML = `
+                <td>
+                    <div class="d-flex align-items-center">
+                        <span class="avatar avatar-xs ${item.is_failed ? 'bg-danger text-white' : 'bg-azure-lt text-azure'} rounded me-2">
+                            <i class="ti ${item.is_failed ? 'ti-alert-circle' : 'ti-file'}"></i>
+                        </span>
+                        <div class="text-truncate" style="max-width: 320px;">
+                            <span class="fw-bold text-dark d-block text-truncate" title="${item.file_name}">${item.file_name}</span>
+                            <small class="text-secondary font-monospace d-block text-truncate" title="${item.relative_path}">${item.relative_path}</small>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="fw-bold text-dark">${item.human_synology_size}</div>
+                    <small class="text-secondary font-monospace">${item.synology_mtime}</small>
+                </td>
+                <td class="text-center">${f1Badge}</td>
+                <td class="text-center">${f2Badge}</td>
+                <td class="text-center">
+                    <span class="badge ${item.name_match ? 'bg-green-lt text-green' : 'bg-danger-lt text-danger'} me-1">Nom</span>
+                    <span class="badge ${item.size_match || item.phase2_status === 'confirmed' ? 'bg-green-lt text-green' : 'bg-danger-lt text-danger'}">Tam</span>
+                </td>
+                <td class="text-center">${verdictBadge}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Listener para abrir el detalle de la órbita
+    document.querySelectorAll('.btn-ver-detalle-orbita').forEach(button => {
+        button.addEventListener('click', function () {
+            const orbitName = this.getAttribute('data-orbit');
+            const url = this.getAttribute('data-url');
+            if (!url) return;
+
+            document.getElementById('m-det-orbit-title').textContent = orbitName;
+            document.getElementById('m-det-loader').style.display = 'block';
+            document.getElementById('m-det-content').style.display = 'none';
+            document.getElementById('m-det-search-input').value = '';
+            currentActiveFilter = 'all';
+            document.querySelectorAll('.btn-filter-orbit-files').forEach(b => b.classList.remove('active'));
+            document.querySelector('.btn-filter-orbit-files[data-filter="all"]').classList.add('active');
+
+            detailModal.show();
+
+            fetch(url, { credentials: 'same-origin' })
+                .then(res => {
+                    if (!res.ok) throw new Error('Error al consultar archivos de la órbita');
+                    return res.json();
+                })
+                .then(data => {
+                    if (!data.success) throw new Error(data.message || 'Error en respuesta');
+
+                    currentOrbitFiles = data.files || [];
+
+                    document.getElementById('m-det-total').textContent = Number(data.total_files || 0).toLocaleString();
+                    document.getElementById('m-det-correct').textContent = Number(data.correct_count || 0).toLocaleString();
+                    document.getElementById('m-det-failed').textContent = Number(data.failed_count || 0).toLocaleString();
+
+                    document.getElementById('count-all').textContent = data.total_files || 0;
+                    document.getElementById('count-failed').textContent = data.failed_count || 0;
+                    document.getElementById('count-ok').textContent = data.correct_count || 0;
+
+                    renderDetailTable();
+
+                    document.getElementById('m-det-loader').style.display = 'none';
+                    document.getElementById('m-det-content').style.display = 'block';
+                })
+                .catch(err => {
+                    detailModal.hide();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: err.message || 'No se pudieron cargar los archivos de la órbita.',
+                        confirmButtonText: 'Entendido'
+                    });
+                });
+        });
+    });
+
+    // Filtros por botón (Todos / Solo Fallidos / Solo Correctos)
+    document.querySelectorAll('.btn-filter-orbit-files').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.btn-filter-orbit-files').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentActiveFilter = this.getAttribute('data-filter');
+            renderDetailTable();
+        });
+    });
+
+    // Búsqueda en vivo
+    document.getElementById('m-det-search-input')?.addEventListener('input', function () {
+        renderDetailTable();
     });
 });
 </script>

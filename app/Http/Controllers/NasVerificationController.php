@@ -44,25 +44,77 @@ class NasVerificationController extends Controller
             ->take(15)
             ->get();
 
-        // Consulta de items con filtros y paginación
+        // Consulta de items agrupados por órbita (conglomerado)
+        $orbitGroups = collect();
         if ($verification) {
-            $itemsQuery = $verification->items();
+            $rawItems = $verification->items()->get();
 
-            if ($request->filled('status') && $request->status !== 'all') {
-                $itemsQuery->where('status', $request->status);
+            $grouped = [];
+            foreach ($rawItems as $item) {
+                $parts = explode('/', trim(str_replace('\\', '/', $item->relative_path), '/'));
+                $orbName = $parts[0] ?? 'Varios';
+
+                if (!isset($grouped[$orbName])) {
+                    $grouped[$orbName] = [
+                        'orbit' => $orbName,
+                        'total_files' => 0,
+                        'confirmed_files' => 0,
+                        'failed_files' => 0, // faltantes o discrepancia
+                        'size_mismatch' => 0,
+                        'missing' => 0,
+                        'phase1_ok' => 0,
+                        'phase2_ok' => 0,
+                        'total_bytes' => 0,
+                    ];
+                }
+
+                $grouped[$orbName]['total_files']++;
+                $grouped[$orbName]['total_bytes'] += ($item->synology_size ?: $item->inspur_size ?: 0);
+
+                if ($item->phase1_status === 'confirmed') {
+                    $grouped[$orbName]['phase1_ok']++;
+                }
+                if ($item->phase2_status === 'confirmed' || $item->status === 'confirmed') {
+                    $grouped[$orbName]['phase2_ok']++;
+                }
+
+                if ($item->status === 'confirmed') {
+                    $grouped[$orbName]['confirmed_files']++;
+                } else {
+                    $grouped[$orbName]['failed_files']++;
+                    if ($item->status === 'size_mismatch') {
+                        $grouped[$orbName]['size_mismatch']++;
+                    } elseif ($item->status === 'missing_target') {
+                        $grouped[$orbName]['missing']++;
+                    }
+                }
             }
 
+            // Calcular porcentajes y peso humano
+            foreach ($grouped as $orb => $data) {
+                $tot = $data['total_files'];
+                $data['percentage'] = $tot > 0 ? round(($data['confirmed_files'] / $tot) * 100, 1) : 0;
+                $data['human_size'] = $this->formatBytes($data['total_bytes']);
+                $orbitGroups->push((object) $data);
+            }
+
+            // Filtrar si el usuario buscó por texto
             if ($request->filled('search')) {
-                $search = $request->search;
-                $itemsQuery->where(function ($q) use ($search) {
-                    $q->where('file_name', 'like', "%{$search}%")
-                      ->orWhere('relative_path', 'like', "%{$search}%");
-                });
+                $search = mb_strtolower($request->search);
+                $orbitGroups = $orbitGroups->filter(fn($o) => str_contains(mb_strtolower($o->orbit), $search));
             }
 
-            $items = $itemsQuery->paginate(10)->withQueryString();
-        } else {
-            $items = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10);
+            // Filtrar por estado si seleccionó uno
+            if ($request->filled('status') && $request->status !== 'all') {
+                if ($request->status === 'confirmed') {
+                    $orbitGroups = $orbitGroups->filter(fn($o) => $o->failed_files === 0);
+                } elseif ($request->status === 'mismatch' || $request->status === 'failed') {
+                    $orbitGroups = $orbitGroups->filter(fn($o) => $o->failed_files > 0);
+                }
+            }
+
+            // Ordenar alfabéticamente
+            $orbitGroups = $orbitGroups->sortBy('orbit')->values();
         }
 
         return view('nas-migracion.confirmacion.index', compact(
@@ -70,7 +122,7 @@ class NasVerificationController extends Controller
             'selectedTask',
             'selectedTaskId',
             'verification',
-            'items',
+            'orbitGroups',
             'history'
         ));
     }
@@ -106,6 +158,56 @@ class NasVerificationController extends Controller
             'status' => 'running',
             'verification_id' => $verification->id,
             'message' => 'El proceso de cotejo y verificación se ha iniciado en segundo plano. Evaluando archivos entre Synology e Inspur.',
+        ]);
+    }
+
+    /**
+     * Retorna los archivos de una órbita específica con sus estados y diferencias.
+     */
+    public function getOrbitFiles(Request $request, NasFileVerification $verification, string $orbit): JsonResponse
+    {
+        $orbitClean = trim($orbit);
+        
+        $items = $verification->items()
+            ->where(function ($q) use ($orbitClean) {
+                $q->where('relative_path', 'like', "{$orbitClean}/%")
+                  ->orWhere('relative_path', 'like', "{$orbitClean}\\%")
+                  ->orWhere('file_name', 'like', "%{$orbitClean}%");
+            })
+            ->get();
+
+        $formatted = $items->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'file_name' => $item->file_name,
+                'relative_path' => $item->relative_path,
+                'status' => $item->status,
+                'status_label' => $item->status_label,
+                'status_badge_class' => $item->status_badge_class,
+                'synology_size' => $item->synology_size,
+                'human_synology_size' => $item->human_synology_size,
+                'synology_mtime' => $item->synology_mtime ? $item->synology_mtime->format('d/m/Y H:i:s') : '-',
+                'inspur_size' => $item->inspur_size,
+                'human_inspur_size' => $item->human_inspur_size,
+                'inspur_mtime' => $item->inspur_mtime ? $item->inspur_mtime->format('d/m/Y H:i:s') : '-',
+                'phase1_status' => $item->phase1_status,
+                'phase2_status' => $item->phase2_status,
+                'size_match' => $item->size_match,
+                'name_match' => $item->name_match,
+                'is_failed' => $item->status !== 'confirmed',
+            ];
+        });
+
+        $correctCount = $formatted->where('is_failed', false)->count();
+        $failedCount = $formatted->where('is_failed', true)->count();
+
+        return response()->json([
+            'success' => true,
+            'orbit' => $orbitClean,
+            'total_files' => $formatted->count(),
+            'correct_count' => $correctCount,
+            'failed_count' => $failedCount,
+            'files' => $formatted->values(),
         ]);
     }
 
