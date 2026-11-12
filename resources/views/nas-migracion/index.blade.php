@@ -511,8 +511,8 @@
                                         </div>
 
                                         <div class="col-md-6">
-                                            <label class="form-label required fw-bold text-success">
-                                                <i class="ti ti-corner-down-right me-1"></i> Subdirectorio Destino en Inspur (RAWDATA)
+                                            <label class="form-label required fw-bold text-success text-nowrap d-flex align-items-center">
+                                                <i class="ti ti-corner-down-right me-1"></i> Subdirectorio Destino Inspur (RAWDATA)
                                             </label>
                                             <select name="inspur_target_dir" class="form-select border-success" required>
                                                 @foreach($inspurAvailableDirs as $dir)
@@ -884,8 +884,8 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label required fw-bold text-success">
-                                <i class="ti ti-corner-down-right me-1"></i> Subdirectorio Destino en Inspur (RAWDATA)
+                            <label class="form-label required fw-bold text-success text-nowrap d-flex align-items-center">
+                                <i class="ti ti-corner-down-right me-1"></i> Subdirectorio Destino Inspur (RAWDATA)
                             </label>
                             <select name="inspur_target_dir" class="form-select border-success" required>
                                 @foreach($inspurAvailableDirs as $dir)
