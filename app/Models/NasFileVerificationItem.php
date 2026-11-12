@@ -18,16 +18,22 @@ class NasFileVerificationItem extends Model
         'file_name',
         'synology_size',
         'synology_mtime',
+        'shared_size',
+        'shared_mtime',
+        'phase1_status',
         'inspur_size',
         'inspur_mtime',
+        'phase2_status',
         'status',
         'notes',
     ];
 
     protected $casts = [
         'synology_size' => 'integer',
+        'shared_size' => 'integer',
         'inspur_size' => 'integer',
         'synology_mtime' => 'datetime',
+        'shared_mtime' => 'datetime',
         'inspur_mtime' => 'datetime',
     ];
 
@@ -44,11 +50,21 @@ class NasFileVerificationItem extends Model
         return $this->formatBytes($this->synology_size);
     }
 
+    public function getHumanSharedSizeAttribute(): string
+    {
+        if ($this->shared_size === null) {
+            return '-';
+        }
+        return $this->formatBytes($this->shared_size);
+    }
+
     public function getHumanInspurSizeAttribute(): string
     {
         if ($this->inspur_size === null) {
             return 'No existe';
         }
+        return $this->formatBytes($this->inspur_size);
+    }
         return $this->formatBytes($this->inspur_size);
     }
 

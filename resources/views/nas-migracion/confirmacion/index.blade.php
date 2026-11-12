@@ -248,12 +248,21 @@
                 <table class="table table-vcenter table-hover card-table">
                     <thead>
                         <tr>
-                            <th style="min-width: 240px;">Archivo / Ruta Relativa</th>
-                            <th style="min-width: 170px;">NAS Synology (Origen)</th>
-                            <th style="min-width: 170px;">NAS Inspur (Destino)</th>
-                            <th class="text-center" style="min-width: 140px;">Parámetros</th>
-                            <th class="text-center" style="min-width: 150px;">Veredicto</th>
-                            <th class="text-end" style="width: 80px;">Acción</th>
+                            <th style="min-width: 220px;">Archivo / Ruta Relativa</th>
+                            <th style="min-width: 140px;">1. Synology (Origen)</th>
+                            <th class="text-center" style="min-width: 130px;">
+                                <span class="badge bg-purple-lt text-purple d-block py-1">
+                                    Fase 1: MIGRACION_SYNOLOGY
+                                </span>
+                            </th>
+                            <th class="text-center" style="min-width: 130px;">
+                                <span class="badge bg-teal-lt text-teal d-block py-1">
+                                    Fase 2: Inspur RAWDATA
+                                </span>
+                            </th>
+                            <th class="text-center" style="min-width: 130px;">Parámetros</th>
+                            <th class="text-center" style="min-width: 130px;">Veredicto Final</th>
+                            <th class="text-end" style="width: 70px;">Acción</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -264,7 +273,7 @@
                                     <span class="avatar avatar-xs bg-azure-lt text-azure rounded me-2">
                                         <i class="ti ti-file fs-4"></i>
                                     </span>
-                                    <div class="text-truncate" style="max-width: 320px;">
+                                    <div class="text-truncate" style="max-width: 280px;">
                                         <span class="fw-bold text-dark d-block text-truncate" title="{{ $item->file_name }}">
                                             {{ $item->file_name }}
                                         </span>
@@ -275,7 +284,7 @@
                                 </div>
                             </td>
 
-                            {{-- Synology --}}
+                            {{-- Synology (Origen) --}}
                             <td>
                                 <div class="fw-semibold text-dark">{{ $item->human_synology_size }}</div>
                                 <div class="text-secondary small font-monospace">
@@ -284,17 +293,46 @@
                                 <small class="text-muted" style="font-size: 0.72rem;">{{ number_format($item->synology_size) }} B</small>
                             </td>
 
-                            {{-- Inspur --}}
-                            <td>
-                                @if($item->inspur_size !== null)
-                                    <div class="fw-semibold text-dark">{{ $item->human_inspur_size }}</div>
-                                    <div class="text-secondary small font-monospace">
-                                        {{ $item->inspur_mtime ? $item->inspur_mtime->format('d/m/Y H:i:s') : '-' }}
+                            {{-- Fase 1: Synology -> MIGRACION_SYNOLOGY --}}
+                            <td class="text-center">
+                                @if($item->phase1_status === 'confirmed')
+                                    <span class="badge bg-success text-white py-1 px-2 d-inline-flex align-items-center">
+                                        <i class="ti ti-check me-1"></i> Copiado OK
+                                    </span>
+                                    <div class="text-muted small mt-1 font-monospace" style="font-size: 0.7rem;">
+                                        Tamaño verificado
                                     </div>
-                                    <small class="text-muted" style="font-size: 0.72rem;">{{ number_format($item->inspur_size) }} B</small>
+                                @elseif($item->phase1_status === 'size_mismatch')
+                                    <span class="badge bg-danger text-white py-1 px-2">
+                                        <i class="ti ti-alert-triangle me-1"></i> Dif. Tamaño
+                                    </span>
+                                @elseif($item->phase1_status === 'pending')
+                                    <span class="badge bg-warning text-dark py-1 px-2">
+                                        <i class="ti ti-clock me-1"></i> En Proceso
+                                    </span>
                                 @else
-                                    <span class="badge bg-danger-lt text-danger fw-bold">
-                                        <i class="ti ti-x me-1"></i> No existe en destino
+                                    <span class="badge bg-secondary-lt text-secondary py-1 px-2">
+                                        <i class="ti ti-minus me-1"></i> No detectado
+                                    </span>
+                                @endif
+                            </td>
+
+                            {{-- Fase 2: MIGRACION_SYNOLOGY -> Inspur RAWDATA --}}
+                            <td class="text-center">
+                                @if($item->phase2_status === 'confirmed' || $item->status === 'confirmed')
+                                    <span class="badge bg-teal text-white py-1 px-2 d-inline-flex align-items-center">
+                                        <i class="ti ti-circle-check me-1"></i> RAWDATA OK
+                                    </span>
+                                    <div class="text-muted small mt-1 font-monospace" style="font-size: 0.7rem;">
+                                        {{ $item->human_inspur_size }}
+                                    </div>
+                                @elseif($item->phase2_status === 'size_mismatch')
+                                    <span class="badge bg-danger text-white py-1 px-2">
+                                        <i class="ti ti-alert-triangle me-1"></i> Truncado
+                                    </span>
+                                @else
+                                    <span class="badge bg-danger-lt text-danger py-1 px-2">
+                                        <i class="ti ti-x me-1"></i> Pendiente
                                     </span>
                                 @endif
                             </td>
@@ -302,50 +340,40 @@
                             {{-- Parámetros evaluados --}}
                             <td class="text-center">
                                 <div class="d-inline-flex gap-1" style="font-size: 0.74rem;">
-                                    {{-- Nombre --}}
-                                    <span class="badge bg-green-lt text-green" title="Nombre: Coincide">
+                                    <span class="badge bg-green-lt text-green" title="Nombre de archivo idéntico">
                                         <i class="ti ti-check"></i> Nom
                                     </span>
-
-                                    {{-- Tamaño --}}
-                                    @if($item->size_match)
-                                        <span class="badge bg-green-lt text-green" title="Tamaño: Idéntico ({{ number_format($item->synology_size) }} bytes)">
+                                    @if($item->size_match || $item->phase2_status === 'confirmed')
+                                        <span class="badge bg-green-lt text-green" title="Tamaño en bytes idéntico">
                                             <i class="ti ti-check"></i> Tam
                                         </span>
                                     @else
-                                        <span class="badge bg-danger-lt text-danger" title="Tamaño: Discrepancia">
+                                        <span class="badge bg-danger-lt text-danger" title="Discrepancia en tamaño">
                                             <i class="ti ti-x"></i> Tam
-                                        </span>
-                                    @endif
-
-                                    {{-- Fecha --}}
-                                    @if($item->date_match)
-                                        <span class="badge bg-green-lt text-green" title="Fecha: Sincronizada">
-                                            <i class="ti ti-check"></i> Fec
-                                        </span>
-                                    @else
-                                        <span class="badge bg-warning-lt text-warning" title="Fecha: Diferencia de modificación">
-                                            <i class="ti ti-clock"></i> Fec
                                         </span>
                                     @endif
                                 </div>
                             </td>
 
-                            {{-- Veredicto --}}
+                            {{-- Veredicto Final --}}
                             <td class="text-center">
-                                <span class="badge {{ $item->status_badge_class }} fw-bold px-2 py-1">
-                                    @if($item->status === 'confirmed')
-                                        <i class="ti ti-circle-check me-1"></i> Confirmado
-                                    @elseif($item->status === 'size_mismatch')
-                                        <i class="ti ti-alert-triangle me-1"></i> Dif. Tamaño
-                                    @elseif($item->status === 'date_mismatch')
-                                        <i class="ti ti-clock me-1"></i> Dif. Fecha
-                                    @elseif($item->status === 'missing_target')
-                                        <i class="ti ti-circle-x me-1"></i> Faltante Inspur
-                                    @else
-                                        {{ $item->status_label }}
-                                    @endif
-                                </span>
+                                @if($item->status === 'confirmed')
+                                    <span class="badge bg-green-lt text-green fw-bold px-2 py-1">
+                                        <i class="ti ti-circle-check me-1"></i> 100% Confirmado
+                                    </span>
+                                @elseif($item->status === 'pending_move')
+                                    <span class="badge bg-azure-lt text-azure fw-bold px-2 py-1">
+                                        <i class="ti ti-arrow-right me-1"></i> En Carpeta Intermedia
+                                    </span>
+                                @elseif($item->status === 'size_mismatch')
+                                    <span class="badge bg-danger-lt text-danger fw-bold px-2 py-1">
+                                        <i class="ti ti-alert-triangle me-1"></i> Error Tamaño
+                                    </span>
+                                @else
+                                    <span class="badge bg-danger-lt text-danger fw-bold px-2 py-1">
+                                        <i class="ti ti-circle-x me-1"></i> Faltante
+                                    </span>
+                                @endif
                             </td>
 
                             {{-- Acción / Modal Detalle --}}

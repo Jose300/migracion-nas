@@ -431,6 +431,15 @@ class NasMigrationService
                 } catch (\Throwable $statEx) {
                     Log::warning("No se pudo registrar estadística automática para Tarea #{$task->id}: " . $statEx->getMessage());
                 }
+
+                // Disparar automáticamente la Confirmación y Cotejo de Archivos (Fase 1 y Fase 2)
+                try {
+                    $verificationService = app(\App\Services\NasVerificationService::class);
+                    $orbitsToVerify = $lastProcessedOrbit ? [$lastProcessedOrbit] : null;
+                    $verificationService->runVerification($task, $userId ?: 1, null, $orbitsToVerify);
+                } catch (\Throwable $verEx) {
+                    Log::warning("No se pudo disparar verificación automática post-migración: " . $verEx->getMessage());
+                }
             }
 
             $task->update([

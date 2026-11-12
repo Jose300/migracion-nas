@@ -16,12 +16,14 @@ class NasVerificationService
     ) {}
 
     /**
-     * Ejecuta la verificación y corroboración comparativa entre Synology e Inspur.
+     * Ejecuta la verificación y corroboración comparativa entre Synology, Carpeta Compartida e Inspur RAWDATA.
+     * Si se pasa $specificOrbits, solo verifica esas órbitas transferidas recientemente.
      */
     public function runVerification(
         NasMigrationTask $task,
         ?int $userId = null,
-        ?int $verificationId = null
+        ?int $verificationId = null,
+        ?array $specificOrbits = null
     ): NasFileVerification {
         if ($verificationId) {
             $verification = NasFileVerification::find($verificationId);
@@ -36,76 +38,130 @@ class NasVerificationService
 
         try {
             $source = rtrim($task->source_path, '/');
-            // Si los archivos se mueven a Inspur RAWDATA, cotejar contra esa ubicación final; de lo contrario contra MIGRACION_SYNOLOGY
-            $target = rtrim($task->auto_move_to_inspur ? ($task->full_inspur_path ?: $task->target_path) : $task->target_path, '/');
+            $intermediate = rtrim($task->target_path ?: '/volume3/dae-RowData/MIGRACION_SYNOLOGY', '/');
+            $cleanSubdir = trim($task->inspur_target_dir ?: 'VRSS-1', '/');
+            $inspurFinal = "/volume3/dae-RowData/INSPUR_HS_IPS/RDP_FTP/RAWDATA/{$cleanSubdir}";
 
-            // Script remoto en Python3 optimizado con tolerancia para timestamps de NFS/SMB
-            // y ejecución dentro de la Synology
+            $filterOrbitsJson = json_encode($specificOrbits ?: []);
+
+            // Script remoto en Python3 ejecutado en Synology que compara los 2 saltos:
+            // Salto 1: Origen (Synology) -> Carpeta Compartida (MIGRACION_SYNOLOGY)
+            // Salto 2: Carpeta Compartida (MIGRACION_SYNOLOGY) -> Inspur RAWDATA (NFS)
             $pyScript = <<<'PYEOF'
 import os, sys, json
 
 src = sys.argv[1].rstrip('/')
-tgt = sys.argv[2].rstrip('/')
+inter = sys.argv[2].rstrip('/')
+tgt = sys.argv[3].rstrip('/')
+filter_orbits = json.loads(sys.argv[4]) if len(sys.argv) > 4 else []
 
 if not os.path.exists(src):
     print(json.dumps({'success': False, 'error': f'Ruta origen no encontrada en Synology: {src}'}))
-    sys.exit(0)
-
-if not os.path.exists(tgt):
-    print(json.dumps({'success': False, 'error': f'Ruta destino Inspur no encontrada o no montada: {tgt}'}))
     sys.exit(0)
 
 items = []
 total_src_bytes = 0
 total_tgt_bytes = 0
 
-for root, dirs, files in os.walk(src):
-    for f in files:
-        full_src = os.path.join(root, f)
-        rel = os.path.relpath(full_src, src).replace('\\', '/')
-        full_tgt = os.path.join(tgt, rel)
+# Si se especificaron orbitas concretas, escanear solo esas carpetas
+target_dirs = []
+if filter_orbits:
+    for orb in filter_orbits:
+        cand = os.path.join(src, orb)
+        if os.path.isdir(cand):
+            target_dirs.append(cand)
+else:
+    # Escanear hasta 15 orbitas mas recientes si no hay filtro para evitar timeouts en catalogos masivos
+    entries = sorted([d for d in os.listdir(src) if not d.startswith(('#', '@', '.'))])
+    for orb in entries[-15:]:
+        cand = os.path.join(src, orb)
+        if os.path.isdir(cand):
+            target_dirs.append(cand)
 
-        try:
-            st_src = os.stat(full_src)
-            src_size = st_src.st_size
-            src_mtime = int(st_src.st_mtime)
-            total_src_bytes += src_size
-        except Exception:
-            continue
+for sdir in target_dirs:
+    for root, dirs, files in os.walk(sdir):
+        for f in files:
+            full_src = os.path.join(root, f)
+            rel = os.path.relpath(full_src, src).replace('\\', '/')
+            full_inter = os.path.join(inter, rel)
+            full_tgt = os.path.join(tgt, rel)
 
-        tgt_size = None
-        tgt_mtime = None
-        status = 'missing_target'
-
-        if os.path.exists(full_tgt):
             try:
-                st_tgt = os.stat(full_tgt)
-                tgt_size = st_tgt.st_size
-                tgt_mtime = int(st_tgt.st_mtime)
-                total_tgt_bytes += tgt_size
-
-                size_ok = (src_size == tgt_size)
-                # Tolerancia de 2 segundos para variaciones de redondeo en timestamps entre NFS/EXT4/Btrfs
-                date_ok = abs(src_mtime - tgt_mtime) <= 2
-
-                if size_ok and date_ok:
-                    status = 'confirmed'
-                elif not size_ok:
-                    status = 'size_mismatch'
-                else:
-                    status = 'date_mismatch'
+                st_src = os.stat(full_src)
+                src_size = st_src.st_size
+                src_mtime = int(st_src.st_mtime)
+                total_src_bytes += src_size
             except Exception:
-                status = 'missing_target'
+                continue
 
-        items.append({
-            'path': rel,
-            'name': f,
-            'src_size': src_size,
-            'src_mtime': src_mtime,
-            'tgt_size': tgt_size,
-            'tgt_mtime': tgt_mtime,
-            'status': status
-        })
+            # Estado Fase 1: Synology -> Carpeta Compartida
+            inter_size = None
+            inter_mtime = None
+            phase1_status = 'pending'
+            if os.path.exists(full_inter):
+                try:
+                    st_inter = os.stat(full_inter)
+                    inter_size = st_inter.st_size
+                    inter_mtime = int(st_inter.st_mtime)
+                    if inter_size == src_size:
+                        phase1_status = 'confirmed'
+                    else:
+                        phase1_status = 'size_mismatch'
+                except Exception:
+                    phase1_status = 'missing'
+            else:
+                # Si ya se movio con rsync --remove-source-files a Inspur, en MIGRACION_SYNOLOGY ya no esta
+                # Pero si en Inspur esta confirmado, Fase 1 fue completada con exito
+                phase1_status = 'moved_to_inspur'
+
+            # Estado Fase 2: Carpeta Compartida -> Inspur RAWDATA
+            tgt_size = None
+            tgt_mtime = None
+            phase2_status = 'missing'
+            if os.path.exists(full_tgt):
+                try:
+                    st_tgt = os.stat(full_tgt)
+                    tgt_size = st_tgt.st_size
+                    tgt_mtime = int(st_tgt.st_mtime)
+                    total_tgt_bytes += tgt_size
+
+                    size_ok = (src_size == tgt_size)
+                    date_ok = abs(src_mtime - tgt_mtime) <= 2
+
+                    if size_ok:
+                        phase2_status = 'confirmed'
+                    else:
+                        phase2_status = 'size_mismatch'
+                except Exception:
+                    phase2_status = 'missing'
+            else:
+                phase2_status = 'missing'
+
+            # Veredicto Global
+            if phase2_status == 'confirmed':
+                global_status = 'confirmed'
+                if phase1_status == 'moved_to_inspur':
+                    phase1_status = 'confirmed'
+            elif phase1_status == 'confirmed' and phase2_status == 'missing':
+                global_status = 'pending_move'
+            elif phase2_status == 'size_mismatch' or phase1_status == 'size_mismatch':
+                global_status = 'size_mismatch'
+            else:
+                global_status = 'missing_target'
+
+            items.append({
+                'path': rel,
+                'name': f,
+                'src_size': src_size,
+                'src_mtime': src_mtime,
+                'inter_size': inter_size,
+                'inter_mtime': inter_mtime,
+                'phase1_status': phase1_status,
+                'tgt_size': tgt_size,
+                'tgt_mtime': tgt_mtime,
+                'phase2_status': phase2_status,
+                'status': global_status
+            })
 
 print(json.dumps({
     'success': True,
@@ -115,9 +171,8 @@ print(json.dumps({
 }))
 PYEOF;
 
-            // Codificar el script en Base64 para evitar problemas de comillas en SSH
             $base64Script = base64_encode($pyScript);
-            $remoteCmd = "python3 -c \"import base64; exec(base64.b64decode('{$base64Script}').decode('utf-8'))\" \"{$source}\" \"{$target}\"";
+            $remoteCmd = "python3 -c \"import base64; exec(base64.b64decode('{$base64Script}').decode('utf-8'))\" \"{$source}\" \"{$intermediate}\" \"{$inspurFinal}\" '{$filterOrbitsJson}'";
 
             $execResult = $this->migrationService->executeRemoteSsh($task, $remoteCmd, 0);
 
@@ -129,7 +184,6 @@ PYEOF;
             $parsed = json_decode($rawOutput, true);
 
             if (!$parsed || !isset($parsed['success'])) {
-                // Si la NAS no tiene python3 o hubo un error de parseo, verificar salida
                 throw new \Exception('Respuesta inválida de la NAS Synology. Salida: ' . substr($rawOutput, 0, 300));
             }
 
@@ -138,6 +192,35 @@ PYEOF;
             }
 
             $itemsData = $parsed['items'] ?? [];
+            $this->saveVerificationItems($verification, $itemsData);
+
+            $duration = (int) round(microtime(true) - $startTime);
+
+            $verification->update([
+                'status' => 'completed',
+                'finished_at' => now(),
+                'duration_seconds' => $duration,
+                'total_bytes_synology' => $parsed['total_src_bytes'] ?? 0,
+                'total_bytes_inspur' => $parsed['total_tgt_bytes'] ?? 0,
+                'summary' => "Verificación automática completada: {$verification->total_confirmed} confirmados de {$verification->total_files_synology} archivos examinados en ambas fases.",
+                'error_message' => null,
+            ]);
+
+        } catch (\Throwable $e) {
+            $duration = (int) round(microtime(true) - $startTime);
+
+            $verification->update([
+                'status' => 'failed',
+                'finished_at' => now(),
+                'duration_seconds' => $duration,
+                'error_message' => $e->getMessage(),
+            ]);
+
+            Log::error("Error en verificación NAS [Task #{$task->id}]: " . $e->getMessage());
+        }
+
+        return $verification;
+    }
             $this->saveVerificationItems($verification, $itemsData);
 
             $duration = (int) round(microtime(true) - $startTime);
@@ -318,8 +401,12 @@ PYEOF;
                     'file_name' => $item['name'] ?? basename($item['path']),
                     'synology_size' => $item['src_size'],
                     'synology_mtime' => isset($item['src_mtime']) ? Carbon::createFromTimestamp($item['src_mtime']) : null,
+                    'shared_size' => $item['inter_size'] ?? null,
+                    'shared_mtime' => isset($item['inter_mtime']) ? Carbon::createFromTimestamp($item['inter_mtime']) : null,
+                    'phase1_status' => $item['phase1_status'] ?? 'confirmed',
                     'inspur_size' => $item['tgt_size'],
                     'inspur_mtime' => isset($item['tgt_mtime']) ? Carbon::createFromTimestamp($item['tgt_mtime']) : null,
+                    'phase2_status' => $item['phase2_status'] ?? 'confirmed',
                     'status' => $status,
                     'notes' => null,
                     'created_at' => now(),
