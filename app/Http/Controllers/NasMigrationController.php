@@ -218,12 +218,12 @@ class NasMigrationController extends Controller
             ]);
 
             $motivo = '';
-            if (!$connTest['ping']) {
-                $motivo = "La IP {$task->nas_host} no responde al ping (host inalcanzable o desconectado).";
-            } elseif (!$connTest['port_open']) {
-                $motivo = "El puerto SSH {$task->nas_port} en {$task->nas_host} no responde o está cerrado.";
+            if (!$connTest['port_open']) {
+                $motivo = "El puerto SSH {$task->nas_port} en {$task->nas_host} no responde o está cerrado (" . ($connTest['port_error'] ?? '') . ").";
+            } elseif (!$connTest['ssh_auth']) {
+                $motivo = "Autenticación SSH fallida en {$task->nas_host}:{$task->nas_port} para el usuario '{$task->ssh_user}'. Verifica la contraseña o credenciales en la configuración de la tarea (" . ($connTest['ssh_output'] ?? '') . ").";
             } else {
-                $motivo = "Autenticación SSH fallida en {$task->nas_host}. Verifica el usuario y la contraseña o llave SSH.";
+                $motivo = "No se pudo establecer sesión SSH en {$task->nas_host}:{$task->nas_port}.";
             }
 
             // Registrar log del intento fallido para trazabilidad

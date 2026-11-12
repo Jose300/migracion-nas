@@ -66,7 +66,7 @@ class NasMigrationService
         $host = $task->nas_host;
         $port = $task->nas_port ?: 22;
 
-        // 1. Probar Ping (ICMP)
+        // 1. Probar Ping (ICMP) - Informativo, no bloqueante si el puerto SSH responde
         $pingCmd = PHP_OS_FAMILY === 'Windows'
             ? "ping -n 1 -w 2000 {$host}"
             : "ping -c 1 -W 2 {$host}";
@@ -77,7 +77,7 @@ class NasMigrationService
         // 2. Probar Puerto TCP (SSH)
         $socketOk = false;
         $socketError = '';
-        $fp = @fsockopen($host, $port, $errno, $errstr, 3);
+        $fp = @fsockopen($host, $port, $errno, $errstr, 4);
         if ($fp) {
             $socketOk = true;
             fclose($fp);
@@ -96,13 +96,17 @@ class NasMigrationService
             $sshAuthOutput = $sshRun['output'];
         }
 
+        // Éxito: el puerto SSH responde y la autenticación SSH es válida
+        // No exigimos ping obligatorio por si hay firewalls/VLANs que bloquean ICMP
+        $success = $socketOk && $sshAuthOk;
+
         return [
             'ping' => $pingOk,
             'port_open' => $socketOk,
             'port_error' => $socketError,
             'ssh_auth' => $sshAuthOk,
             'ssh_output' => trim($sshAuthOutput),
-            'success' => $pingOk && $socketOk && $sshAuthOk,
+            'success' => $success,
         ];
     }
 
@@ -139,11 +143,11 @@ class NasMigrationService
             // Pre-verificación de conectividad antes de iniciar la migración real
             $connTest = $this->testConnection($task);
             if (!$connTest['success']) {
-                $motivo = !$connTest['ping']
-                    ? "Host inalcanzable: {$task->nas_host} no responde al ping (ICMP)."
-                    : (!$connTest['port_open']
-                        ? "Puerto SSH {$task->nas_port} cerrado o inaccesible en {$task->nas_host}."
-                        : "Autenticación SSH fallida hacia {$task->nas_host} (revisa usuario y credenciales).");
+                $motivo = !$connTest['port_open']
+                    ? "Puerto SSH {$task->nas_port} cerrado o inaccesible en {$task->nas_host} (" . ($connTest['port_error'] ?? '') . ")."
+                    : (!$connTest['ssh_auth']
+                        ? "Autenticación SSH fallida hacia {$task->nas_host}:{$task->nas_port} con usuario '{$task->ssh_user}'. Revisa usuario y contraseña."
+                        : "Conexión SSH no disponible hacia {$task->nas_host}:{$task->nas_port}.");
 
                 $duration = (int) round(microtime(true) - $startTime);
 
