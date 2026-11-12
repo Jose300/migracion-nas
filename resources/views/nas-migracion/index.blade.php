@@ -186,7 +186,10 @@
                                             <span class="badge bg-secondary-lt fw-bold badge-status-pill">En espera</span>
                                         @endif
                                         <span class="badge bg-purple-lt">
-                                            <i class="ti ti-clock me-1"></i> {{ ucfirst($task->schedule_frequency) }}
+                                            <i class="ti ti-bolt me-1"></i> Asíncrono
+                                        </span>
+                                        <span class="badge bg-primary-lt fw-bold" id="task-phase-badge-{{ $task->id }}">
+                                            <i class="ti ti-refresh me-1"></i> <span class="phase-name">Iniciando...</span>
                                         </span>
                                         <span class="badge bg-blue-lt" title="Lote de órbitas configurado">
                                             <i class="ti ti-stack-2 me-1"></i> Lote: {{ $task->batch_size ?? 5 }} órbitas
@@ -1316,6 +1319,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         <span class="spinner-border spinner-border-sm me-1" role="status"></span> En Proceso de Copia (Segundo Plano)
                     </span>
                     <span class="badge bg-purple-lt ms-1"><i class="ti ti-bolt me-1"></i> Asíncrono</span>
+                    <span class="badge bg-primary-lt fw-bold ms-1" id="task-phase-badge-${taskId}">
+                        <i class="ti ti-refresh me-1"></i> <span class="phase-name">Iniciando...</span>
+                    </span>
                 `;
             }
             if (progressBox) {
@@ -1425,10 +1431,27 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
 
+                // Actualizar Insignia de Fase Activa en la cabecera
+                const phaseBadge = document.getElementById(`task-phase-badge-${taskId}`);
+                if (phaseBadge && data.current_phase) {
+                    if (data.current_phase_code === 'phase2') {
+                        phaseBadge.className = 'badge bg-teal-lt fw-bold ms-1';
+                        phaseBadge.innerHTML = `<i class="ti ti-truck-delivery me-1"></i> 2. Traslado a Inspur RAWDATA`;
+                    } else if (data.current_phase_code === 'phase1') {
+                        phaseBadge.className = 'badge bg-azure-lt fw-bold ms-1';
+                        phaseBadge.innerHTML = `<i class="ti ti-folder-share me-1"></i> 1. Copiando a MIGRACION_SYNOLOGY`;
+                    } else {
+                        phaseBadge.className = 'badge bg-primary-lt fw-bold ms-1';
+                        phaseBadge.innerHTML = `<i class="ti ti-refresh me-1"></i> ${data.current_phase}`;
+                    }
+                }
+
                 if (data.status === 'running') {
                     if (progressLabel) {
-                        if (currentFiles > 0) {
-                            progressLabel.innerHTML = `<span class="spinner-border spinner-border-sm me-1 text-success" style="width: 11px; height: 11px;"></span> Copiando archivos a <code>MIGRACION_SYNOLOGY</code> y trasladando a Inspur...`;
+                        if (data.current_phase_code === 'phase2') {
+                            progressLabel.innerHTML = `<span class="spinner-border spinner-border-sm me-1 text-teal" style="width: 11px; height: 11px;"></span> <b>Fase 2 en curso:</b> Trasladando archivos a <code>Inspur RAWDATA (${data.latest_log?.inspur_target_dir_used || 'Destino'})</code>...`;
+                        } else if (currentFiles > 0) {
+                            progressLabel.innerHTML = `<span class="spinner-border spinner-border-sm me-1 text-success" style="width: 11px; height: 11px;"></span> <b>Fase 1 en curso:</b> Copiando archivos a <code>MIGRACION_SYNOLOGY</code>...`;
                         } else if (data.live_output && data.live_output.includes('INICIANDO')) {
                             progressLabel.innerHTML = `<span class="spinner-border spinner-border-sm me-1 text-primary" style="width: 11px; height: 11px;"></span> Conectado a Synology: Detectando órbitas y archivos pendientes...`;
                         } else {

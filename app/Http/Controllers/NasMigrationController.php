@@ -420,6 +420,19 @@ class NasMigrationController extends Controller
             }
         }
 
+        // Determinar la fase exacta activa para informarla al usuario en tiempo real
+        $currentPhase = 'Copiando a MIGRACION_SYNOLOGY';
+        $currentPhaseCode = 'phase1';
+        if ($latestLog) {
+            if ($latestLog->phase_inspur_status === 'running' || str_contains($latestLog->output ?? '', '[FASE 2 - INSPUR]')) {
+                $currentPhase = 'Trasladando a Inspur RAWDATA';
+                $currentPhaseCode = 'phase2';
+            } elseif ($filesTransferred > 0) {
+                $currentPhase = 'Copiando a MIGRACION_SYNOLOGY';
+                $currentPhaseCode = 'phase1';
+            }
+        }
+
         return response()->json([
             'task_id' => $task->id,
             'status' => $task->status,
@@ -429,6 +442,8 @@ class NasMigrationController extends Controller
             'batch_size' => $batchLimitOrbits,
             'percentage' => $percentage,
             'current_orbit' => $latestLog->latest_processed_orbit ?? $task->last_migrated_orbit,
+            'current_phase' => $currentPhase,
+            'current_phase_code' => $currentPhaseCode,
             'elapsed_seconds' => $elapsedSeconds,
             'estimated_remaining_seconds' => $estimatedRemainingSeconds,
             'live_output' => $latestLog ? substr($latestLog->output ?? '', -300) : '',

@@ -334,7 +334,10 @@ class NasMigrationService
             $moveSummary = '';
 
             if ($success && ($task->auto_move_to_inspur ?? true)) {
-                $log->update(['output' => substr($output . "\n\n[FASE 2 - INSPUR]: Trasladando archivos a RAWDATA/{$inspurTargetDir}...", -5000)]);
+                $log->update([
+                    'output' => substr($output . "\n\n[FASE 2 - INSPUR]: Trasladando archivos a RAWDATA/{$inspurTargetDir}...", -5000),
+                    'phase_inspur_status' => 'running',
+                ]);
                 $moveResult = $this->moveFilesToInspurRawdataDetailed($task, $inspurTargetDir, $log);
                 $filesMoved = $moveResult['moved'];
                 $phaseInspurStatus = $moveResult['success'] ? 'completed' : 'failed';
