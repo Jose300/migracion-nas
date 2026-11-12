@@ -481,10 +481,11 @@
                                 @endif
                             </td>
                             <td class="text-end">
-                                <a href="{{ route('nas-migracion.confirmacion.index', ['task_id' => $h->nas_migration_task_id, 'verification_id' => $h->id]) }}" 
-                                   class="btn btn-outline-dark btn-sm fw-bold">
+                                <button type="button" 
+                                        class="btn btn-outline-dark btn-sm fw-bold btn-ver-reporte-orbita"
+                                        data-url="{{ route('nas-migracion.confirmacion.orbit-summary', $h->id) }}">
                                     <i class="ti ti-file-text me-1"></i> Ver Reporte
-                                </a>
+                                </button>
                             </td>
                         </tr>
                         @endforeach
@@ -567,6 +568,104 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Resumen por Órbita Verificada --}}
+<div class="modal fade" id="modal-resumen-orbitas" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-dark text-white py-3">
+                <div>
+                    <h5 class="modal-title fw-bold d-flex align-items-center mb-0">
+                        <i class="ti ti-report-analytics me-2 text-cyan fs-2"></i> 
+                        Resumen de Cotejo por Órbita
+                    </h5>
+                    <small class="text-white-50" id="m-orbit-subtitle">Cargando reporte de verificación...</small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                {{-- Spinner de carga --}}
+                <div id="m-orbit-loader" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="text-secondary mt-3 fw-bold">Analizando y consolidando archivos por órbita...</p>
+                </div>
+
+                {{-- Contenido cuando está listo --}}
+                <div id="m-orbit-content" style="display: none;">
+                    {{-- KPIs Resumen Superior --}}
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body p-3">
+                                    <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Órbitas Examinadas</span>
+                                    <h2 class="text-dark fw-bold mb-0" id="m-kpi-orbits">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body p-3">
+                                    <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Total Archivos</span>
+                                    <h2 class="text-primary fw-bold mb-0" id="m-kpi-files">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body p-3">
+                                    <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Confirmados (100%)</span>
+                                    <h2 class="text-success fw-bold mb-0" id="m-kpi-confirmed">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body p-3">
+                                    <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Cumplimiento Global</span>
+                                    <h2 class="text-azure fw-bold mb-0" id="m-kpi-percent">0%</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Tabla de Órbitas --}}
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between">
+                            <h4 class="card-title fw-bold text-dark mb-0">
+                                <i class="ti ti-folders me-1 text-primary"></i> Desglose Detallado por Órbita
+                            </h4>
+                            <span class="badge bg-primary-lt" id="m-badge-total-count">0 órbitas</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-vcenter table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="min-width: 220px;">Órbita / Directorio</th>
+                                        <th class="text-center" style="width: 120px;">Total Archivos</th>
+                                        <th class="text-center" style="min-width: 180px;">Fase 1 (Intermedia)</th>
+                                        <th class="text-center" style="min-width: 180px;">Fase 2 (Inspur RAWDATA)</th>
+                                        <th class="text-center" style="width: 130px;">Peso Total</th>
+                                        <th class="text-center" style="width: 150px;">Estado General</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="m-orbit-tbody">
+                                    {{-- Se rellena vía JS --}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white">
+                <button type="button" class="btn btn-danger fw-bold" data-bs-dismiss="modal">
+                    <i class="ti ti-x me-1"></i> Cerrar
+                </button>
             </div>
         </div>
     </div>
@@ -771,6 +870,128 @@ document.addEventListener('DOMContentLoaded', function () {
             badge.textContent = label;
 
             inspectModal.show();
+        });
+    });
+
+    // 5. Modal Resumen por Órbita al pulsar "Ver Reporte"
+    const orbitModalEl = document.getElementById('modal-resumen-orbitas');
+    const orbitModal = new bootstrap.Modal(orbitModalEl);
+
+    document.querySelectorAll('.btn-ver-reporte-orbita').forEach(button => {
+        button.addEventListener('click', function () {
+            const url = this.getAttribute('data-url');
+            if (!url) return;
+
+            // Mostrar modal y estado de carga
+            document.getElementById('m-orbit-loader').style.display = 'block';
+            document.getElementById('m-orbit-content').style.display = 'none';
+            document.getElementById('m-orbit-subtitle').textContent = 'Cargando datos de la verificación...';
+            orbitModal.show();
+
+            fetch(url, { credentials: 'same-origin' })
+                .then(res => {
+                    if (!res.ok) throw new Error('Error en el servidor al consultar el resumen');
+                    return res.json();
+                })
+                .then(data => {
+                    if (!data.success) {
+                        throw new Error(data.message || 'No se pudo obtener el resumen');
+                    }
+
+                    // Encabezado y KPIs
+                    const v = data.verification;
+                    document.getElementById('m-orbit-subtitle').textContent = 
+                        `Tarea: ${v.task_name} • Ejecución: ${v.executed_at} • Duración: ${v.duration}`;
+                    document.getElementById('m-kpi-orbits').textContent = data.total_orbits_count;
+                    document.getElementById('m-kpi-files').textContent = Number(v.total_files || 0).toLocaleString();
+                    document.getElementById('m-kpi-confirmed').textContent = Number(v.total_confirmed || 0).toLocaleString();
+                    document.getElementById('m-kpi-percent').textContent = `${v.percentage}%`;
+                    document.getElementById('m-badge-total-count').textContent = `${data.total_orbits_count} órbita(s)`;
+
+                    // Tabla de órbitas
+                    const tbody = document.getElementById('m-orbit-tbody');
+                    tbody.innerHTML = '';
+
+                    if (!data.orbits || data.orbits.length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-secondary">
+                                    <i class="ti ti-folder-off fs-1 d-block mb-2 text-muted"></i>
+                                    No hay registros de órbitas disponibles para esta verificación.
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        data.orbits.forEach(o => {
+                            const p1Percent = o.total_files > 0 ? Math.round((o.phase1_ok / o.total_files) * 100) : 0;
+                            const p2Percent = o.total_files > 0 ? Math.round((o.phase2_ok / o.total_files) * 100) : 0;
+                            
+                            const is100 = o.percentage >= 100;
+                            const badgeEstado = is100
+                                ? `<span class="badge bg-green-lt text-green fw-bold px-2 py-1"><i class="ti ti-check me-1"></i> Órbita OK (100%)</span>`
+                                : `<span class="badge bg-warning-lt text-warning fw-bold px-2 py-1"><i class="ti ti-alert-triangle me-1"></i> Incompleta (${o.percentage}%)</span>`;
+
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar avatar-xs bg-primary-lt text-primary me-2 rounded">
+                                            <i class="ti ti-satellite"></i>
+                                        </div>
+                                        <div>
+                                            <span class="font-monospace fw-bold text-dark d-block">${o.orbit}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary-lt fw-bold">${Number(o.total_files).toLocaleString()} arch.</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-between mb-1">
+                                        <small class="text-secondary">Synology $\\rightarrow$ Intermedia</small>
+                                        <span class="badge bg-green-lt text-green fw-bold" style="font-size: 0.75rem;">
+                                            ${o.phase1_ok} / ${o.total_files}
+                                        </span>
+                                    </div>
+                                    <div class="progress progress-xs">
+                                        <div class="progress-bar bg-success" style="width: ${p1Percent}%"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-between mb-1">
+                                        <small class="text-secondary">Intermedia $\\rightarrow$ Inspur</small>
+                                        <span class="badge ${p2Percent === 100 ? 'bg-green-lt text-green' : 'bg-azure-lt text-azure'} fw-bold" style="font-size: 0.75rem;">
+                                            ${o.phase2_ok} / ${o.total_files}
+                                        </span>
+                                    </div>
+                                    <div class="progress progress-xs">
+                                        <div class="progress-bar ${p2Percent === 100 ? 'bg-success' : 'bg-primary'}" style="width: ${p2Percent}%"></div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border font-monospace fw-bold">${o.human_size}</span>
+                                </td>
+                                <td class="text-center">
+                                    ${badgeEstado}
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+
+                    // Ocultar loader y mostrar contenido
+                    document.getElementById('m-orbit-loader').style.display = 'none';
+                    document.getElementById('m-orbit-content').style.display = 'block';
+                })
+                .catch(err => {
+                    orbitModal.hide();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al consultar resumen',
+                        text: err.message || 'No se pudo cargar el resumen por órbita.',
+                        confirmButtonText: 'Entendido'
+                    });
+                });
         });
     });
 });

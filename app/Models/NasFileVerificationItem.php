@@ -73,8 +73,8 @@ class NasFileVerificationItem extends Model
 
     public function getSizeMatchAttribute(): bool
     {
-        return $this->synology_size !== null 
-            && $this->inspur_size !== null 
+        return $this->synology_size !== null
+            && $this->inspur_size !== null
             && $this->synology_size === $this->inspur_size;
     }
 
@@ -123,4 +123,3 @@ class NasFileVerificationItem extends Model
         return round($bytes, $precision) . ' ' . $units[$pow];
     }
 }
-

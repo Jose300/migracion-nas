@@ -208,6 +208,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/{verification}/status', [App\Http\Controllers\NasVerificationController::class, 'checkStatus'])
                 ->middleware('permission:ver-confirmacion-nas')->name('status');
 
+            Route::get('/{verification}/resumen-orbitas', [App\Http\Controllers\NasVerificationController::class, 'getOrbitSummary'])
+                ->middleware('permission:ver-confirmacion-nas')->name('orbit-summary');
+
             Route::post('/simular/{task}', [App\Http\Controllers\NasVerificationController::class, 'simulate'])
                 ->middleware('permission:ejecutar-confirmacion-nas')->name('simulate');
 

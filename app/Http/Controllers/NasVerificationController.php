@@ -110,6 +110,93 @@ class NasVerificationController extends Controller
     }
 
     /**
+     * Retorna el resumen agrupado por órbita de una verificación para mostrar en modal.
+     */
+    public function getOrbitSummary(NasFileVerification $verification): JsonResponse
+    {
+        $verification->load(['task', 'user']);
+        $items = $verification->items()->get();
+
+        $orbits = [];
+        foreach ($items as $item) {
+            $parts = explode('/', trim(str_replace('\\', '/', $item->relative_path), '/'));
+            $orbitName = $parts[0] ?? 'Raíz / Varios';
+
+            if (!isset($orbits[$orbitName])) {
+                $orbits[$orbitName] = [
+                    'orbit' => $orbitName,
+                    'total_files' => 0,
+                    'confirmed_files' => 0,
+                    'mismatched_size' => 0,
+                    'missing_target' => 0,
+                    'phase1_ok' => 0,
+                    'phase2_ok' => 0,
+                    'total_bytes' => 0,
+                ];
+            }
+
+            $orbits[$orbitName]['total_files']++;
+            $orbits[$orbitName]['total_bytes'] += ($item->synology_size ?: $item->inspur_size ?: 0);
+
+            if ($item->phase1_status === 'confirmed') {
+                $orbits[$orbitName]['phase1_ok']++;
+            }
+            if ($item->phase2_status === 'confirmed' || $item->status === 'confirmed') {
+                $orbits[$orbitName]['phase2_ok']++;
+            }
+
+            if ($item->status === 'confirmed') {
+                $orbits[$orbitName]['confirmed_files']++;
+            } elseif ($item->status === 'size_mismatch') {
+                $orbits[$orbitName]['mismatched_size']++;
+            } elseif ($item->status === 'missing_target') {
+                $orbits[$orbitName]['missing_target']++;
+            }
+        }
+
+        // Calcular porcentajes y tamaños formateados
+        $orbitsList = [];
+        foreach ($orbits as $orb => $data) {
+            $tot = $data['total_files'];
+            $data['percentage'] = $tot > 0 ? round(($data['confirmed_files'] / $tot) * 100, 1) : 0;
+            $data['human_size'] = $this->formatBytes($data['total_bytes']);
+            $orbitsList[] = $data;
+        }
+
+        // Ordenar órbitas alfabéticamente
+        usort($orbitsList, fn($a, $b) => strcmp($a['orbit'], $b['orbit']));
+
+        return response()->json([
+            'success' => true,
+            'verification' => [
+                'id' => $verification->id,
+                'task_name' => $verification->task?->name ?? 'Tarea General',
+                'executed_at' => $verification->started_at ? $verification->started_at->format('d/m/Y H:i:s') : '-',
+                'duration' => $verification->duration_formatted,
+                'status' => $verification->status,
+                'total_files' => $verification->total_files_synology,
+                'total_confirmed' => $verification->total_confirmed,
+                'total_missing' => $verification->total_missing_in_target,
+                'percentage' => $verification->confirmed_percentage,
+                'error_message' => $verification->error_message,
+            ],
+            'orbits' => $orbitsList,
+            'total_orbits_count' => count($orbitsList),
+        ]);
+    }
+
+    protected function formatBytes(int $bytes, int $precision = 2): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+        $bytes /= (1 << (10 * $pow));
+
+        return round($bytes, $precision) . ' ' . $units[$pow];
+    }
+
+    /**
      * Consulta el estado de una verificación en tiempo real para el polling del frontend.
      */
     public function checkStatus(NasFileVerification $verification): JsonResponse
