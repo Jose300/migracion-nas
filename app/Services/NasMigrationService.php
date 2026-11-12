@@ -514,7 +514,14 @@ class NasMigrationService
         $onMoveOutput = function ($type, $buffer) use ($log) {
             if ($log) {
                 // Mantener viva la marca de tiempo de la tarea en la BD para que el monitor nunca la confunda con colgada
+                $updateData = [];
+                if (str_contains($buffer, 'TRASLADANDO_ORBITA:')) {
+                    $updateData['output'] = substr(($log->output ?? '') . "\n" . trim($buffer), -5000);
+                }
                 $log->touch();
+                if (!empty($updateData)) {
+                    $log->update($updateData);
+                }
             }
         };
 

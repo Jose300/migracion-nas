@@ -1362,7 +1362,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 const currentFiles = data.files_transferred || 0;
-                const totalFiles = data.total_files_in_batch || 0;
+                let totalFiles = data.total_files_in_batch || 0;
+                if (totalFiles > 0 && currentFiles > totalFiles) {
+                    totalFiles = currentFiles;
+                }
                 const batchOrbits = data.batch_size || 5;
 
                 if (totalFiles > 0) {

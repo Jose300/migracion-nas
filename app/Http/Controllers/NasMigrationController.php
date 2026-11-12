@@ -396,6 +396,10 @@ class NasMigrationController extends Controller
 
         $filesTransferred = $latestLog ? (int) ($latestLog->files_transferred ?? 0) : 0;
         $totalFilesInBatch = $latestLog ? (int) ($latestLog->total_files_in_batch ?? 0) : 0;
+        // Evitar visualmente que el contador de transferidos supere el total calculado
+        if ($totalFilesInBatch > 0 && $filesTransferred > $totalFilesInBatch) {
+            $totalFilesInBatch = $filesTransferred;
+        }
         $batchLimitOrbits = (int) ($task->batch_size ?: 5);
 
         if ($totalFilesInBatch > 0) {
