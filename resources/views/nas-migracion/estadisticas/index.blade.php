@@ -315,11 +315,12 @@
                                 @endforeach
                             </td>
                             <td class="text-center">
-                                <a href="{{ route('nas-migracion.estadisticas.index', ['responsable' => $resp->responsable]) }}" 
-                                   class="btn btn-sm btn-outline-secondary" 
-                                   title="Filtrar registros de este ejecutor">
-                                    <i class="ti ti-filter me-1"></i> Ver Datos
-                                </a>
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-primary btn-ver-resumen-responsable" 
+                                        data-responsable="{{ $resp->responsable }}"
+                                        title="Ver información resumida de este ejecutor">
+                                    <i class="ti ti-eye me-1"></i> Ver Datos
+                                </button>
                             </td>
                         </tr>
                         @empty
@@ -617,6 +618,145 @@
 </div>
 @endcan
 
+{{-- Modal Resumen del Responsable / Ejecutor --}}
+<div class="modal fade" id="modal-resumen-responsable" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold text-white d-flex align-items-center">
+                    <i class="ti ti-user-circle fs-2 me-2"></i>
+                    <span>Resumen Consolidado: <span id="modal-resp-title-name" class="text-white text-decoration-underline">-</span></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+                {{-- Spinner de Carga --}}
+                <div id="modal-resp-loading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <div class="text-muted mt-2 small">Cargando métricas y registros del ejecutor...</div>
+                </div>
+
+                {{-- Contenido de Métricas --}}
+                <div id="modal-resp-content" class="d-none">
+                    {{-- Encabezado con Avatar y Período --}}
+                    <div class="d-flex align-items-center justify-content-between p-3 rounded bg-light mb-3 border">
+                        <div class="d-flex align-items-center">
+                            <span id="modal-resp-avatar" class="avatar avatar-md me-3 bg-primary text-white fw-bold fs-3">--</span>
+                            <div>
+                                <h4 class="mb-0 fw-bold text-dark" id="modal-resp-name">-</h4>
+                                <div class="text-secondary small mt-1">
+                                    <i class="ti ti-calendar me-1"></i> Período de guardias: <span id="modal-resp-periodo" class="fw-semibold text-dark">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span id="modal-resp-badge-tipo" class="badge bg-blue-lt px-2 py-1 fs-4">Guardia Humana</span>
+                        </div>
+                    </div>
+
+                    {{-- Tarjetas KPI --}}
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-3 col-6">
+                            <div class="card card-sm border bg-primary-lt">
+                                <div class="card-body p-2 text-center">
+                                    <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.68rem;">Volumen Total</div>
+                                    <div class="fs-2 fw-bold text-primary my-1 font-monospace" id="modal-resp-gb">0 GB</div>
+                                    <div class="text-secondary" style="font-size: 0.72rem;" id="modal-resp-tb">(0 TB)</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="card card-sm border bg-success-lt">
+                                <div class="card-body p-2 text-center">
+                                    <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.68rem;">Participación</div>
+                                    <div class="fs-2 fw-bold text-success my-1 font-monospace" id="modal-resp-pct">0%</div>
+                                    <div class="text-secondary" style="font-size: 0.72rem;">del total general</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="card card-sm border bg-azure-lt">
+                                <div class="card-body p-2 text-center">
+                                    <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.68rem;">Archivos</div>
+                                    <div class="fs-2 fw-bold text-azure my-1 font-monospace" id="modal-resp-archivos">0</div>
+                                    <div class="text-secondary" style="font-size: 0.72rem;">transferidos</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="card card-sm border bg-teal-lt">
+                                <div class="card-body p-2 text-center">
+                                    <div class="text-muted small text-uppercase fw-bold" style="font-size: 0.68rem;">Guardias / Lotes</div>
+                                    <div class="fs-2 fw-bold text-teal my-1 font-monospace" id="modal-resp-registros">0</div>
+                                    <div class="text-secondary" style="font-size: 0.72rem;">registros</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Desglose por Satélite --}}
+                    <div class="card mb-3 border">
+                        <div class="card-header py-2 bg-light">
+                            <h6 class="card-title mb-0 fw-bold fs-4 text-dark">
+                                <i class="ti ti-satellite me-1 text-teal"></i> Desglose por Satélite
+                            </h6>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-vcenter mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Satélite</th>
+                                        <th class="text-end">GB Migrados</th>
+                                        <th class="text-center">Archivos</th>
+                                        <th class="text-center">Registros</th>
+                                        <th style="width: 30%;">Proporción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modal-resp-sat-tbody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {{-- Últimos Registros Transferidos --}}
+                    <div class="card border">
+                        <div class="card-header py-2 bg-light d-flex justify-content-between align-items-center">
+                            <h6 class="card-title mb-0 fw-bold fs-4 text-dark">
+                                <i class="ti ti-history me-1 text-primary"></i> Últimas Transferencias Realizadas
+                            </h6>
+                            <span class="badge bg-secondary-lt" style="font-size: 0.7rem;">Hasta 8 más recientes</span>
+                        </div>
+                        <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+                            <table class="table table-sm table-hover table-striped mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Satélite</th>
+                                        <th>ID Archivo / Órbita</th>
+                                        <th class="text-end">GB</th>
+                                        <th class="text-center">Arch.</th>
+                                        <th>Observaciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modal-resp-recent-tbody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <a href="#" id="modal-resp-btn-filter" class="btn btn-outline-primary">
+                    <i class="ti ti-filter me-1"></i> Ver todos los registros en la tabla
+                </a>
+                <button type="button" class="btn btn-danger fw-bold" data-bs-dismiss="modal">
+                    <i class="ti ti-x me-1"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -862,6 +1002,142 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (result.isConfirmed) {
                     form.submit();
                 }
+            });
+        });
+    });
+
+    // 6. Modal AJAX de Resumen por Responsable
+    const modalResumenElement = document.getElementById('modal-resumen-responsable');
+    const modalResumen = modalResumenElement ? new bootstrap.Modal(modalResumenElement) : null;
+
+    document.querySelectorAll('.btn-ver-resumen-responsable').forEach(button => {
+        button.addEventListener('click', function () {
+            const responsable = this.getAttribute('data-responsable');
+            if (!responsable || !modalResumen) return;
+
+            document.getElementById('modal-resp-title-name').textContent = responsable;
+            document.getElementById('modal-resp-loading').classList.remove('d-none');
+            document.getElementById('modal-resp-content').classList.add('d-none');
+
+            modalResumen.show();
+
+            fetch(`{{ route('nas-migracion.estadisticas.responsable-resumen') }}?responsable=${encodeURIComponent(responsable)}`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'No se pudieron cargar los datos.',
+                        confirmButtonColor: '#2fb344'
+                    });
+                    modalResumen.hide();
+                    return;
+                }
+
+                // Llenar Datos Principales
+                document.getElementById('modal-resp-name').textContent = data.responsable;
+                document.getElementById('modal-resp-gb').textContent = `${data.total_gb} GB`;
+                document.getElementById('modal-resp-tb').textContent = `(${data.total_tb} TB)`;
+                document.getElementById('modal-resp-pct').textContent = `${data.porcentaje_global}%`;
+                document.getElementById('modal-resp-archivos').textContent = data.total_archivos;
+                document.getElementById('modal-resp-registros').textContent = data.total_registros;
+
+                const periodo = (data.fecha_inicio && data.fecha_fin) 
+                    ? `${data.fecha_inicio} al ${data.fecha_fin}` 
+                    : (data.fecha_inicio || 'Sin fechas registradas');
+                document.getElementById('modal-resp-periodo').textContent = periodo;
+
+                // Avatar y Tipo
+                const avatarEl = document.getElementById('modal-resp-avatar');
+                const badgeTipoEl = document.getElementById('modal-resp-badge-tipo');
+
+                if (data.is_bot) {
+                    avatarEl.className = 'avatar avatar-md me-3 bg-purple text-white fw-bold fs-3';
+                    avatarEl.innerHTML = '<i class="ti ti-robot"></i>';
+                    badgeTipoEl.className = 'badge bg-purple-lt px-2 py-1 fs-4';
+                    badgeTipoEl.textContent = 'Proceso Automático (bot_pss)';
+                } else {
+                    avatarEl.className = 'avatar avatar-md me-3 bg-primary text-white fw-bold fs-3';
+                    avatarEl.textContent = (data.responsable || '--').substring(0, 2).toUpperCase();
+                    badgeTipoEl.className = 'badge bg-blue-lt px-2 py-1 fs-4';
+                    badgeTipoEl.textContent = 'Guardia Humana';
+                }
+
+                // Desglose Satélites
+                const satTbody = document.getElementById('modal-resp-sat-tbody');
+                satTbody.innerHTML = '';
+                if (data.satelites && data.satelites.length > 0) {
+                    data.satelites.forEach(s => {
+                        const satBadge = s.satelite === 'VRSS-1' ? 'bg-info-lt' : 'bg-teal-lt';
+                        const barColor = s.satelite === 'VRSS-1' ? 'bg-info' : 'bg-teal';
+                        satTbody.innerHTML += `
+                            <tr>
+                                <td>
+                                    <span class="badge ${satBadge} font-monospace">${s.satelite}</span>
+                                </td>
+                                <td class="text-end fw-bold font-monospace text-primary">${parseFloat(s.total_gb).toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 4})} GB</td>
+                                <td class="text-center font-monospace">${parseInt(s.total_archivos).toLocaleString()}</td>
+                                <td class="text-center font-monospace">${s.total_registros}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress progress-sm flex-grow-1 me-2" style="height: 6px;">
+                                            <div class="progress-bar ${barColor}" style="width: ${s.porcentaje_sat}%"></div>
+                                        </div>
+                                        <span class="small font-monospace text-muted">${s.porcentaje_sat}%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    satTbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-2">Sin desglose disponible</td></tr>`;
+                }
+
+                // Últimos Registros
+                const recentTbody = document.getElementById('modal-resp-recent-tbody');
+                recentTbody.innerHTML = '';
+                if (data.recent_records && data.recent_records.length > 0) {
+                    data.recent_records.forEach(r => {
+                        const satBadge = r.satelite === 'VRSS-1' ? 'bg-info-lt' : 'bg-teal-lt';
+                        recentTbody.innerHTML += `
+                            <tr style="font-size: 0.8rem;">
+                                <td>${r.fecha}</td>
+                                <td><span class="badge ${satBadge} font-monospace" style="font-size: 0.7rem;">${r.satelite}</span></td>
+                                <td><code class="text-primary">${r.archivo_id || '-'}</code></td>
+                                <td class="text-end font-monospace fw-bold text-dark">${r.tamano_gb}</td>
+                                <td class="text-center font-monospace">${r.cantidad_archivos}</td>
+                                <td class="text-truncate text-secondary" style="max-width: 180px;" title="${r.observaciones}">${r.observaciones}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    recentTbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-2">Sin registros recientes</td></tr>`;
+                }
+
+                // Botón Enlace Filtrado
+                const btnFilter = document.getElementById('modal-resp-btn-filter');
+                if (btnFilter) {
+                    btnFilter.href = data.filter_url;
+                }
+
+                document.getElementById('modal-resp-loading').classList.add('d-none');
+                document.getElementById('modal-resp-content').classList.remove('d-none');
+            })
+            .catch(err => {
+                document.getElementById('modal-resp-loading').classList.add('d-none');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Red',
+                    text: 'No se pudo comunicar con el servidor: ' + err.message,
+                    confirmButtonColor: '#2fb344'
+                });
+                modalResumen.hide();
             });
         });
     });

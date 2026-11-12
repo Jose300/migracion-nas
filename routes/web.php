@@ -220,6 +220,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [App\Http\Controllers\NasStatsController::class, 'index'])
                 ->middleware('permission:ver-estadisticas-nas')->name('index');
 
+            Route::get('/responsable-resumen', [App\Http\Controllers\NasStatsController::class, 'getResponsableSummary'])
+                ->middleware('permission:ver-estadisticas-nas')->name('responsable-resumen');
+
             Route::post('/', [App\Http\Controllers\NasStatsController::class, 'store'])
                 ->middleware('permission:crear-estadisticas-nas')->name('store');
 

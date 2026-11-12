@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\NasMigrationStat;
 use App\Models\NasMigrationTask;
 use App\Services\AuditService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -132,6 +133,83 @@ class NasStatsController extends Controller
             'records',
             'availableExecutors'
         ));
+    }
+
+    /**
+     * Retorna el resumen consolidado y desglose de un ejecutor para modal AJAX.
+     */
+    public function getResponsableSummary(Request $request): JsonResponse
+    {
+        $responsable = trim($request->input('responsable', ''));
+
+        if (empty($responsable)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El responsable es requerido.',
+            ], 422);
+        }
+
+        $globalTotalGb = (float) NasMigrationStat::sum('tamano_gb');
+        $query = NasMigrationStat::where('responsable', $responsable);
+
+        $totalGb = (float) (clone $query)->sum('tamano_gb');
+        $totalArchivos = (int) (clone $query)->sum('cantidad_archivos');
+        $totalRegistros = (int) (clone $query)->count();
+        $minFecha = (clone $query)->min('fecha');
+        $maxFecha = (clone $query)->max('fecha');
+
+        $porcentaje = $globalTotalGb > 0 ? round(($totalGb / $globalTotalGb) * 100, 2) : 0;
+
+        // Desglose por Satélite
+        $satBreakdown = NasMigrationStat::where('responsable', $responsable)
+            ->select(
+                'satelite',
+                DB::raw('SUM(tamano_gb) as total_gb'),
+                DB::raw('SUM(cantidad_archivos) as total_archivos'),
+                DB::raw('COUNT(*) as total_registros')
+            )
+            ->groupBy('satelite')
+            ->orderBy('satelite')
+            ->get()
+            ->map(function ($row) use ($totalGb) {
+                $row->total_gb = round((float) $row->total_gb, 4);
+                $row->porcentaje_sat = $totalGb > 0 ? round(($row->total_gb / $totalGb) * 100, 1) : 0;
+                return $row;
+            });
+
+        // Últimos 8 registros transferidos por este responsable
+        $recentRecords = NasMigrationStat::where('responsable', $responsable)
+            ->latest('fecha')
+            ->latest('id')
+            ->take(8)
+            ->get()
+            ->map(function ($r) {
+                return [
+                    'id' => $r->id,
+                    'fecha' => is_string($r->fecha) ? substr($r->fecha, 0, 10) : ($r->fecha ? $r->fecha->format('d/m/Y') : '-'),
+                    'satelite' => $r->satelite,
+                    'archivo_id' => $r->archivo_id,
+                    'tamano_gb' => number_format((float) $r->tamano_gb, 4),
+                    'cantidad_archivos' => (int) $r->cantidad_archivos,
+                    'observaciones' => $r->observaciones ?: 'Sin observaciones',
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'responsable' => $responsable,
+            'is_bot' => strtolower($responsable) === 'bot_pss',
+            'total_gb' => number_format($totalGb, 2),
+            'total_tb' => number_format($totalGb / 1024, 2),
+            'porcentaje_global' => $porcentaje,
+            'total_archivos' => number_format($totalArchivos),
+            'total_registros' => $totalRegistros,
+            'fecha_inicio' => $minFecha ? (is_string($minFecha) ? substr($minFecha, 0, 10) : $minFecha->format('d/m/Y')) : null,
+            'fecha_fin' => $maxFecha ? (is_string($maxFecha) ? substr($maxFecha, 0, 10) : $maxFecha->format('d/m/Y')) : null,
+            'satelites' => $satBreakdown,
+            'recent_records' => $recentRecords,
+            'filter_url' => route('nas-migracion.estadisticas.index', ['responsable' => $responsable]),
+        ]);
     }
 
     /**
