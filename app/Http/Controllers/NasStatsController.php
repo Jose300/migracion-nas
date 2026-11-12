@@ -31,13 +31,13 @@ class NasStatsController extends Controller
 
         // 2. Resumen por Responsable (Cotejado con hoja "Resumen por Responsable" del Excel)
         $responsablesStats = NasMigrationStat::select(
-                'responsable',
-                DB::raw('SUM(tamano_gb) as total_gb'),
-                DB::raw('SUM(cantidad_archivos) as total_archivos'),
-                DB::raw('COUNT(*) as total_registros'),
-                DB::raw('MIN(fecha) as fecha_inicio'),
-                DB::raw('MAX(fecha) as fecha_fin')
-            )
+            'responsable',
+            DB::raw('SUM(tamano_gb) as total_gb'),
+            DB::raw('SUM(cantidad_archivos) as total_archivos'),
+            DB::raw('COUNT(*) as total_registros'),
+            DB::raw('MIN(fecha) as fecha_inicio'),
+            DB::raw('MAX(fecha) as fecha_fin')
+        )
             ->groupBy('responsable')
             ->orderByDesc('total_gb')
             ->get()
@@ -61,17 +61,17 @@ class NasStatsController extends Controller
 
         // Serie de Tiempo: GB Migrados por Día
         $dailyData = NasMigrationStat::select(
-                'fecha',
-                'satelite',
-                DB::raw('SUM(tamano_gb) as dia_gb'),
-                DB::raw('SUM(cantidad_archivos) as dia_archivos')
-            )
+            'fecha',
+            'satelite',
+            DB::raw('SUM(tamano_gb) as dia_gb'),
+            DB::raw('SUM(cantidad_archivos) as dia_archivos')
+        )
             ->groupBy('fecha', 'satelite')
             ->orderBy('fecha')
             ->get();
 
         $allDates = $dailyData->pluck('fecha')->map(fn($d) => is_string($d) ? substr($d, 0, 10) : $d->format('Y-m-d'))->unique()->values()->toArray();
-        
+
         $timelineVrss1 = [];
         $timelineVrss2 = [];
         foreach ($allDates as $dateStr) {
@@ -104,8 +104,8 @@ class NasStatsController extends Controller
             $s = trim($request->search);
             $query->where(function ($q) use ($s) {
                 $q->where('archivo_id', 'like', "%{$s}%")
-                  ->orWhere('responsable', 'like', "%{$s}%")
-                  ->orWhere('observaciones', 'like', "%{$s}%");
+                    ->orWhere('responsable', 'like', "%{$s}%")
+                    ->orWhere('observaciones', 'like', "%{$s}%");
             });
         }
 
@@ -314,7 +314,7 @@ class NasStatsController extends Controller
 
         return response()->streamDownload(function () use ($query) {
             $handle = fopen('php://output', 'w');
-            
+
             // UTF-8 BOM para que Excel abra acentos y símbolos correctamente
             fputs($handle, "\xEF\xBB\xBF");
 
@@ -352,4 +352,3 @@ class NasStatsController extends Controller
         ]);
     }
 }
-

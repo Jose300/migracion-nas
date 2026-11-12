@@ -768,8 +768,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // 1. Iniciar Verificación en Vivo
     document.querySelectorAll('.btn-start-verification').forEach(button => {
         button.addEventListener('click', function () {
-            const taskName = this.getAttribute('data-task-name');
-            const url = this.getAttribute('data-url');
+            const btn = this;
+            const taskName = btn.getAttribute('data-task-name');
+            const url = btn.getAttribute('data-url');
 
             Swal.fire({
                 title: '¿Iniciar Verificación y Cotejo?',
@@ -783,6 +784,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 cancelButtonText: 'Cancelar'
             }).then(result => {
                 if (result.isConfirmed) {
+                    // Bloquear inmediatamente el botón
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Iniciando...';
+
                     Swal.fire({
                         title: 'Despachando Verificación...',
                         html: 'Conectando con la NAS en segundo plano.',
@@ -801,6 +806,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
+                            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Cotejando...';
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Cotejo en Marcha',
@@ -810,6 +816,8 @@ document.addEventListener('DOMContentLoaded', function () {
                                 window.location.reload();
                             });
                         } else {
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="ti ti-scan me-1"></i> Verificar y Comparar Ahora';
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error al iniciar',
@@ -819,6 +827,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     })
                     .catch(err => {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="ti ti-scan me-1"></i> Verificar y Comparar Ahora';
                         Swal.fire({
                             icon: 'error',
                             title: 'Error de comunicación',
@@ -834,8 +844,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // 2. Simular Cotejo Demostrativo
     document.querySelectorAll('.btn-simulate-verification').forEach(button => {
         button.addEventListener('click', function () {
-            const taskName = this.getAttribute('data-task-name');
-            const url = this.getAttribute('data-url');
+            const btn = this;
+            const taskName = btn.getAttribute('data-task-name');
+            const url = btn.getAttribute('data-url');
 
             Swal.fire({
                 title: '¿Simular Cotejo de Verificación?',
@@ -849,6 +860,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 cancelButtonText: 'Cancelar'
             }).then(result => {
                 if (result.isConfirmed) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Simulando...';
+
                     Swal.fire({
                         title: 'Generando Simulación...',
                         allowOutsideClick: false,

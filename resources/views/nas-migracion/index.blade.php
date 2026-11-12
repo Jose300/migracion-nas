@@ -1153,6 +1153,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 cancelButtonColor: '#d63939'
             }).then(result => {
                 if (result.isConfirmed) {
+                    // Bloquear inmediatamente el botón de sincronizar en la tarjeta
+                    const btn = document.getElementById(`btn-sync-${taskId}`);
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+                    }
+
                     // Modal de comprobación previa de conectividad
                     Swal.fire({
                         title: 'Comprobando Conexión con NAS...',
