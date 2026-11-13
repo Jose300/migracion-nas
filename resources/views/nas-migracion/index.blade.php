@@ -656,13 +656,32 @@
                             </td>
                             <td>
                                 <span class="badge bg-secondary-lt fw-bold">{{ number_format($log->files_transferred) }} archivos</span>
-                                @if($log->last_migrated_orbit_in_batch)
+                                
+                                {{-- Listado de Órbitas Copiadas en esta Tarea --}}
+                                @php
+                                    $copiedOrbits = $log->copied_orbits;
+                                @endphp
+                                @if(count($copiedOrbits) > 0)
+                                    <div class="mt-1 d-flex flex-wrap gap-1 align-items-center" style="max-width: 220px;">
+                                        @foreach(array_slice($copiedOrbits, 0, 2) as $orb)
+                                            <span class="badge bg-teal-lt text-teal font-monospace px-1 py-0" style="font-size: 0.69rem;" title="Órbita transferida">
+                                                <i class="ti ti-satellite me-1"></i>{{ $orb }}
+                                            </span>
+                                        @endforeach
+                                        @if(count($copiedOrbits) > 2)
+                                            <span class="badge bg-secondary-lt text-secondary font-monospace px-1 py-0" style="font-size: 0.68rem;" title="{{ implode(', ', $copiedOrbits) }}">
+                                                +{{ count($copiedOrbits) - 2 }} más
+                                            </span>
+                                        @endif
+                                    </div>
+                                @elseif($log->last_migrated_orbit_in_batch)
                                     <div class="small text-truncate mt-1" style="max-width: 140px;" title="Última órbita procesada: {{ $log->last_migrated_orbit_in_batch }}">
                                         <i class="ti ti-check text-success"></i> <code class="small text-success">{{ $log->last_migrated_orbit_in_batch }}</code>
                                     </div>
                                 @endif
+
                                 @if($log->orbits_skipped > 0)
-                                    <div class="small text-muted" title="{{ $log->orbits_skipped }} órbitas ya existían en destino">
+                                    <div class="small text-muted mt-1" title="{{ $log->orbits_skipped }} órbitas ya existían en destino">
                                         <i class="ti ti-arrow-forward-up text-warning"></i> <small>{{ $log->orbits_skipped }} omitidas</small>
                                     </div>
                                 @endif
@@ -971,11 +990,40 @@
                     <div><span class="text-secondary">Estado:</span> <span id="log-status-badge"></span></div>
                 </div>
 
-                {{-- Ventana tipo Terminal --}}
-                <div class="p-3">
-                    <pre id="log-output-content" 
-                         class="m-0 text-success font-monospace" 
-                         style="background-color: #0c0d0e; padding: 1rem; border-radius: 6px; max-height: 480px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; font-size: 0.85rem; border: 1px solid #23272d;"></pre>
+                {{-- Pestañas: Consola Terminal y Listado de Órbitas Copiadas --}}
+                <div class="bg-black px-3 pt-2 border-bottom border-secondary">
+                    <ul class="nav nav-tabs nav-tabs-alt border-0" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active text-white" id="tab-log-console-link" data-bs-toggle="tab" href="#tab-log-console" role="tab">
+                                <i class="ti ti-terminal me-1 text-green"></i> Salida de Consola
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" id="tab-log-orbits-link" data-bs-toggle="tab" href="#tab-log-orbits" role="tab">
+                                <i class="ti ti-satellite me-1 text-teal"></i> Órbitas y Archivos del Lote <span class="badge bg-teal-lt ms-1" id="log-orbits-count-badge">0</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="tab-content">
+                    {{-- Pestaña 1: Ventana tipo Terminal --}}
+                    <div class="tab-pane fade show active p-3" id="tab-log-console" role="tabpanel">
+                        <pre id="log-output-content" 
+                             class="m-0 text-success font-monospace" 
+                             style="background-color: #0c0d0e; padding: 1rem; border-radius: 6px; max-height: 480px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; font-size: 0.85rem; border: 1px solid #23272d;"></pre>
+                    </div>
+
+                    {{-- Pestaña 2: Listado de Órbitas y Archivos --}}
+                    <div class="tab-pane fade p-3" id="tab-log-orbits" role="tabpanel">
+                        <div id="log-orbits-empty" class="text-center py-4 text-white-50 d-none">
+                            <i class="ti ti-folder-off fs-1 d-block mb-2 text-secondary"></i>
+                            No se registraron órbitas transferidas en este log (pudo ser omitido por existir en destino o finalizar con error).
+                        </div>
+                        <div id="log-orbits-container" class="accordion accordion-flush" style="max-height: 480px; overflow-y: auto;">
+                            {{-- Contenido dinámico inyectado por JS --}}
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer bg-dark border-secondary">
@@ -1566,6 +1614,58 @@ document.addEventListener('DOMContentLoaded', function () {
     let visorLiveTimer = null;
     let currentVisorUrl = null;
 
+    function renderOrbitsTab(data) {
+        const badge = document.getElementById('log-orbits-count-badge');
+        const container = document.getElementById('log-orbits-container');
+        const emptyMsg = document.getElementById('log-orbits-empty');
+        if (!container || !badge) return;
+
+        const orbits = data.orbits_with_files || [];
+        badge.textContent = orbits.length;
+
+        if (orbits.length === 0) {
+            container.innerHTML = '';
+            if (emptyMsg) emptyMsg.classList.remove('d-none');
+            return;
+        }
+
+        if (emptyMsg) emptyMsg.classList.add('d-none');
+        container.innerHTML = '';
+
+        orbits.forEach((orb, idx) => {
+            const accId = `acc-orbit-${idx}`;
+            const collapseId = `collapse-orbit-${idx}`;
+            const filesList = (orb.files || []).map(f => `
+                <li class="list-group-item bg-dark border-secondary text-light py-1 px-2 font-monospace" style="font-size: 0.76rem;">
+                    <i class="ti ti-file text-azure me-1"></i> ${f.relative_path}
+                </li>
+            `).join('');
+
+            const orbItem = document.createElement('div');
+            orbItem.className = 'accordion-item bg-black border border-secondary mb-2 rounded';
+            orbItem.innerHTML = `
+                <h2 class="accordion-header" id="${accId}">
+                    <button class="accordion-button bg-black text-light ${idx === 0 ? '' : 'collapsed'} py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">
+                        <div class="d-flex align-items-center justify-content-between w-100 me-2">
+                            <span class="font-monospace fw-bold text-teal d-flex align-items-center">
+                                <i class="ti ti-satellite me-2 fs-2 text-warning"></i> ${orb.orbit}
+                            </span>
+                            <span class="badge bg-teal-lt font-monospace">${orb.files_count} archivo(s)</span>
+                        </div>
+                    </button>
+                </h2>
+                <div id="${collapseId}" class="accordion-collapse collapse ${idx === 0 ? 'show' : ''}" data-bs-parent="#log-orbits-container">
+                    <div class="accordion-body p-2 bg-dark border-top border-secondary">
+                        <ul class="list-group list-group-flush mb-0">
+                            ${filesList || '<li class="list-group-item bg-dark text-muted py-1 px-2 small">Detalle no disponible</li>'}
+                        </ul>
+                    </div>
+                </div>
+            `;
+            container.appendChild(orbItem);
+        });
+    }
+
     function refreshVisorContent() {
         if (!currentVisorUrl) return;
         fetch(currentVisorUrl, {
@@ -1599,6 +1699,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const logBox = document.getElementById('log-output-content');
             logBox.textContent = fullText;
             logBox.scrollTop = logBox.scrollHeight;
+
+            // Renderizar listado de órbitas del lote
+            renderOrbitsTab(data);
 
             if (data.status !== 'running' && visorLiveTimer) {
                 clearInterval(visorLiveTimer);

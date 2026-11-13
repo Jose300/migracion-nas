@@ -510,6 +510,8 @@ class NasMigrationController extends Controller
             'size' => $log->human_transferred_size,
             'speed' => $log->speed ?: '-',
             'summary' => $log->summary,
+            'copied_orbits' => $log->copied_orbits,
+            'orbits_with_files' => $log->orbits_with_files,
             'output' => $log->output ?: 'Sin salida registrada.',
             'error_message' => $log->error_message,
         ]);
