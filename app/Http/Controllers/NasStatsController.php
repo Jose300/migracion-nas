@@ -431,6 +431,8 @@ class NasStatsController extends Controller
                     DB::raw('SUM(cantidad_archivos) as total_archivos')
                 )->groupBy('responsable')->orderByDesc('total_gb')->get();
 
+                $allResponsables = $responsables->pluck('responsable')->values()->toArray();
+
                 foreach ($responsables as $r) {
                     $pct = $totalGbGlobal > 0 ? round(($r->total_gb / $totalGbGlobal) * 100, 2) : 0;
                     $sats = NasMigrationStat::where('responsable', $r->responsable)->distinct()->pluck('satelite')->implode(', ');
