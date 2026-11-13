@@ -120,6 +120,20 @@ class NasStatsController extends Controller
             $monthlyVrss2[] = round((float) $items->where('satelite', 'VRSS-2')->sum('tamano_gb'), 2);
         }
 
+        // Agrupación Semanal según Responsable (Evolución de Guardias / Responsables por Semana)
+        $allResponsables = $responsablesStats->pluck('responsable')->values()->toArray();
+        $weeklyRespSeries = [];
+        foreach ($allResponsables as $respName) {
+            $dataResp = [];
+            foreach ($weeksGrouped as $wKey => $items) {
+                $dataResp[] = round((float) $items->where('responsable', $respName)->sum('tamano_gb'), 2);
+            }
+            $weeklyRespSeries[] = [
+                'name' => $respName,
+                'data' => $dataResp,
+            ];
+        }
+
         // 4. Listado Detallado de Registros con Filtros
         $query = NasMigrationStat::with(['task', 'user'])->latest('fecha')->latest('id');
 
@@ -172,6 +186,7 @@ class NasStatsController extends Controller
             'weeklyLabels',
             'weeklyVrss1',
             'weeklyVrss2',
+            'weeklyRespSeries',
             'monthlyLabels',
             'monthlyVrss1',
             'monthlyVrss2',
@@ -463,8 +478,31 @@ class NasStatsController extends Controller
                 fputcsv($handle, [], ';');
                 fputcsv($handle, [], ';');
 
-                // SECCIÓN 5: SERIE TEMPORAL POR MES
-                fputcsv($handle, ['=== 5. EVOLUCIÓN MENSUAL DE MIGRACIÓN ==='], ';');
+                // SECCIÓN 5: SERIE TEMPORAL SEMANAL SEGÚN RESPONSABLE
+                fputcsv($handle, ['=== 5. EVOLUCIÓN SEMANAL SEGÚN RESPONSABLE (GB POR SEMANA) ==='], ';');
+                $headerResp = array_merge(['Semana (Año-S)', 'Rango de Fechas'], $allResponsables, ['Total Semana (GB)']);
+                fputcsv($handle, $headerResp, ';');
+
+                foreach ($byWeek as $w => $items) {
+                    $min = $items->min('fecha');
+                    $max = $items->max('fecha');
+                    $rango = date('d/m/Y', strtotime($min)) . ' - ' . date('d/m/Y', strtotime($max));
+                    $rowResp = [$w, $rango];
+                    $totWResp = 0;
+                    foreach ($allResponsables as $rName) {
+                        $gbR = (float) $items->where('responsable', $rName)->sum('tamano_gb');
+                        $totWResp += $gbR;
+                        $rowResp[] = number_format($gbR, 4, ',', '');
+                    }
+                    $rowResp[] = number_format($totWResp, 4, ',', '');
+                    fputcsv($handle, $rowResp, ';');
+                }
+
+                fputcsv($handle, [], ';');
+                fputcsv($handle, [], ';');
+
+                // SECCIÓN 6: SERIE TEMPORAL POR MES
+                fputcsv($handle, ['=== 6. EVOLUCIÓN MENSUAL DE MIGRACIÓN ==='], ';');
                 fputcsv($handle, ['Mes / Año', 'VRSS-1 (GB)', 'VRSS-2 (GB)', 'Total Mes (GB)', 'Archivos Mes'], ';');
 
                 $byMonth = $allStats->groupBy(function($item) {

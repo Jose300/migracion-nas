@@ -250,6 +250,26 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Gráfico 4: Volumen Migrado por Semana según Responsable --}}
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="card-title fw-bold d-flex align-items-center mb-0">
+                                <i class="ti ti-chart-arrows-vertical me-2 text-warning fs-2"></i> Evolución Semanal de Migración por Responsable
+                            </h3>
+                            <small class="text-secondary">Comparativa de volumen transferido (GB) por cada operador y bot_pss semana a semana</small>
+                        </div>
+                        <span class="badge bg-warning-lt fw-bold font-monospace">
+                            <i class="ti ti-calendar-event me-1"></i> Por Semana (ISO)
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div id="chart-weekly-responsables" style="min-height: 320px;"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         {{-- Tabla: Resumen por Responsable (Reflejo fiel de la Hoja de Excel) --}}
@@ -1073,6 +1093,82 @@ document.addEventListener('DOMContentLoaded', function () {
                 ]);
             });
         });
+    }
+
+    // 3.1. Gráfica de Barras Apiladas: Volumen Migrado por Semana según Responsable
+    const weeklyRespLabels = @json($weeklyLabels);
+    const weeklyRespSeries = @json($weeklyRespSeries);
+
+    if (document.getElementById('chart-weekly-responsables') && weeklyRespLabels.length > 0) {
+        const weeklyRespOptions = {
+            series: weeklyRespSeries,
+            chart: {
+                type: 'bar',
+                height: 320,
+                stacked: true,
+                fontFamily: 'inherit',
+                toolbar: {
+                    show: true,
+                    tools: {
+                        download: true,
+                        selection: false,
+                        zoom: false,
+                        zoomin: false,
+                        zoomout: false,
+                        pan: false,
+                        reset: false
+                    }
+                }
+            },
+            colors: ['#206bc4', '#4299e1', '#0ca678', '#f59f00', '#ae3ec9', '#d63939', '#17a2b8', '#6366f1'],
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    borderRadius: 4,
+                    columnWidth: '50%'
+                }
+            },
+            xaxis: {
+                categories: weeklyRespLabels,
+                labels: {
+                    rotate: -15,
+                    style: {
+                        fontSize: '11px',
+                        fontWeight: 500
+                    }
+                }
+            },
+            yaxis: {
+                labels: {
+                    formatter: function (val) {
+                        return val.toFixed(0) + " GB";
+                    }
+                },
+                title: {
+                    text: 'Volumen Migrado (GB)'
+                }
+            },
+            legend: {
+                position: 'top',
+                horizontalAlign: 'center',
+                fontSize: '12px',
+                markers: {
+                    radius: 12
+                }
+            },
+            tooltip: {
+                shared: true,
+                intersect: false,
+                y: {
+                    formatter: function (val) {
+                        return val.toLocaleString('es-VE') + " GB";
+                    }
+                }
+            }
+        };
+
+        const chartWeeklyResp = new ApexCharts(document.getElementById('chart-weekly-responsables'), weeklyRespOptions);
+        chartWeeklyResp.render();
     }
 
     // 4. Modal: Alternar entre modo Lote e Individual
