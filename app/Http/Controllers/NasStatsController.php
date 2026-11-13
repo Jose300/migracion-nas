@@ -120,8 +120,24 @@ class NasStatsController extends Controller
             $monthlyVrss2[] = round((float) $items->where('satelite', 'VRSS-2')->sum('tamano_gb'), 2);
         }
 
-        // Agrupación Semanal según Responsable (Evolución de Guardias / Responsables por Semana)
+        // Agrupación Temporal según Responsable (Diario, Semanal, Mensual)
         $allResponsables = $responsablesStats->pluck('responsable')->values()->toArray();
+
+        // 1) Diario por Responsable
+        $dailyRespSeries = [];
+        foreach ($allResponsables as $respName) {
+            $dSeries = [];
+            foreach ($allDates as $dateStr) {
+                $val = round((float) $allStatsForPeriod->where('responsable', $respName)->filter(fn($i) => (is_string($i->fecha) ? substr($i->fecha, 0, 10) : $i->fecha->format('Y-m-d')) === $dateStr)->sum('tamano_gb'), 2);
+                $dSeries[] = $val;
+            }
+            $dailyRespSeries[] = [
+                'name' => $respName,
+                'data' => $dSeries,
+            ];
+        }
+
+        // 2) Semanal por Responsable
         $weeklyRespSeries = [];
         foreach ($allResponsables as $respName) {
             $dataResp = [];
@@ -131,6 +147,19 @@ class NasStatsController extends Controller
             $weeklyRespSeries[] = [
                 'name' => $respName,
                 'data' => $dataResp,
+            ];
+        }
+
+        // 3) Mensual por Responsable
+        $monthlyRespSeries = [];
+        foreach ($allResponsables as $respName) {
+            $mSeries = [];
+            foreach ($monthsGrouped as $mKey => $items) {
+                $mSeries[] = round((float) $items->where('responsable', $respName)->sum('tamano_gb'), 2);
+            }
+            $monthlyRespSeries[] = [
+                'name' => $respName,
+                'data' => $mSeries,
             ];
         }
 
@@ -186,7 +215,9 @@ class NasStatsController extends Controller
             'weeklyLabels',
             'weeklyVrss1',
             'weeklyVrss2',
+            'dailyRespSeries',
             'weeklyRespSeries',
+            'monthlyRespSeries',
             'monthlyLabels',
             'monthlyVrss1',
             'monthlyVrss2',

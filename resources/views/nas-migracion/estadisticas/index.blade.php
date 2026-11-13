@@ -251,22 +251,44 @@
                 </div>
             </div>
 
-            {{-- Gráfico 4: Volumen Migrado por Semana según Responsable --}}
+            {{-- Gráfico 4: Evolución de Migración según Responsable con Filtros (Día, Semana, Mes y Filtro por Responsable) --}}
             <div class="col-12">
                 <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <div class="card-header bg-transparent d-flex flex-wrap justify-content-between align-items-center gap-2 py-3">
                         <div>
-                            <h3 class="card-title fw-bold d-flex align-items-center mb-0">
-                                <i class="ti ti-chart-arrows-vertical me-2 text-warning fs-2"></i> Evolución Semanal de Migración por Responsable
+                            <h3 class="card-title fw-bold d-flex align-items-center mb-0" id="chart-resp-card-title">
+                                <i class="ti ti-chart-arrows-vertical me-2 text-warning fs-2"></i> Evolución de Migración por Responsable
                             </h3>
-                            <small class="text-secondary">Comparativa de volumen transferido (GB) por cada operador y bot_pss semana a semana</small>
+                            <small class="text-secondary" id="chart-resp-card-subtitle">Comparativa de volumen transferido (GB) por cada operador y bot_pss por período</small>
                         </div>
-                        <span class="badge bg-warning-lt fw-bold font-monospace">
-                            <i class="ti ti-calendar-event me-1"></i> Por Semana (ISO)
-                        </span>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            {{-- Filtro por Responsable específico --}}
+                            <div class="d-flex align-items-center gap-1">
+                                <label class="text-secondary small fw-bold text-nowrap"><i class="ti ti-user me-1"></i>Responsable:</label>
+                                <select id="select-filter-chart-resp" class="form-select form-select-sm" style="min-width: 170px;">
+                                    <option value="all" selected>Todos los Responsables</option>
+                                    @foreach($availableExecutors as $exec)
+                                        <option value="{{ $exec }}">{{ $exec }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- Filtro por Período: Día, Semana, Mes --}}
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Periodicidad por Responsable">
+                                <button type="button" class="btn btn-outline-warning btn-resp-period" data-period="daily" title="Ver por Día">
+                                    Diario
+                                </button>
+                                <button type="button" class="btn btn-outline-warning active btn-resp-period" data-period="weekly" title="Ver por Semana">
+                                    Semanal
+                                </button>
+                                <button type="button" class="btn btn-outline-warning btn-resp-period" data-period="monthly" title="Ver por Mes">
+                                    Mensual
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <div class="card-body">
-                        <div id="chart-weekly-responsables" style="min-height: 320px;"></div>
+                        <div id="chart-weekly-responsables" style="min-height: 340px;"></div>
                     </div>
                 </div>
             </div>
@@ -1095,16 +1117,52 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // 3.1. Gráfica de Barras Apiladas: Volumen Migrado por Semana según Responsable
-    const weeklyRespLabels = @json($weeklyLabels);
-    const weeklyRespSeries = @json($weeklyRespSeries);
+    // 3.1. Gráfica de Barras: Evolución de Migración por Responsable con Filtros (Día, Semana, Mes y Filtro por Responsable)
+    const datasetsResp = {
+        daily: {
+            periodName: 'Diario',
+            categories: @json($allDates),
+            series: @json($dailyRespSeries),
+            rotate: -45,
+            columnWidth: '55%'
+        },
+        weekly: {
+            periodName: 'Semanal',
+            categories: @json($weeklyLabels),
+            series: @json($weeklyRespSeries),
+            rotate: -15,
+            columnWidth: '50%'
+        },
+        monthly: {
+            periodName: 'Mensual',
+            categories: @json($monthlyLabels),
+            series: @json($monthlyRespSeries),
+            rotate: 0,
+            columnWidth: '35%'
+        }
+    };
 
-    if (document.getElementById('chart-weekly-responsables') && weeklyRespLabels.length > 0) {
-        const weeklyRespOptions = {
-            series: weeklyRespSeries,
+    let currentRespPeriod = 'weekly';
+    let currentSelectedResp = 'all';
+
+    function getFilteredRespSeries(period, selectedResp) {
+        const ds = datasetsResp[period];
+        if (!ds) return [];
+        if (selectedResp === 'all') {
+            return ds.series;
+        }
+        return ds.series.filter(s => s.name === selectedResp);
+    }
+
+    if (document.getElementById('chart-weekly-responsables')) {
+        const initialRespDs = datasetsResp[currentRespPeriod];
+        const initialSeries = getFilteredRespSeries(currentRespPeriod, currentSelectedResp);
+
+        const respChartOptions = {
+            series: initialSeries,
             chart: {
                 type: 'bar',
-                height: 320,
+                height: 340,
                 stacked: true,
                 fontFamily: 'inherit',
                 toolbar: {
@@ -1124,14 +1182,14 @@ document.addEventListener('DOMContentLoaded', function () {
             plotOptions: {
                 bar: {
                     horizontal: false,
-                    borderRadius: 4,
-                    columnWidth: '50%'
+                    borderRadius: 3,
+                    columnWidth: initialRespDs.columnWidth
                 }
             },
             xaxis: {
-                categories: weeklyRespLabels,
+                categories: initialRespDs.categories,
                 labels: {
-                    rotate: -15,
+                    rotate: initialRespDs.rotate,
                     style: {
                         fontSize: '11px',
                         fontWeight: 500
@@ -1161,14 +1219,75 @@ document.addEventListener('DOMContentLoaded', function () {
                 intersect: false,
                 y: {
                     formatter: function (val) {
-                        return val.toLocaleString('es-VE') + " GB";
+                        return (val || 0).toLocaleString('es-VE') + " GB";
                     }
                 }
             }
         };
 
-        const chartWeeklyResp = new ApexCharts(document.getElementById('chart-weekly-responsables'), weeklyRespOptions);
-        chartWeeklyResp.render();
+        const chartRespInstance = new ApexCharts(document.getElementById('chart-weekly-responsables'), respChartOptions);
+        chartRespInstance.render();
+
+        function updateRespChart() {
+            const ds = datasetsResp[currentRespPeriod];
+            if (!ds) return;
+
+            const isSingle = currentSelectedResp !== 'all';
+            const filteredSeries = getFilteredRespSeries(currentRespPeriod, currentSelectedResp);
+
+            // Actualizar subtítulo
+            const subtitleEl = document.getElementById('chart-resp-card-subtitle');
+            if (subtitleEl) {
+                const targetText = isSingle ? `Mostrando datos de <b>${currentSelectedResp}</b>` : 'Comparativa de todos los operadores';
+                subtitleEl.innerHTML = `${targetText} (${ds.periodName})`;
+            }
+
+            chartRespInstance.updateOptions({
+                chart: {
+                    stacked: !isSingle
+                },
+                xaxis: {
+                    categories: ds.categories,
+                    labels: {
+                        rotate: ds.rotate,
+                        style: {
+                            fontSize: '11px',
+                            fontWeight: 500
+                        }
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        columnWidth: ds.columnWidth
+                    }
+                }
+            });
+
+            chartRespInstance.updateSeries(filteredSeries);
+        }
+
+        // Filtro por Período: Día, Semana, Mes
+        document.querySelectorAll('.btn-resp-period').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const period = this.getAttribute('data-period');
+                if (period === currentRespPeriod) return;
+
+                document.querySelectorAll('.btn-resp-period').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentRespPeriod = period;
+
+                updateRespChart();
+            });
+        });
+
+        // Filtro por Responsable
+        const selectResp = document.getElementById('select-filter-chart-resp');
+        if (selectResp) {
+            selectResp.addEventListener('change', function () {
+                currentSelectedResp = this.value;
+                updateRespChart();
+            });
+        }
     }
 
     // 4. Modal: Alternar entre modo Lote e Individual
