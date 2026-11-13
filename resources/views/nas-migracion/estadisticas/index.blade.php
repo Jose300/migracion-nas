@@ -1035,6 +1035,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             },
             xaxis: {
+                type: 'category',
                 categories: initialDataset.categories,
                 labels: {
                     rotate: initialDataset.rotate,
@@ -1187,6 +1188,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             },
             xaxis: {
+                type: 'category',
                 categories: initialRespDs.categories,
                 labels: {
                     rotate: initialRespDs.rotate,
@@ -1247,6 +1249,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     stacked: !isSingle
                 },
                 xaxis: {
+                    type: 'category',
                     categories: ds.categories,
                     labels: {
                         rotate: ds.rotate,

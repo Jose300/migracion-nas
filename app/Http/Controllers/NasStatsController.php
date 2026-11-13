@@ -82,8 +82,8 @@ class NasStatsController extends Controller
         }
 
         // Agrupación Semanal (Lunes a Domingo con rango de fechas)
-        $allStatsForPeriod = NasMigrationStat::all(['fecha', 'satelite', 'tamano_gb']);
-        $weeksGrouped = $allStatsForPeriod->groupBy(function($item) {
+        $allStatsForPeriod = NasMigrationStat::all(['fecha', 'satelite', 'tamano_gb', 'responsable']);
+        $weeksGrouped = $allStatsForPeriod->groupBy(function ($item) {
             $c = \Carbon\Carbon::parse($item->fecha);
             return $c->isoWeekYear() . '-S' . str_pad($c->isoWeek(), 2, '0', STR_PAD_LEFT);
         })->sortKeys();
@@ -102,7 +102,7 @@ class NasStatsController extends Controller
         }
 
         // Agrupación Mensual (Nombre de Mes y Año)
-        $monthsGrouped = $allStatsForPeriod->groupBy(function($item) {
+        $monthsGrouped = $allStatsForPeriod->groupBy(function ($item) {
             return substr(is_string($item->fecha) ? $item->fecha : $item->fecha->format('Y-m-d'), 0, 7);
         })->sortKeys();
 
@@ -110,8 +110,18 @@ class NasStatsController extends Controller
         $monthlyVrss1 = [];
         $monthlyVrss2 = [];
         $mesesEsp = [
-            '01'=>'Ene', '02'=>'Feb', '03'=>'Mar', '04'=>'Abr', '05'=>'May', '06'=>'Jun',
-            '07'=>'Jul', '08'=>'Ago', '09'=>'Sep', '10'=>'Oct', '11'=>'Nov', '12'=>'Dic'
+            '01' => 'Ene',
+            '02' => 'Feb',
+            '03' => 'Mar',
+            '04' => 'Abr',
+            '05' => 'May',
+            '06' => 'Jun',
+            '07' => 'Jul',
+            '08' => 'Ago',
+            '09' => 'Sep',
+            '10' => 'Oct',
+            '11' => 'Nov',
+            '12' => 'Dic'
         ];
         foreach ($monthsGrouped as $mKey => $items) {
             $p = explode('-', $mKey);
@@ -483,7 +493,7 @@ class NasStatsController extends Controller
                 fputcsv($handle, ['=== 4. EVOLUCIÓN SEMANAL DE MIGRACIÓN ==='], ';');
                 fputcsv($handle, ['Semana (Año-S)', 'Rango de Fechas', 'VRSS-1 (GB)', 'VRSS-2 (GB)', 'Total Semana (GB)', 'Archivos Semana'], ';');
 
-                $byWeek = $allStats->groupBy(function($item) {
+                $byWeek = $allStats->groupBy(function ($item) {
                     $c = \Carbon\Carbon::parse($item->fecha);
                     return $c->isoWeekYear() . '-S' . str_pad($c->isoWeek(), 2, '0', STR_PAD_LEFT);
                 })->sortKeys();
@@ -536,13 +546,23 @@ class NasStatsController extends Controller
                 fputcsv($handle, ['=== 6. EVOLUCIÓN MENSUAL DE MIGRACIÓN ==='], ';');
                 fputcsv($handle, ['Mes / Año', 'VRSS-1 (GB)', 'VRSS-2 (GB)', 'Total Mes (GB)', 'Archivos Mes'], ';');
 
-                $byMonth = $allStats->groupBy(function($item) {
+                $byMonth = $allStats->groupBy(function ($item) {
                     return substr(is_string($item->fecha) ? $item->fecha : $item->fecha->format('Y-m-d'), 0, 7);
                 })->sortKeys();
 
                 $mesesEsp = [
-                    '01'=>'Enero', '02'=>'Febrero', '03'=>'Marzo', '04'=>'Abril', '05'=>'Mayo', '06'=>'Junio',
-                    '07'=>'Julio', '08'=>'Agosto', '09'=>'Septiembre', '10'=>'Octubre', '11'=>'Noviembre', '12'=>'Diciembre'
+                    '01' => 'Enero',
+                    '02' => 'Febrero',
+                    '03' => 'Marzo',
+                    '04' => 'Abril',
+                    '05' => 'Mayo',
+                    '06' => 'Junio',
+                    '07' => 'Julio',
+                    '08' => 'Agosto',
+                    '09' => 'Septiembre',
+                    '10' => 'Octubre',
+                    '11' => 'Noviembre',
+                    '12' => 'Diciembre'
                 ];
 
                 foreach ($byMonth as $m => $items) {
