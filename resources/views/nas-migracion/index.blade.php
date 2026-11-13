@@ -1093,15 +1093,21 @@ document.addEventListener('DOMContentLoaded', function () {
     // 2. Iniciar Sincronización Manual Asíncrona (Segundo Plano)
     document.querySelectorAll('.btn-start-sync').forEach(button => {
         button.addEventListener('click', function () {
-            const taskId = this.getAttribute('data-task-id');
-            const taskName = this.getAttribute('data-task-name');
-            const batchSize = this.getAttribute('data-batch-size') || 500;
-            const currentSource = this.getAttribute('data-source-path') || '/volume1/dae-RowData/';
-            const currentTarget = this.getAttribute('data-target-path') || '/volume1/dae-RowData/MIGRACION_SYNOLOGY/';
-            const currentInspurDir = this.getAttribute('data-inspur-dir') || 'VRSS-1';
-            const currentLastOrbit = this.getAttribute('data-last-orbit') || '';
-            const syncUrl = this.getAttribute('data-url');
-            const statusUrl = this.getAttribute('data-status-url');
+            const btn = this;
+            const taskId = btn.getAttribute('data-task-id');
+            const taskName = btn.getAttribute('data-task-name');
+            const batchSize = btn.getAttribute('data-batch-size') || 500;
+            const currentSource = btn.getAttribute('data-source-path') || '/volume1/dae-RowData/';
+            const currentTarget = btn.getAttribute('data-target-path') || '/volume1/dae-RowData/MIGRACION_SYNOLOGY/';
+            const currentInspurDir = btn.getAttribute('data-inspur-dir') || 'VRSS-1';
+            const currentLastOrbit = btn.getAttribute('data-last-orbit') || '';
+            const syncUrl = btn.getAttribute('data-url');
+            const statusUrl = btn.getAttribute('data-status-url');
+
+            // Deshabilitar y mostrar estado de carga inmediatamente al hacer clic
+            btn.disabled = true;
+            const originalBtnHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
 
             Swal.fire({
                 title: 'Confirmar Sincronización',
@@ -1153,12 +1159,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 cancelButtonColor: '#d63939'
             }).then(result => {
                 if (result.isConfirmed) {
-                    // Bloquear inmediatamente el botón de sincronizar en la tarjeta
-                    const btn = document.getElementById(`btn-sync-${taskId}`);
-                    if (btn) {
-                        btn.disabled = true;
-                        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
-                    }
+                    // Mantener el botón bloqueado y pasar a estado en ejecución
+                    setTaskRunningState(taskId, true);
 
                     // Modal de comprobación previa de conectividad
                     Swal.fire({
@@ -1210,7 +1212,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             // Iniciar polling fluido cada 1.5 segundos
                             startPollingTask(taskId, statusUrl, taskName);
                         } else {
-                            // Fallo de conexión o error: paralizar y alertar de inmediato
+                            // Fallo de conexión o error: restaurar botón y alertar
                             setTaskRunningState(taskId, false);
                             Swal.fire({
                                 icon: 'error',
@@ -1234,6 +1236,10 @@ document.addEventListener('DOMContentLoaded', function () {
                             confirmButtonColor: '#d63939'
                         });
                     });
+                } else {
+                    // Si el usuario canceló el diálogo, desbloquear y restaurar el botón
+                    btn.disabled = false;
+                    btn.innerHTML = originalBtnHtml;
                 }
             });
         });
