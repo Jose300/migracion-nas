@@ -24,9 +24,32 @@
                 </a>
 
                 @can('exportar-estadisticas-nas')
-                <a href="{{ route('nas-migracion.estadisticas.export', request()->all()) }}" class="btn btn-outline-primary btn-sm fw-bold">
-                    <i class="ti ti-file-spreadsheet me-1"></i> Exportar CSV
-                </a>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-primary btn-sm fw-bold dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="ti ti-file-spreadsheet me-1"></i> Exportar a Excel / CSV
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="{{ route('nas-migracion.estadisticas.export', ['tipo' => 'graficos']) }}">
+                                <i class="ti ti-chart-bar text-primary me-2 fs-3"></i>
+                                <div>
+                                    <div class="fw-bold">Exportar Métricas de Gráficos</div>
+                                    <small class="text-muted">Por Responsable, Satélite, Días, Semanas y Meses</small>
+                                </div>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="{{ route('nas-migracion.estadisticas.export', request()->all()) }}">
+                                <i class="ti ti-table text-success me-2 fs-3"></i>
+                                <div>
+                                    <div class="fw-bold">Exportar Detalle de Archivos</div>
+                                    <small class="text-muted">Listado completo filtrado con observaciones</small>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
                 @endcan
 
                 @can('crear-estadisticas-nas')
@@ -203,14 +226,24 @@
                 </div>
             </div>
 
-            {{-- Gráfico 3: Evolución Temporal de Migración (GB por Día) --}}
+            {{-- Gráfico 3: Evolución Temporal de Migración (Diario, Semanal, Mensual) --}}
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-                        <h3 class="card-title fw-bold d-flex align-items-center">
-                            <i class="ti ti-chart-area-line me-2 text-azure"></i> Ritmo Diario de Migración
+                    <div class="card-header bg-transparent d-flex flex-wrap justify-content-between align-items-center gap-1 py-2">
+                        <h3 class="card-title fw-bold d-flex align-items-center mb-0" id="timeline-card-title">
+                            <i class="ti ti-chart-bar me-2 text-azure"></i> Ritmo de Migración
                         </h3>
-                        <span class="badge bg-azure-lt">GB por Día</span>
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Periodicidad de Migración">
+                            <button type="button" class="btn btn-outline-primary active btn-timeline-period" data-period="daily" title="Ver por Día">
+                                Diario
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-timeline-period" data-period="weekly" title="Ver por Semana">
+                                Semanal
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-timeline-period" data-period="monthly" title="Ver por Mes">
+                                Mensual
+                            </button>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div id="chart-daily-timeline" style="min-height: 290px;"></div>
@@ -899,21 +932,47 @@ document.addEventListener('DOMContentLoaded', function () {
         chartSat.render();
     }
 
-    // 3. Gráfica de Barras Apiladas / Área: Ritmo Diario de Migración
-    const timelineDates = @json($allDates);
-    const timelineVrss1 = @json($timelineVrss1);
-    const timelineVrss2 = @json($timelineVrss2);
+    // 3. Gráfica de Barras Apiladas: Ritmo Temporal de Migración (Diario, Semanal, Mensual)
+    const datasetsTimeline = {
+        daily: {
+            title: '<i class="ti ti-chart-bar me-2 text-azure"></i> Ritmo Diario de Migración',
+            categories: @json($allDates),
+            vrss1: @json($timelineVrss1),
+            vrss2: @json($timelineVrss2),
+            columnWidth: '60%',
+            rotate: -45
+        },
+        weekly: {
+            title: '<i class="ti ti-chart-bar me-2 text-azure"></i> Ritmo Semanal de Migración',
+            categories: @json($weeklyLabels),
+            vrss1: @json($weeklyVrss1),
+            vrss2: @json($weeklyVrss2),
+            columnWidth: '45%',
+            rotate: -20
+        },
+        monthly: {
+            title: '<i class="ti ti-chart-bar me-2 text-azure"></i> Ritmo Mensual de Migración',
+            categories: @json($monthlyLabels),
+            vrss1: @json($monthlyVrss1),
+            vrss2: @json($monthlyVrss2),
+            columnWidth: '35%',
+            rotate: 0
+        }
+    };
 
-    if (document.getElementById('chart-daily-timeline') && timelineDates.length > 0) {
+    let currentTimelinePeriod = 'daily';
+    const initialDataset = datasetsTimeline.daily;
+
+    if (document.getElementById('chart-daily-timeline') && initialDataset.categories.length > 0) {
         const timelineOptions = {
             series: [
                 {
                     name: 'VRSS-1',
-                    data: timelineVrss1
+                    data: initialDataset.vrss1
                 },
                 {
                     name: 'VRSS-2',
-                    data: timelineVrss2
+                    data: initialDataset.vrss2
                 }
             ],
             chart: {
@@ -930,13 +989,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 bar: {
                     horizontal: false,
                     borderRadius: 3,
-                    columnWidth: '60%'
+                    columnWidth: initialDataset.columnWidth
                 }
             },
             xaxis: {
-                categories: timelineDates,
+                categories: initialDataset.categories,
                 labels: {
-                    rotate: -45,
+                    rotate: initialDataset.rotate,
                     style: {
                         fontSize: '10px'
                     }
@@ -964,6 +1023,56 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const chartTimeline = new ApexCharts(document.getElementById('chart-daily-timeline'), timelineOptions);
         chartTimeline.render();
+
+        // Controladores para conmutar entre Diario, Semanal y Mensual
+        document.querySelectorAll('.btn-timeline-period').forEach(button => {
+            button.addEventListener('click', function () {
+                const period = this.getAttribute('data-period');
+                if (period === currentTimelinePeriod) return;
+
+                document.querySelectorAll('.btn-timeline-period').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentTimelinePeriod = period;
+
+                const ds = datasetsTimeline[period];
+                if (!ds) return;
+
+                // Actualizar título del card
+                const titleEl = document.getElementById('timeline-card-title');
+                if (titleEl) {
+                    titleEl.innerHTML = ds.title;
+                }
+
+                // Actualizar gráfica dinámicamente con animación
+                chartTimeline.updateOptions({
+                    xaxis: {
+                        categories: ds.categories,
+                        labels: {
+                            rotate: ds.rotate,
+                            style: {
+                                fontSize: '10px'
+                            }
+                        }
+                    },
+                    plotOptions: {
+                        bar: {
+                            columnWidth: ds.columnWidth
+                        }
+                    }
+                });
+
+                chartTimeline.updateSeries([
+                    {
+                        name: 'VRSS-1',
+                        data: ds.vrss1
+                    },
+                    {
+                        name: 'VRSS-2',
+                        data: ds.vrss2
+                    }
+                ]);
+            });
+        });
     }
 
     // 4. Modal: Alternar entre modo Lote e Individual
