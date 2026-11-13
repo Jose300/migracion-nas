@@ -33,8 +33,8 @@
                             <a class="dropdown-item d-flex align-items-center" href="{{ route('nas-migracion.estadisticas.export', ['tipo' => 'graficos']) }}">
                                 <i class="ti ti-chart-bar text-primary me-2 fs-3"></i>
                                 <div>
-                                    <div class="fw-bold">Exportar Métricas de Gráficos</div>
-                                    <small class="text-muted">Por Responsable, Satélite, Días, Semanas y Meses</small>
+                                    <div class="fw-bold">Exportar Libro con Gráficos (.xlsx)</div>
+                                    <small class="text-muted">Incluye gráficos nativos interactivos de Excel</small>
                                 </div>
                             </a>
                         </li>
@@ -43,7 +43,7 @@
                             <a class="dropdown-item d-flex align-items-center" href="{{ route('nas-migracion.estadisticas.export', request()->all()) }}">
                                 <i class="ti ti-table text-success me-2 fs-3"></i>
                                 <div>
-                                    <div class="fw-bold">Exportar Detalle de Archivos</div>
+                                    <div class="fw-bold">Exportar Detalle de Archivos (.csv)</div>
                                     <small class="text-muted">Listado completo filtrado con observaciones</small>
                                 </div>
                             </a>
