@@ -420,6 +420,7 @@ class NasMigrationService
 
             // Si la tarea concluyó con éxito y transfirió archivos, registrar automáticamente en Estadísticas
             // Todas las migraciones gestionadas por las tareas de sincronización se asignan a "bot_pss"
+            // Se registra cada órbita transferida de manera individual en las estadísticas históricas
             if ($finalTaskSuccess && $stats['files_transferred'] > 0) {
                 try {
                     $responsableName = 'bot_pss';
@@ -429,26 +430,56 @@ class NasMigrationService
                         $sateliteName = 'VRSS-2';
                     }
 
-                    $gbTransferred = round($stats['total_bytes'] / (1024 * 1024 * 1024), 4);
-                    // Si los bytes fueron 0 pero hay archivos regulares transferidos, estimar el tamaño según la órbita
-                    if ($gbTransferred <= 0 && $stats['files_transferred'] > 0) {
-                        $gbTransferred = round(($stats['files_transferred'] * 268435456) / (1024 * 1024 * 1024), 4);
+                    // Extraer desglose de órbitas individuales transferidas a partir del log
+                    $orbitsFound = [];
+                    if (!empty($output) && preg_match_all('/PROGRESS_FILE:\s*([^\r\n]+)/', $output, $matches)) {
+                        foreach ($matches[1] as $path) {
+                            $trimmed = trim($path);
+                            if (!empty($trimmed) && !str_ends_with($trimmed, '/')) {
+                                $parts = explode('/', $trimmed);
+                                $orbName = $parts[0] ?? null;
+                                if ($orbName) {
+                                    if (!isset($orbitsFound[$orbName])) {
+                                        $orbitsFound[$orbName] = 0;
+                                    }
+                                    $orbitsFound[$orbName]++;
+                                }
+                            }
+                        }
                     }
+
+                    // Si no hubo líneas PROGRESS_FILE con formato de órbita, usar la última órbita del lote
+                    if (empty($orbitsFound) && !empty($lastProcessedOrbit)) {
+                        $orbitsFound[$lastProcessedOrbit] = $stats['files_transferred'];
+                    }
+
+                    $totalFilesBatch = array_sum($orbitsFound) ?: $stats['files_transferred'] ?: 1;
+                    $totalBytesBatch = $stats['total_bytes'] ?: ($stats['files_transferred'] * 268435456);
 
                     $maxLote = \App\Models\NasMigrationStat::where('responsable', $responsableName)->max('lote_numero') ?: 0;
 
-                    \App\Models\NasMigrationStat::create([
-                        'responsable' => $responsableName,
-                        'fecha' => now()->toDateString(),
-                        'satelite' => $sateliteName,
-                        'archivo_id' => $lastProcessedOrbit ?: ('Lote_' . now()->format('Ymd_His')),
-                        'tamano_gb' => $gbTransferred,
-                        'lote_numero' => $maxLote + 1,
-                        'cantidad_archivos' => $stats['files_transferred'],
-                        'observaciones' => "Sincronización NAS Tarea Programada - {$task->name}" . ($lastProcessedOrbit ? " [Órbita: {$lastProcessedOrbit}]" : ''),
-                        'nas_migration_task_id' => $task->id,
-                        'user_id' => $userId ?: 1,
-                    ]);
+                    foreach ($orbitsFound as $orbName => $orbFilesCount) {
+                        $maxLote++;
+                        // Proporción de tamaño en GB para esta órbita
+                        $orbBytes = ($totalFilesBatch > 0) ? ($totalBytesBatch * ($orbFilesCount / $totalFilesBatch)) : 0;
+                        $gbTransferred = round($orbBytes / (1024 * 1024 * 1024), 4);
+                        if ($gbTransferred <= 0 && $orbFilesCount > 0) {
+                            $gbTransferred = round(($orbFilesCount * 268435456) / (1024 * 1024 * 1024), 4);
+                        }
+
+                        \App\Models\NasMigrationStat::create([
+                            'responsable' => $responsableName,
+                            'fecha' => now()->toDateString(),
+                            'satelite' => $sateliteName,
+                            'archivo_id' => $orbName,
+                            'tamano_gb' => $gbTransferred,
+                            'lote_numero' => $maxLote,
+                            'cantidad_archivos' => $orbFilesCount,
+                            'observaciones' => "Sincronización NAS Tarea Programada - {$task->name} [Órbita: {$orbName}]",
+                            'nas_migration_task_id' => $task->id,
+                            'user_id' => $userId ?: 1,
+                        ]);
+                    }
                 } catch (\Throwable $statEx) {
                     Log::warning("No se pudo registrar estadística automática para Tarea #{$task->id}: " . $statEx->getMessage());
                 }
