@@ -23,6 +23,16 @@ class NasMigrationController extends Controller
     {
         $tasks = NasMigrationTask::with('latestLog')->get();
 
+        // Limpieza de inconsistencias de estado: Si una tarea figura 'running' pero su último log no está 'running'
+        foreach ($tasks as $t) {
+            if ($t->status === 'running' && (!$t->latestLog || $t->latestLog->status !== 'running')) {
+                $t->update([
+                    'status' => 'idle',
+                    'last_run_status' => $t->latestLog?->status ?? 'idle',
+                ]);
+            }
+        }
+
         // Métricas globales
         $totalTasks = $tasks->count();
         $tasksActivas = $tasks->where('is_active', true)->count();

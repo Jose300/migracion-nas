@@ -26,13 +26,29 @@ class NasVerificationController extends Controller
         $selectedTaskId = $request->input('task_id', $tasks->first()?->id);
         $selectedTask = $tasks->firstWhere('id', $selectedTaskId) ?? $tasks->first();
 
+        // Obtener la última ejecución de migración registrada para esta tarea
+        $latestMigrationLog = $selectedTask?->logs()->latest('id')->first();
+        $latestOrbitExecuted = $latestMigrationLog?->last_migrated_orbit_in_batch ?: $selectedTask?->last_migrated_orbit;
+
+        // Auto-recuperación de verificación colgada: Si figura 'running' pero lleva más de 10 min
+        $runningVerif = NasFileVerification::where('nas_migration_task_id', $selectedTask?->id)
+            ->where('status', 'running')
+            ->first();
+        if ($runningVerif && $runningVerif->started_at && $runningVerif->started_at->diffInMinutes(now()) >= 10) {
+            $runningVerif->update([
+                'status' => 'failed',
+                'finished_at' => now(),
+                'error_message' => 'Proceso de verificación finalizado por tiempo de espera excedido.',
+            ]);
+        }
+
         // Obtener la verificación seleccionada o la más reciente de la tarea
         if ($request->filled('verification_id')) {
             $verification = NasFileVerification::with(['task', 'user'])->find($request->verification_id);
         } elseif ($selectedTask) {
             $verification = NasFileVerification::with(['task', 'user'])
                 ->where('nas_migration_task_id', $selectedTask->id)
-                ->latest('started_at')
+                ->latest('id')
                 ->first();
         } else {
             $verification = null;
@@ -134,6 +150,8 @@ class NasVerificationController extends Controller
             'tasks',
             'selectedTask',
             'selectedTaskId',
+            'latestMigrationLog',
+            'latestOrbitExecuted',
             'verification',
             'orbitGroups',
             'history'
@@ -153,7 +171,9 @@ class NasVerificationController extends Controller
             'started_at' => now(),
         ]);
 
-        $orbit = $request->input('orbit', $task->last_migrated_orbit);
+        $latestLog = $task->logs()->latest('id')->first();
+        $defaultOrbit = $latestLog?->last_migrated_orbit_in_batch ?: $task->last_migrated_orbit;
+        $orbit = $request->input('orbit', $defaultOrbit);
         $orbitOpt = !empty($orbit) ? ' --orbit="' . addslashes(trim($orbit)) . '"' : '';
 
         // 2. Despachar comando Artisan desacoplado en segundo plano

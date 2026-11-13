@@ -97,87 +97,87 @@ print(f"VERIFY_TOTAL:{total_candidates}", file=sys.stderr, flush=True)
 for idx, (root, f) in enumerate(all_files, 1):
     if idx % 10 == 0 or idx == total_candidates:
         print(f"VERIFY_PROGRESS:{idx}:{total_candidates}", file=sys.stderr, flush=True)
-            full_src = os.path.join(root, f)
-            rel = os.path.relpath(full_src, src).replace('\\', '/')
-            full_inter = os.path.join(inter, rel)
-            full_tgt = os.path.join(tgt, rel)
+    full_src = os.path.join(root, f)
+    rel = os.path.relpath(full_src, src).replace('\\', '/')
+    full_inter = os.path.join(inter, rel)
+    full_tgt = os.path.join(tgt, rel)
 
-            try:
-                st_src = os.stat(full_src)
-                src_size = st_src.st_size
-                src_mtime = int(st_src.st_mtime)
-                total_src_bytes += src_size
-            except Exception:
-                continue
+    try:
+        st_src = os.stat(full_src)
+        src_size = st_src.st_size
+        src_mtime = int(st_src.st_mtime)
+        total_src_bytes += src_size
+    except Exception:
+        continue
 
-            # Estado Fase 1: Synology -> Carpeta Compartida
-            inter_size = None
-            inter_mtime = None
-            phase1_status = 'pending'
-            if os.path.exists(full_inter):
-                try:
-                    st_inter = os.stat(full_inter)
-                    inter_size = st_inter.st_size
-                    inter_mtime = int(st_inter.st_mtime)
-                    if inter_size == src_size:
-                        phase1_status = 'confirmed'
-                    else:
-                        phase1_status = 'size_mismatch'
-                except Exception:
-                    phase1_status = 'missing'
+    # Estado Fase 1: Synology -> Carpeta Compartida
+    inter_size = None
+    inter_mtime = None
+    phase1_status = 'pending'
+    if os.path.exists(full_inter):
+        try:
+            st_inter = os.stat(full_inter)
+            inter_size = st_inter.st_size
+            inter_mtime = int(st_inter.st_mtime)
+            if inter_size == src_size:
+                phase1_status = 'confirmed'
             else:
-                # Si ya se movio con rsync --remove-source-files a Inspur, en MIGRACION_SYNOLOGY ya no esta
-                # Pero si en Inspur esta confirmado, Fase 1 fue completada con exito
-                phase1_status = 'moved_to_inspur'
+                phase1_status = 'size_mismatch'
+        except Exception:
+            phase1_status = 'missing'
+    else:
+        # Si ya se movio con rsync --remove-source-files a Inspur, en MIGRACION_SYNOLOGY ya no esta
+        # Pero si en Inspur esta confirmado, Fase 1 fue completada con exito
+        phase1_status = 'moved_to_inspur'
 
-            # Estado Fase 2: Carpeta Compartida -> Inspur RAWDATA
-            tgt_size = None
-            tgt_mtime = None
+    # Estado Fase 2: Carpeta Compartida -> Inspur RAWDATA
+    tgt_size = None
+    tgt_mtime = None
+    phase2_status = 'missing'
+    if os.path.exists(full_tgt):
+        try:
+            st_tgt = os.stat(full_tgt)
+            tgt_size = st_tgt.st_size
+            tgt_mtime = int(st_tgt.st_mtime)
+            total_tgt_bytes += tgt_size
+
+            size_ok = (src_size == tgt_size)
+            date_ok = abs(src_mtime - tgt_mtime) <= 2
+
+            if size_ok:
+                phase2_status = 'confirmed'
+            else:
+                phase2_status = 'size_mismatch'
+        except Exception:
             phase2_status = 'missing'
-            if os.path.exists(full_tgt):
-                try:
-                    st_tgt = os.stat(full_tgt)
-                    tgt_size = st_tgt.st_size
-                    tgt_mtime = int(st_tgt.st_mtime)
-                    total_tgt_bytes += tgt_size
+    else:
+        phase2_status = 'missing'
 
-                    size_ok = (src_size == tgt_size)
-                    date_ok = abs(src_mtime - tgt_mtime) <= 2
+    # Veredicto Global
+    if phase2_status == 'confirmed':
+        global_status = 'confirmed'
+        if phase1_status == 'moved_to_inspur':
+            phase1_status = 'confirmed'
+    elif phase1_status == 'confirmed' and phase2_status == 'missing':
+        global_status = 'pending_move'
+    elif phase2_status == 'size_mismatch' or phase1_status == 'size_mismatch':
+        global_status = 'size_mismatch'
+    else:
+        global_status = 'missing_target'
 
-                    if size_ok:
-                        phase2_status = 'confirmed'
-                    else:
-                        phase2_status = 'size_mismatch'
-                except Exception:
-                    phase2_status = 'missing'
-            else:
-                phase2_status = 'missing'
-
-            # Veredicto Global
-            if phase2_status == 'confirmed':
-                global_status = 'confirmed'
-                if phase1_status == 'moved_to_inspur':
-                    phase1_status = 'confirmed'
-            elif phase1_status == 'confirmed' and phase2_status == 'missing':
-                global_status = 'pending_move'
-            elif phase2_status == 'size_mismatch' or phase1_status == 'size_mismatch':
-                global_status = 'size_mismatch'
-            else:
-                global_status = 'missing_target'
-
-            items.append({
-                'path': rel,
-                'name': f,
-                'src_size': src_size,
-                'src_mtime': src_mtime,
-                'inter_size': inter_size,
-                'inter_mtime': inter_mtime,
-                'phase1_status': phase1_status,
-                'tgt_size': tgt_size,
-                'tgt_mtime': tgt_mtime,
-                'phase2_status': phase2_status,
-                'status': global_status
-            })
+    items.append({
+        'path': rel,
+        'name': f,
+        'src_size': src_size,
+        'src_mtime': src_mtime,
+        'inter_size': inter_size,
+        'inter_mtime': inter_mtime,
+        'phase1_status': phase1_status,
+        'tgt_size': tgt_size,
+        'tgt_mtime': tgt_mtime,
+        'phase2_status': phase2_status,
+        'status': global_status
+    })
 
 print(json.dumps({
     'success': True,

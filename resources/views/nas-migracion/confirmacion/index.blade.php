@@ -62,6 +62,40 @@
 <div class="page-body">
     <div class="container-xl">
 
+        {{-- Banner de la Última Ejecución de Migración Evaluada --}}
+        @if($latestMigrationLog)
+        <div class="card bg-azure-lt border-azure mb-3 shadow-sm">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center">
+                        <span class="avatar avatar-md rounded bg-azure text-white me-3">
+                            <i class="ti ti-activity fs-2"></i>
+                        </span>
+                        <div>
+                            <div class="fw-bold text-azure text-uppercase small" style="letter-spacing: 0.05em;">
+                                Evaluación Basada en la Última Tarea Ejecutada
+                            </div>
+                            <div class="h3 mb-0 text-dark fw-bold">
+                                {{ $selectedTask->name }} &bull; Ejecución del {{ $latestMigrationLog->started_at ? $latestMigrationLog->started_at->format('d/m/Y H:i:s') : '-' }}
+                            </div>
+                            <small class="text-secondary">
+                                Estado transferencia: <span class="badge {{ $latestMigrationLog->status === 'completed' ? 'bg-success' : 'bg-warning' }} text-white">{{ strtoupper($latestMigrationLog->status) }}</span>
+                                &bull; Archivos migrados: <b>{{ number_format($latestMigrationLog->files_transferred) }}</b>
+                                &bull; Tamaño: <b>{{ $latestMigrationLog->human_transferred_size ?: '0 B' }}</b>
+                                &bull; Órbita procesada: <code class="fw-bold text-primary">{{ $latestOrbitExecuted ?: 'Detectada automáticamente' }}</code>
+                            </small>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-white text-azure border border-azure px-3 py-2 fw-bold font-monospace">
+                            <i class="ti ti-satellite me-1"></i> Órbita en Cotejo: {{ $latestOrbitExecuted ?: 'N/A' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         {{-- Stat Cards de Verificación --}}
         @if($verification)
         <div class="row row-cards g-3 mb-4">

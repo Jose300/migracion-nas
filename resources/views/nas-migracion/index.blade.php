@@ -1519,11 +1519,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 1500);
     }
 
-    // Si al cargar la página alguna fila ya estaba en 'running', activar polling automático
+    // Si al cargar la página alguna fila o tarjeta ya estaba en 'running', activar polling automático y asegurar visibilidad
     document.querySelectorAll('[data-current-status="running"]').forEach(row => {
         const taskId = row.getAttribute('data-task-id');
         const statusUrl = row.getAttribute('data-status-url');
         setTaskRunningState(taskId, true);
+        const progressBox = document.getElementById(`task-progress-box-${taskId}`);
+        if (progressBox) progressBox.classList.remove('d-none');
         startPollingTask(taskId, statusUrl, 'Tarea #' + taskId);
     });
 
