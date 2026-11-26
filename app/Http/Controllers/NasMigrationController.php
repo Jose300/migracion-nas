@@ -340,6 +340,126 @@ class NasMigrationController extends Controller
     }
 
     /**
+     * Traslada en segundo plano todas las órbitas pendientes (carpeta local de rescate + MIGRACION_SYNOLOGY)
+     * hacia el destino final NFS en Inspur RAWDATA y limpia directorios vacíos.
+     */
+    public function relocatePending(Request $request, NasMigrationTask $task): JsonResponse
+    {
+        // 1. Verificar que no haya ni una tarea en ejecución en BD ni procesos rsync activos en la NAS Synology
+        if ($task->status === 'running') {
+            $latestLog = $task->latestLog;
+            $stillRunning = $latestLog && $latestLog->status === 'running' && $this->migrationService->isTransferProcessRunningOnNas($task);
+            if ($stillRunning) {
+                return response()->json([
+                    'success' => false,
+                    'error_type' => 'task_busy',
+                    'message' => 'Aún hay una tarea de transferencia ejecutándose en la NAS. Espera a que concluya antes de trasladar las órbitas pendientes.',
+                ], 422);
+            }
+            $task->update(['status' => 'idle']);
+        } elseif ($this->migrationService->isTransferProcessRunningOnNas($task)) {
+            return response()->json([
+                'success' => false,
+                'error_type' => 'task_busy',
+                'message' => 'Se detectó un proceso de copia activo en la NAS Synology. Espera a que termine para iniciar el traslado seguro a Inspur.',
+            ], 422);
+        }
+
+        // 2. Comprobar conectividad y montajes NFS hacia Inspur
+        $connTest = $this->migrationService->testConnection($task);
+        if (!$connTest['success']) {
+            $motivo = $connTest['mount_error'] ?: ($connTest['port_error'] ?: 'No se pudo verificar la conexión o los montajes NFS hacia Inspur.');
+            return response()->json([
+                'success' => false,
+                'error_type' => !empty($connTest['mount_error']) ? 'nfs_mount_error' : 'connection_error',
+                'message' => $motivo,
+                'details' => $connTest,
+            ], 422);
+        }
+
+        $pendingLocal = (int) ($connTest['pending_local_orbits'] ?? 0);
+        $pendingShared = (int) ($connTest['pending_shared_orbits'] ?? 0);
+        $totalPending = $pendingLocal + $pendingShared;
+
+        if ($totalPending === 0) {
+            return response()->json([
+                'success' => false,
+                'error_type' => 'no_pending',
+                'message' => 'No se encontraron órbitas pendientes por mover ni en el respaldo local ni en MIGRACION_SYNOLOGY. ¡Todo está ya en Inspur RAWDATA!',
+                'details' => $connTest,
+            ], 200);
+        }
+
+        $inspurDir = $task->inspur_target_dir ?: 'VRSS-2';
+
+        $task->update([
+            'status' => 'running',
+            'last_run_at' => now(),
+        ]);
+
+        $log = NasMigrationLog::create([
+            'nas_migration_task_id' => $task->id,
+            'status' => 'running',
+            'trigger_type' => 'manual',
+            'user_id' => auth()->id(),
+            'started_at' => now(),
+            'phase_synology_status' => 'completed',
+            'phase_inspur_status' => 'running',
+            'source_path_used' => 'Rescate Local + MIGRACION_SYNOLOGY',
+            'inspur_target_dir_used' => $inspurDir,
+            'output' => "[FASE 2 - INSPUR] Preparando traslado de {$totalPending} órbitas ({$pendingLocal} locales + {$pendingShared} en MIGRACION_SYNOLOGY) hacia {$connTest['nfs_inspur_path']}/RDP_FTP/RAWDATA/{$inspurDir}...\n",
+        ]);
+
+        // 3. Despachar comando Artisan asíncrono en segundo plano
+        $php = PHP_BINARY;
+        if (PHP_OS_FAMILY === 'Windows') {
+            if (!str_ends_with(strtolower($php), 'php.exe') || !file_exists($php)) {
+                $extDir = ini_get('extension_dir');
+                if ($extDir) {
+                    $cand = dirname($extDir) . DIRECTORY_SEPARATOR . 'php.exe';
+                    if (file_exists($cand)) {
+                        $php = $cand;
+                    }
+                }
+            }
+            if (!str_ends_with(strtolower($php), 'php.exe') || !file_exists($php)) {
+                $laragonPhpDirs = glob('C:\\laragon\\bin\\php\\php*\\php.exe');
+                if (!empty($laragonPhpDirs)) {
+                    rsort($laragonPhpDirs);
+                    $php = $laragonPhpDirs[0];
+                }
+            }
+            if (!file_exists($php)) {
+                $php = 'php.exe';
+            }
+        }
+
+        $artisan = base_path('artisan');
+        $userId = auth()->id() ?? 0;
+
+        if (PHP_OS_FAMILY === 'Windows') {
+            $bgLog = storage_path('logs/nas_relocate_background.log');
+            $command = "cmd /c start /B \"\" \"{$php}\" \"{$artisan}\" nas:relocate-pending {$task->id} --log_id={$log->id} --user_id={$userId} > \"{$bgLog}\" 2>&1";
+            pclose(popen($command, 'r'));
+        } else {
+            $command = "{$php} \"{$artisan}\" nas:relocate-pending {$task->id} --log_id={$log->id} --user_id={$userId} > /dev/null 2>&1 &";
+            exec($command);
+        }
+
+        return response()->json([
+            'success' => true,
+            'status' => 'running',
+            'log_id' => $log->id,
+            'task_id' => $task->id,
+            'pending_local' => $pendingLocal,
+            'pending_shared' => $pendingShared,
+            'total_pending' => $totalPending,
+            'inspur_mount' => $connTest['nfs_inspur_path'],
+            'message' => "Traslado iniciado en segundo plano: moviendo {$totalPending} órbitas pendientes ({$pendingLocal} del rescate local + {$pendingShared} de MIGRACION_SYNOLOGY) hacia Inspur RAWDATA.",
+        ]);
+    }
+
+    /**
      * Paraliza y detiene inmediatamente una tarea de sincronización en ejecución.
      */
     public function stopSync(NasMigrationTask $task): JsonResponse

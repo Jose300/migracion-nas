@@ -47,15 +47,13 @@ class NasVerificationService
             $source = rtrim($task->source_path, '/');
             $intermediate = rtrim($task->target_path ?: '/volume3/dae-RowData/MIGRACION_SYNOLOGY', '/');
             $cleanSubdir = trim($task->inspur_target_dir ?: 'VRSS-1', '/');
-            $inspurMountRoot = '/volume3/dae-RowData/INSPUR_HS_IPS';
-            $inspurFinal = "{$inspurMountRoot}/RDP_FTP/RAWDATA/{$cleanSubdir}";
 
             $filterOrbitsJson = json_encode($specificOrbits ?: []);
 
             // Script remoto en Python3 ejecutado en Synology que compara los 2 saltos:
             // Salto 1: Origen (Synology) -> Carpeta Compartida (MIGRACION_SYNOLOGY)
             // Salto 2: Carpeta Compartida (MIGRACION_SYNOLOGY) -> Inspur RAWDATA (NFS)
-            // Verifica estrictamente en /proc/mounts que las carpetas destino sean montajes NFS reales y no directorios locales
+            // Resuelve dinámicamente el punto de montaje NFS real de Inspur (/HS_IPS_PRIVATE) en /proc/mounts
             $pyScript = <<<'PYEOF'
 import os, sys, json
 
@@ -71,23 +69,39 @@ def is_nfs_mounted(mp):
         pass
     return False
 
+def resolve_inspur_mount():
+    candidates = ['/volume3/dae-RowData/INSPUR_HS_IPS', '/volume3/dae-RowData/HS_IPS_PRIVATE']
+    try:
+        with open('/proc/mounts', 'r') as f:
+            lines = [l.split() for l in f if len(l.split()) >= 3]
+        for c in candidates:
+            for p in lines:
+                if p[1].rstrip('/') == c and p[2].startswith('nfs'):
+                    return True, p[1].rstrip('/')
+        for p in lines:
+            if p[2].startswith('nfs') and p[0].rstrip('/').endswith(':/HS_IPS_PRIVATE'):
+                return True, p[1].rstrip('/')
+    except Exception:
+        pass
+    return False, candidates[0]
+
 src = sys.argv[1].rstrip('/')
 inter = sys.argv[2].rstrip('/')
-tgt = sys.argv[3].rstrip('/')
+clean_subdir = sys.argv[3].strip('/')
 filter_orbits = json.loads(sys.argv[4]) if len(sys.argv) > 4 else []
-inspur_mount_root = '/volume3/dae-RowData/INSPUR_HS_IPS'
 
 if not os.path.exists(src):
     print(json.dumps({'success': False, 'error': f'Ruta origen no encontrada en Synology: {src}'}))
     sys.exit(0)
 
 inter_mounted = is_nfs_mounted(inter)
-inspur_mounted = is_nfs_mounted(inspur_mount_root)
+inspur_mounted, inspur_mount_root = resolve_inspur_mount()
+tgt = os.path.join(inspur_mount_root, 'RDP_FTP', 'RAWDATA', clean_subdir)
 
 if not inspur_mounted:
     print(json.dumps({
         'success': False,
-        'error': f'Protección Anti-Desmontaje NFS: El recurso remoto de Inspur ({inspur_mount_root}) NO está montado por NFS en la Synology. No se puede dar por confirmada ninguna órbita en Inspur hasta remontar 192.168.10.180:/HS_IPS_PRIVATE.'
+        'error': f'Protección Anti-Desmontaje NFS: El recurso remoto de Inspur (/HS_IPS_PRIVATE) NO está montado por NFS en la Synology. No se puede dar por confirmada ninguna órbita en Inspur hasta remontar 192.168.10.180:/HS_IPS_PRIVATE.'
     }))
     sys.exit(0)
 
@@ -213,7 +227,7 @@ print(json.dumps({
 PYEOF;
 
             $base64Script = base64_encode($pyScript);
-            $remoteCmd = "python3 -c \"import base64; exec(base64.b64decode('{$base64Script}').decode('utf-8'))\" \"{$source}\" \"{$intermediate}\" \"{$inspurFinal}\" '{$filterOrbitsJson}'";
+            $remoteCmd = "python3 -c \"import base64; exec(base64.b64decode('{$base64Script}').decode('utf-8'))\" \"{$source}\" \"{$intermediate}\" \"{$cleanSubdir}\" '{$filterOrbitsJson}'";
 
             $onVerificationOutput = function ($type, $buffer) use ($verification) {
                 if (preg_match('/VERIFY_TOTAL:(\d+)/', $buffer, $mTot)) {
