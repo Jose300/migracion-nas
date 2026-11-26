@@ -863,9 +863,15 @@ class NasMigrationService
             $defaultSubdir = trim($task->inspur_target_dir ?: 'VRSS-2', '/');
             $localRescueRoot = '/volume3/dae-RowData/INSPUR_HS_IPS_LOCAL_PENDIENTE';
 
-            $pyScript = <<<'PYEOF'
-import os, sys, subprocess
+            // Embebemos las rutas directamente con var_export dentro del script Python (sin pasar argumentos CLI externos
+            // para evitar que escapeshellarg() en Windows rompa la cadena SSH con comillas dobles en plink.exe)
+            $pyHeader = "import os, sys, subprocess\n" .
+                "# TAG_ACTIVE_PROCESS: nas_relocate_active\n" .
+                "shared_src = " . var_export($sharedFolder, true) . ".rstrip('/')\n" .
+                "default_subdir = " . var_export($defaultSubdir, true) . ".strip('/')\n" .
+                "rescue_root = " . var_export($localRescueRoot, true) . ".rstrip('/')\n\n";
 
+            $pyBody = <<<'PYEOF'
 def is_nfs_mounted(mp):
     mp = mp.rstrip('/')
     try:
@@ -894,20 +900,15 @@ def resolve_inspur_mount():
         pass
     return False, candidates[0]
 
-shared_src = sys.argv[1].rstrip('/')
-default_subdir = sys.argv[2].strip('/')
-rescue_root = sys.argv[3].rstrip('/')
-
 mounted_ok, inspur_root = resolve_inspur_mount()
 if not mounted_ok:
-    print("[ERROR_MOUNT] PROTECCION ANTI-DESMONTAJE: /HS_IPS_PRIVATE no esta montado por NFS en Synology.")
+    print("[ERROR_MOUNT] PROTECCION ANTI-DESMONTAJE: /HS_IPS_PRIVATE no esta montado por NFS en Synology.", flush=True)
     sys.exit(4)
 
-print("=== INICIANDO TRASLADO DEFINITIVO DE ORBITAS PENDIENTES A INSPUR ===")
-print(f"[FASE 2 - INSPUR] Destino NFS verificado: {inspur_root}/RDP_FTP/RAWDATA/")
-sys.stdout.flush()
+print("=== INICIANDO TRASLADO DEFINITIVO DE ORBITAS PENDIENTES A INSPUR ===", flush=True)
+print(f"[FASE 2 - INSPUR] Destino NFS verificado: {inspur_root}/RDP_FTP/RAWDATA/", flush=True)
 
-# Recolectar trabajos: lista de tuplas (origen_label, src_orb_path, subdir_destino, orb_name)
+# Recolectar listado rapido de carpetas de orbita (sin os.walk global previo para arrancar en < 1 segundo)
 jobs = []
 
 # 1) Orbitas resguardadas en carpeta local de rescate (INSPUR_HS_IPS_LOCAL_PENDIENTE/RDP_FTP/RAWDATA/{SAT}/{ORB})
@@ -934,54 +935,55 @@ if is_nfs_mounted(shared_src) and os.path.isdir(shared_src):
         if os.path.isdir(orb_p):
             jobs.append(('MIGRACION_SYNOLOGY', orb_p, default_subdir, orb))
 
-if not jobs:
-    print("TOTAL_BATCH_FILES:0")
-    print("[COMPLETADO] No existen orbitas pendientes por trasladar en local ni en MIGRACION_SYNOLOGY.")
-    print("RELOCATE_SUMMARY:orbits=0:files=0:bytes=0:last=")
+total_orbits = len(jobs)
+if total_orbits == 0:
+    print("TOTAL_BATCH_FILES:0", flush=True)
+    print("[COMPLETADO] No existen orbitas pendientes por trasladar en local ni en MIGRACION_SYNOLOGY.", flush=True)
+    print("RELOCATE_SUMMARY:orbits=0:files=0:bytes=0:last=", flush=True)
     sys.exit(0)
 
-# Contar total de archivos y bytes antes de trasladar para barra de progreso exacta
-total_files = 0
-total_bytes = 0
-job_stats = []
-for origin_lbl, orb_p, sub, orb in jobs:
+# Estimacion inicial rapida (~110 archivos promedio por orbita) que se ajusta dinamicamente conforme avanza
+estimated_files = total_orbits * 110
+print(f"TOTAL_BATCH_FILES:{estimated_files}", flush=True)
+print(f"[RESUMEN LOTE] Orbitas pendientes detectadas: {total_orbits} | Iniciando transferencia inmediata...", flush=True)
+
+moved_orbits = 0
+moved_files = 0
+moved_bytes = 0
+scanned_files_so_far = 0
+last_orbit = ''
+errors = []
+
+for idx, (origin_lbl, src_orb, sub, orb) in enumerate(jobs, 1):
+    # Re-verificar montaje NFS antes de cada orbita
+    if not is_nfs_mounted(inspur_root):
+        msg = f"Montaje NFS {inspur_root} se desconecto antes de trasladar {orb}. Abortando de inmediato."
+        print("[ERROR_MOUNT] " + msg, flush=True)
+        errors.append(msg)
+        break
+
+    # Contar archivos y peso solo de la orbita actual (instantaneo)
     f_cnt = 0
     b_cnt = 0
-    for r, _, files in os.walk(orb_p):
+    for r, _, files in os.walk(src_orb):
         for fn in files:
             f_cnt += 1
             try:
                 b_cnt += os.path.getsize(os.path.join(r, fn))
             except Exception:
                 pass
-    total_files += f_cnt
-    total_bytes += b_cnt
-    job_stats.append((origin_lbl, orb_p, sub, orb, f_cnt, b_cnt))
 
-print(f"TOTAL_BATCH_FILES:{total_files}")
-print(f"[RESUMEN LOTE] Orbitas pendientes detectadas: {len(job_stats)} | Total archivos: {total_files}")
-sys.stdout.flush()
-
-moved_orbits = 0
-moved_files = 0
-moved_bytes = 0
-last_orbit = ''
-errors = []
-
-for idx, (origin_lbl, src_orb, sub, orb, f_cnt, b_cnt) in enumerate(job_stats, 1):
-    # Re-verificar montaje NFS antes de cada orbita
-    if not is_nfs_mounted(inspur_root):
-        msg = f"Montaje NFS {inspur_root} se desconecto antes de trasladar {orb}. Abortando de inmediato."
-        print("[ERROR_MOUNT] " + msg)
-        errors.append(msg)
-        break
+    scanned_files_so_far += f_cnt
+    remaining_orbits = total_orbits - idx
+    avg_per_orb = max(1, int(round(scanned_files_so_far / idx)))
+    dynamic_total = scanned_files_so_far + (remaining_orbits * avg_per_orb)
+    print(f"TOTAL_BATCH_FILES:{dynamic_total}", flush=True)
 
     tgt_base = os.path.join(inspur_root, 'RDP_FTP', 'RAWDATA', sub)
     os.makedirs(tgt_base, exist_ok=True)
     tgt_orb = os.path.join(tgt_base, orb)
 
-    print(f"[{idx}/{len(job_stats)}] TRASLADANDO_ORBITA:{orb} ({origin_lbl} -> RAWDATA/{sub}, {f_cnt} arch.)")
-    sys.stdout.flush()
+    print(f"[{idx}/{total_orbits}] TRASLADANDO_ORBITA:{orb} ({origin_lbl} -> RAWDATA/{sub}, {f_cnt} arch.)", flush=True)
 
     cmd = ['rsync', '-avh', '--timeout=300', '--partial', '--remove-source-files', '--out-format=PROGRESS_FILE:' + orb + '/%n', src_orb + '/', tgt_orb + '/']
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
@@ -1012,8 +1014,10 @@ for idx, (origin_lbl, src_orb, sub, orb, f_cnt, b_cnt) in enumerate(job_stats, 1
     else:
         err_snip = ' '.join(out_lines[-3:])[:220]
         errors.append(f"{orb}: rc={proc.returncode} {err_snip}")
-        print(f"[ERROR_ORBITA] {orb}: {err_snip}")
-        sys.stdout.flush()
+        print(f"[ERROR_ORBITA] {orb}: {err_snip}", flush=True)
+
+# Ajustar total final exacto al 100%
+print(f"TOTAL_BATCH_FILES:{moved_files}", flush=True)
 
 # Si la carpeta local de rescate quedo completamente vacia, limpiar su arbol vacio
 if os.path.isdir(rescue_root):
@@ -1025,22 +1029,21 @@ if os.path.isdir(rescue_root):
                 pass
     try:
         os.rmdir(rescue_root)
-        print(f"[LIMPIEZA] Carpeta temporal {rescue_root} eliminada tras quedar 100% vacia.")
+        print(f"[LIMPIEZA] Carpeta temporal {rescue_root} eliminada tras quedar 100% vacia.", flush=True)
     except Exception:
         pass
 
-print(f"RELOCATE_SUMMARY:orbits={moved_orbits}:files={moved_files}:bytes={moved_bytes}:last={last_orbit}")
+print(f"RELOCATE_SUMMARY:orbits={moved_orbits}:files={moved_files}:bytes={moved_bytes}:last={last_orbit}", flush=True)
 if errors:
-    print("RELOCATE_ERRORS:" + " | ".join(errors))
+    print("RELOCATE_ERRORS:" + " | ".join(errors), flush=True)
     sys.exit(5)
 sys.exit(0)
 PYEOF;
 
+            $pyScript = $pyHeader . $pyBody;
             $b64 = base64_encode($pyScript);
-            $remoteCmd = "python3 -c \"import base64; exec(base64.b64decode('{$b64}').decode('utf-8'))\" " .
-                escapeshellarg($sharedFolder) . ' ' .
-                escapeshellarg($defaultSubdir) . ' ' .
-                escapeshellarg($localRescueRoot);
+            // Exactamente el mismo formato probado de runSync + marcador nas_relocate_active visible en ps aux
+            $remoteCmd = "python3 -c \"# nas_relocate_active\nimport base64; exec(base64.b64decode('{$b64}').decode('utf-8'))\"";
 
             $filesCount = 0;
             $totalBatchFiles = 0;
@@ -1236,7 +1239,7 @@ PYEOF;
             $pyScript = "import subprocess\n" .
                 "try:\n" .
                 "    out = subprocess.check_output(['ps', 'aux'], text=True)\n" .
-                "    active = any(('rsync' in l and not l.strip().endswith('--daemon') and 'grep' not in l) or 'nas_batch' in l for l in out.splitlines())\n" .
+                "    active = any(('rsync' in l and not l.strip().endswith('--daemon') and 'grep' not in l) or 'nas_batch' in l or 'nas_relocate_active' in l for l in out.splitlines())\n" .
                 "    print('STATUS_TRANSFER_ACTIVE:' + str(active))\n" .
                 "except Exception:\n" .
                 "    print('STATUS_TRANSFER_ACTIVE:False')\n";
@@ -1263,7 +1266,7 @@ PYEOF;
                 "    for line in out.splitlines():\n" .
                 "        if 'grep' in line or line.strip().endswith('--daemon'):\n" .
                 "            continue\n" .
-                "        if 'rsync' in line or 'nas_batch' in line:\n" .
+                "        if 'rsync' in line or 'nas_batch' in line or 'nas_relocate_active' in line:\n" .
                 "            parts = line.split()\n" .
                 "            if len(parts) > 1 and parts[1].isdigit():\n" .
                 "                pid = int(parts[1])\n" .
