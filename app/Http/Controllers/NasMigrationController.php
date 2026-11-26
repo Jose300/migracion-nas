@@ -318,9 +318,10 @@ class NasMigrationController extends Controller
         $userId = auth()->id() ?? 0;
 
         if (PHP_OS_FAMILY === 'Windows') {
-            // En Apache sobre Windows, popen directo de 'start' no abre cmd.exe; se requiere cmd /c start /B
-            $bgLog = storage_path('logs/nas_sync_background.log');
-            $command = "cmd /c start /B \"\" \"{$php}\" \"{$artisan}\" nas:sync {$task->id} --log_id={$log->id} --user_id={$userId} --limit={$limit} --source=\"{$source}\" --inspur_dir=\"{$inspurDir}\" > \"{$bgLog}\" 2>&1";
+            // popen() en PHP Windows ya invoca internamente "cmd.exe /c <comando>".
+            // Usar "start /B" directo evita el fallo de comillas anidadas de "cmd /c start /B"
+            $bgLog = str_replace('/', '\\', storage_path('logs/nas_sync_background.log'));
+            $command = "start /B \"\" \"{$php}\" \"{$artisan}\" nas:sync {$task->id} --log_id={$log->id} --user_id={$userId} --limit={$limit} --source=\"{$source}\" --inspur_dir=\"{$inspurDir}\" > \"{$bgLog}\" 2>&1";
             pclose(popen($command, 'r'));
         } else {
             // En Linux / Unix
@@ -438,8 +439,10 @@ class NasMigrationController extends Controller
         $userId = auth()->id() ?? 0;
 
         if (PHP_OS_FAMILY === 'Windows') {
-            $bgLog = storage_path('logs/nas_relocate_background.log');
-            $command = "cmd /c start /B \"\" \"{$php}\" \"{$artisan}\" nas:relocate-pending {$task->id} --log_id={$log->id} --user_id={$userId} > \"{$bgLog}\" 2>&1";
+            // popen() en PHP Windows ya invoca internamente "cmd.exe /c <comando>".
+            // Usar "start /B" directo garantiza que el proceso Artisan desacoplado arranque siempre.
+            $bgLog = str_replace('/', '\\', storage_path('logs/nas_relocate_background.log'));
+            $command = "start /B \"\" \"{$php}\" \"{$artisan}\" nas:relocate-pending {$task->id} --log_id={$log->id} --user_id={$userId} > \"{$bgLog}\" 2>&1";
             pclose(popen($command, 'r'));
         } else {
             $command = "{$php} \"{$artisan}\" nas:relocate-pending {$task->id} --log_id={$log->id} --user_id={$userId} > /dev/null 2>&1 &";
