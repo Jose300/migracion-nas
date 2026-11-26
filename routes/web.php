@@ -189,7 +189,7 @@ Route::middleware('auth')->group(function () {
             ->middleware('permission:ejecutar-migracion-nas')->name('tasks.sync');
 
         Route::post('/tareas/{task}/relocate-pending', [App\Http\Controllers\NasMigrationController::class, 'relocatePending'])
-            ->middleware('permission:ejecutar-migracion-nas')->name('tasks.relocate-pending');
+            ->middleware('permission:reubicar-orbitas-pendientes-nas')->name('tasks.relocate-pending');
 
         Route::post('/tareas/{task}/stop', [App\Http\Controllers\NasMigrationController::class, 'stopSync'])
             ->middleware('permission:ejecutar-migracion-nas')->name('tasks.stop');

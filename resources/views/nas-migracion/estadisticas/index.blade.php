@@ -40,7 +40,7 @@
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <a class="dropdown-item d-flex align-items-center" href="{{ route('nas-migracion.estadisticas.export', request()->all()) }}">
+                            <a class="dropdown-item d-flex align-items-center" id="link-export-detalle-csv" href="{{ route('nas-migracion.estadisticas.export', request()->all()) }}">
                                 <i class="ti ti-table text-success me-2 fs-3"></i>
                                 <div>
                                     <div class="fw-bold">Exportar Detalle de Archivos (.csv)</div>
@@ -431,37 +431,47 @@
             </div>
         </div>
 
-        {{-- Tabla de Registros Detallados con Filtros y Buscador --}}
-        <div class="card border-0 shadow-sm">
+        {{-- Tabla de Registros Detallados con Filtros Dinámicos (AJAX sin recargar página) --}}
+        <div class="card border-0 shadow-sm" id="card-detalle-estadisticas">
             <div class="card-header bg-transparent d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>
                     <h3 class="card-title fw-bold d-flex align-items-center">
                         <i class="ti ti-list-details me-2 text-primary"></i> Detalle de Archivos y Guardias Migradas
+                        <span class="badge bg-blue-lt ms-2 font-monospace" id="stats-records-total-badge">{{ number_format($records->total()) }} reg.</span>
                     </h3>
                     <p class="text-secondary small mb-0">
                         Historial individual de archivos transferidos con tamaño exacto en GB, satélite y responsable.
                     </p>
                 </div>
-                <div>
-                    @if(request()->anyFilled(['responsable', 'satelite', 'fecha_desde', 'fecha_hasta', 'search']))
-                        <a href="{{ route('nas-migracion.estadisticas.index') }}" class="btn btn-outline-danger btn-sm fw-bold">
-                            <i class="ti ti-x me-1"></i> Limpiar Filtros
-                        </a>
-                    @endif
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-primary small fw-semibold d-none" id="stats-filter-spinner">
+                        <span class="spinner-border spinner-border-sm me-1" role="status"></span> Actualizando...
+                    </span>
+                    <button type="button"
+                            id="btn-clear-stats-filters"
+                            class="btn btn-danger btn-sm fw-bold {{ request()->anyFilled(['responsable', 'satelite', 'fecha', 'fecha_desde', 'fecha_hasta', 'search']) ? '' : 'd-none' }}">
+                        <i class="ti ti-x me-1"></i> Limpiar Filtros
+                    </button>
                 </div>
             </div>
 
-            {{-- Barra de Filtros --}}
+            {{-- Barra de Filtros Dinámicos --}}
             <div class="card-body border-bottom bg-light py-2">
-                <form action="{{ route('nas-migracion.estadisticas.index') }}" method="GET" class="row g-2 align-items-center">
+                <form action="{{ route('nas-migracion.estadisticas.index') }}" method="GET" id="form-stats-filters" class="row g-2 align-items-center">
                     <div class="col-md-3">
                         <div class="input-icon">
                             <span class="input-icon-addon"><i class="ti ti-search"></i></span>
-                            <input type="text" name="search" class="form-control form-control-sm" value="{{ request('search') }}" placeholder="Buscar por ID de archivo...">
+                            <input type="text"
+                                   name="search"
+                                   id="filter-stats-search"
+                                   class="form-control form-control-sm"
+                                   value="{{ request('search') }}"
+                                   autocomplete="off"
+                                   placeholder="Buscar por ID de archivo u operador...">
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <select name="responsable" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <select name="responsable" id="filter-stats-responsable" class="form-select form-select-sm">
                             <option value="all">Todos los Responsables</option>
                             @foreach($availableExecutors as $exec)
                                 <option value="{{ $exec }}" {{ request('responsable') === $exec ? 'selected' : '' }}>
@@ -471,108 +481,31 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <select name="satelite" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <select name="satelite" id="filter-stats-satelite" class="form-select form-select-sm">
                             <option value="all">Todos los Satélites</option>
                             <option value="VRSS-1" {{ request('satelite') === 'VRSS-1' ? 'selected' : '' }}>VRSS-1</option>
                             <option value="VRSS-2" {{ request('satelite') === 'VRSS-2' ? 'selected' : '' }}>VRSS-2</option>
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <input type="date" name="fecha_desde" class="form-control form-control-sm" value="{{ request('fecha_desde') }}" title="Fecha desde" placeholder="Desde">
+                        <input type="date"
+                               name="fecha"
+                               id="filter-stats-fecha"
+                               class="form-control form-control-sm"
+                               value="{{ request('fecha', request('fecha_desde')) }}"
+                               title="Filtrar por fecha exacta">
                     </div>
                     <div class="col-md-2 d-flex gap-1">
-                        <button type="submit" class="btn btn-primary btn-sm fw-bold flex-grow-1">
+                        <button type="submit" class="btn btn-success btn-sm fw-bold flex-grow-1">
                             <i class="ti ti-filter me-1"></i> Filtrar
                         </button>
                     </div>
                 </form>
             </div>
 
-            <div class="table-responsive">
-                <table class="table table-vcenter table-striped card-table">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width: 50px;">#</th>
-                            <th>Responsable</th>
-                            <th>Fecha</th>
-                            <th>Satélite</th>
-                            <th>ID del Archivo</th>
-                            <th class="text-end">Tamaño (GB)</th>
-                            <th>Observaciones</th>
-                            @can('crear-estadisticas-nas')
-                            <th class="text-end" style="width: 70px;">Acción</th>
-                            @endcan
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($records as $index => $row)
-                        <tr>
-                            <td class="text-secondary font-monospace">
-                                {{ $records->firstItem() + $index }}
-                            </td>
-                            <td class="fw-bold text-dark">
-                                @if(strtolower($row->responsable) === 'bot_pss')
-                                    <div class="d-flex align-items-center">
-                                        <span class="badge bg-purple-lt text-purple fw-bold me-1">bot_pss</span>
-                                        @if($row->user)
-                                            <span class="badge bg-light text-dark border small fw-normal" title="Operador que ejecutó la tarea">
-                                                <i class="ti ti-user me-1 text-primary"></i>{{ $row->user->name }}
-                                            </span>
-                                        @endif
-                                    </div>
-                                @else
-                                    {{ $row->responsable }}
-                                @endif
-                            </td>
-                            <td class="text-secondary small">
-                                <i class="ti ti-calendar me-1"></i>
-                                {{ is_string($row->fecha) ? substr($row->fecha, 0, 10) : $row->fecha->format('d/m/Y') }}
-                            </td>
-                            <td>
-                                <span class="badge {{ $row->satelite === 'VRSS-1' ? 'bg-info-lt' : 'bg-teal-lt' }} font-monospace fw-bold">
-                                    {{ $row->satelite }}
-                                </span>
-                            </td>
-                            <td>
-                                <code class="text-primary fw-bold">{{ $row->archivo_id ?: 'N/A' }}</code>
-                                @if($row->cantidad_archivos > 1)
-                                    <span class="badge bg-secondary-lt ms-1">{{ $row->cantidad_archivos }} archivos</span>
-                                @endif
-                            </td>
-                            <td class="text-end">
-                                <span class="fw-bold font-monospace text-dark">{{ number_format($row->tamano_gb, 4) }}</span>
-                                <span class="text-muted small">GB</span>
-                            </td>
-                            <td class="text-secondary small text-truncate" style="max-width: 250px;">
-                                {{ $row->observaciones ?: '-' }}
-                            </td>
-                            @can('crear-estadisticas-nas')
-                            <td class="text-end">
-                                <form action="{{ route('nas-migracion.estadisticas.destroy', $row) }}" method="POST" class="d-inline form-delete-stat">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button" 
-                                            class="btn btn-icon btn-sm btn-outline-danger btn-delete-stat" 
-                                            data-name="{{ $row->responsable }} - {{ $row->tamano_gb }} GB"
-                                            title="Eliminar este registro">
-                                        <i class="ti ti-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                            @endcan
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="{{ auth()->user() && auth()->user()->can('crear-estadisticas-nas') ? 8 : 7 }}" class="text-center py-4 text-secondary">
-                                No se encontraron registros coincidentes con los filtros seleccionados.
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+            <div id="stats-records-container">
+                @include('nas-migracion.estadisticas._records_table', ['records' => $records])
             </div>
-
-            @include('partials.datatable-pagination', ['paginator' => $records, 'label' => 'registros'])
         </div>
 
     </div>
@@ -1320,29 +1253,162 @@ document.addEventListener('DOMContentLoaded', function () {
         radioIndividual.addEventListener('change', toggleModo);
     }
 
-    // 5. Confirmación con SweetAlert2 para eliminar registros
-    document.querySelectorAll('.btn-delete-stat').forEach(button => {
-        button.addEventListener('click', function (e) {
-            e.preventDefault();
-            const form = this.closest('form');
-            const name = this.getAttribute('data-name');
+    // 5. Confirmación con SweetAlert2 para eliminar registros (con delegación de eventos para soportar recargas AJAX)
+    document.addEventListener('click', function (e) {
+        const button = e.target.closest('.btn-delete-stat');
+        if (!button) return;
 
-            Swal.fire({
-                title: '¿Eliminar este registro?',
-                html: `Se removerá la guardia de <b>${name}</b> de las estadísticas.`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#2fb344',
-                cancelButtonColor: '#d63939'
-            }).then(result => {
-                if (result.isConfirmed) {
-                    form.submit();
-                }
-            });
+        e.preventDefault();
+        const form = button.closest('form');
+        const name = button.getAttribute('data-name');
+
+        Swal.fire({
+            title: '¿Eliminar este registro?',
+            html: `Se removerá la guardia de <b>${name}</b> de las estadísticas.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#2fb344',
+            cancelButtonColor: '#d63939'
+        }).then(result => {
+            if (result.isConfirmed && form) {
+                form.submit();
+            }
         });
     });
+
+    // 5.1 Filtrado y Paginación Dinámica sin recargar la página (AJAX) para Detalle de Archivos y Guardias Migradas
+    const statsFilterForm = document.getElementById('form-stats-filters');
+    const statsRecordsContainer = document.getElementById('stats-records-container');
+    const statsSearchInput = document.getElementById('filter-stats-search');
+    const statsRespSelect = document.getElementById('filter-stats-responsable');
+    const statsSatSelect = document.getElementById('filter-stats-satelite');
+    const statsFechaInput = document.getElementById('filter-stats-fecha');
+    const btnClearStatsFilters = document.getElementById('btn-clear-stats-filters');
+    const statsFilterSpinner = document.getElementById('stats-filter-spinner');
+    const statsTotalBadge = document.getElementById('stats-records-total-badge');
+    const exportCsvLink = document.getElementById('link-export-detalle-csv');
+
+    let statsSearchDebounce = null;
+    let currentStatsAbortCtrl = null;
+
+    function fetchStatsRecordsDynamic(page = 1) {
+        if (!statsFilterForm || !statsRecordsContainer) return;
+
+        if (currentStatsAbortCtrl) {
+            currentStatsAbortCtrl.abort();
+        }
+        currentStatsAbortCtrl = new AbortController();
+
+        const params = new URLSearchParams();
+        const searchVal = (statsSearchInput?.value || '').trim();
+        const respVal = statsRespSelect?.value || 'all';
+        const satVal = statsSatSelect?.value || 'all';
+        const fechaVal = statsFechaInput?.value || '';
+
+        if (searchVal !== '') params.set('search', searchVal);
+        if (respVal !== '' && respVal !== 'all') params.set('responsable', respVal);
+        if (satVal !== '' && satVal !== 'all') params.set('satelite', satVal);
+        if (fechaVal !== '') params.set('fecha', fechaVal);
+        if (page > 1) params.set('page', page);
+
+        // Actualizar URL en la barra del navegador sin recargar la página
+        const baseUrl = statsFilterForm.getAttribute('action');
+        const cleanQuery = params.toString();
+        const browserUrl = cleanQuery ? `${baseUrl}?${cleanQuery}` : baseUrl;
+        window.history.replaceState({}, '', browserUrl);
+
+        // Petición AJAX
+        params.set('ajax_table', '1');
+        if (statsFilterSpinner) statsFilterSpinner.classList.remove('d-none');
+        statsRecordsContainer.style.opacity = '0.55';
+
+        fetch(`${baseUrl}?${params.toString()}`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            signal: currentStatsAbortCtrl.signal
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                statsRecordsContainer.innerHTML = data.html;
+                if (statsTotalBadge && data.total !== undefined) {
+                    statsTotalBadge.textContent = `${Number(data.total).toLocaleString('es-VE')} reg.`;
+                }
+                if (btnClearStatsFilters) {
+                    btnClearStatsFilters.classList.toggle('d-none', !data.has_filters);
+                }
+                if (exportCsvLink && data.export_csv_url) {
+                    exportCsvLink.setAttribute('href', data.export_csv_url);
+                }
+            }
+        })
+        .catch(err => {
+            if (err.name !== 'AbortError') {
+                console.error('Error al actualizar listado de estadísticas:', err);
+            }
+        })
+        .finally(() => {
+            if (statsFilterSpinner) statsFilterSpinner.classList.add('d-none');
+            statsRecordsContainer.style.opacity = '1';
+        });
+    }
+
+    if (statsFilterForm && statsRecordsContainer) {
+        statsFilterForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            fetchStatsRecordsDynamic(1);
+        });
+
+        if (statsSearchInput) {
+            statsSearchInput.addEventListener('input', function () {
+                clearTimeout(statsSearchDebounce);
+                statsSearchDebounce = setTimeout(() => {
+                    fetchStatsRecordsDynamic(1);
+                }, 320);
+            });
+        }
+
+        if (statsRespSelect) {
+            statsRespSelect.addEventListener('change', () => fetchStatsRecordsDynamic(1));
+        }
+
+        if (statsSatSelect) {
+            statsSatSelect.addEventListener('change', () => fetchStatsRecordsDynamic(1));
+        }
+
+        if (statsFechaInput) {
+            statsFechaInput.addEventListener('change', () => fetchStatsRecordsDynamic(1));
+        }
+
+        if (btnClearStatsFilters) {
+            btnClearStatsFilters.addEventListener('click', function () {
+                if (statsSearchInput) statsSearchInput.value = '';
+                if (statsRespSelect) statsRespSelect.value = 'all';
+                if (statsSatSelect) statsSatSelect.value = 'all';
+                if (statsFechaInput) statsFechaInput.value = '';
+                fetchStatsRecordsDynamic(1);
+            });
+        }
+
+        // Interceptar clics en la paginación dentro del contenedor para cambiar de página sin recargar
+        statsRecordsContainer.addEventListener('click', function (e) {
+            const pageLink = e.target.closest('a.datatable-page-btn');
+            if (!pageLink) return;
+
+            e.preventDefault();
+            try {
+                const targetUrl = new URL(pageLink.href, window.location.origin);
+                const pageNum = parseInt(targetUrl.searchParams.get('page') || '1', 10);
+                fetchStatsRecordsDynamic(pageNum);
+            } catch (_) {
+                fetchStatsRecordsDynamic(1);
+            }
+        });
+    }
 
     // 6. Modal AJAX de Resumen por Responsable
     const modalResumenElement = document.getElementById('modal-resumen-responsable');

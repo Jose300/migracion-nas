@@ -174,38 +174,36 @@ class NasStatsController extends Controller
             ];
         }
 
-        // 4. Listado Detallado de Registros con Filtros
-        $query = NasMigrationStat::with(['task', 'user'])->latest('fecha')->latest('id');
-
-        if ($request->filled('responsable') && $request->responsable !== 'all') {
-            $query->where('responsable', $request->responsable);
-        }
-
-        if ($request->filled('satelite') && $request->satelite !== 'all') {
-            $query->where('satelite', $request->satelite);
-        }
-
-        if ($request->filled('fecha_desde')) {
-            $query->whereDate('fecha', '>=', $request->fecha_desde);
-        }
-
-        if ($request->filled('fecha_hasta')) {
-            $query->whereDate('fecha', '<=', $request->fecha_hasta);
-        }
-
-        if ($request->filled('search')) {
-            $s = trim($request->search);
-            $query->where(function ($q) use ($s) {
-                $q->where('archivo_id', 'like', "%{$s}%")
-                    ->orWhere('responsable', 'like', "%{$s}%")
-                    ->orWhere('observaciones', 'like', "%{$s}%");
-            });
-        }
+        // 4. Listado Detallado de Registros con Filtros (soporta recarga completa y peticiones dinámicas AJAX)
+        $query = $this->buildFilteredStatsQuery($request)->with(['task', 'user'])->latest('fecha')->latest('id');
 
         $records = $query->paginate(10)->withQueryString();
 
-        // Lista de ejecutores registrados para selectores y datalists
-        $availableExecutors = NasMigrationStat::distinct()->orderBy('responsable')->pluck('responsable')->toArray();
+        // Si es una petición AJAX del listado dinámico, devolver únicamente el fragmento de tabla + paginación y URL de exportación actualizada
+        if ($request->ajax() && $request->boolean('ajax_table')) {
+            $exportParams = array_filter(
+                $request->only(['search', 'responsable', 'satelite', 'fecha', 'fecha_desde', 'fecha_hasta']),
+                fn($v) => $v !== null && $v !== '' && $v !== 'all'
+            );
+
+            return response()->json([
+                'success' => true,
+                'html' => view('nas-migracion.estadisticas._records_table', compact('records'))->render(),
+                'total' => $records->total(),
+                'has_filters' => !empty($exportParams),
+                'export_csv_url' => route('nas-migracion.estadisticas.export', $exportParams),
+            ]);
+        }
+
+        // Lista de ejecutores registrados para selectores y datalists (incluye operadores asociados a ejecuciones de bot_pss)
+        $statExecutors = NasMigrationStat::distinct()->orderBy('responsable')->pluck('responsable')->toArray();
+        $userOperators = \App\Models\User::whereIn(
+            'id',
+            NasMigrationStat::whereNotNull('user_id')->distinct()->pluck('user_id')
+        )->orderBy('name')->pluck('name')->toArray();
+
+        $availableExecutors = array_values(array_unique(array_merge($statExecutors, $userOperators)));
+        sort($availableExecutors, SORT_NATURAL | SORT_FLAG_CASE);
 
         return view('nas-migracion.estadisticas.index', compact(
             'totalGb',
@@ -398,25 +396,70 @@ class NasStatsController extends Controller
     }
 
     /**
-     * Exporta los datos de estadísticas a formato CSV con codificación UTF-8 BOM.
+     * Construye la consulta filtrada unificada para el listado dinámico y la exportación CSV.
+     * Soporta coincidencia por responsable directo o por el operador (user->name) en tareas de bot_pss,
+     * así como fecha exacta (`fecha`) o rango (`fecha_desde` / `fecha_hasta`).
      */
-    public function export(Request $request): StreamedResponse
+    protected function buildFilteredStatsQuery(Request $request)
     {
-        $query = NasMigrationStat::orderBy('fecha')->orderBy('id');
+        $query = NasMigrationStat::query();
 
         if ($request->filled('responsable') && $request->responsable !== 'all') {
-            $query->where('responsable', $request->responsable);
+            $resp = trim($request->responsable);
+            $query->where(function ($q) use ($resp) {
+                $q->where('responsable', $resp)
+                    ->orWhereHas('user', function ($uq) use ($resp) {
+                        $uq->where('name', $resp)
+                            ->orWhere('name', 'like', "%{$resp}%");
+                    });
+            });
         }
 
         if ($request->filled('satelite') && $request->satelite !== 'all') {
-            $query->where('satelite', $request->satelite);
+            $query->where('satelite', trim($request->satelite));
         }
 
+        if ($request->filled('fecha')) {
+            $query->whereDate('fecha', $request->fecha);
+        } else {
+            if ($request->filled('fecha_desde') && $request->filled('fecha_hasta')) {
+                $query->whereDate('fecha', '>=', $request->fecha_desde)
+                    ->whereDate('fecha', '<=', $request->fecha_hasta);
+            } elseif ($request->filled('fecha_desde')) {
+                // Si el usuario seleccionó una única fecha en el selector de fecha, filtrar ese día exacto
+                $query->whereDate('fecha', $request->fecha_desde);
+            } elseif ($request->filled('fecha_hasta')) {
+                $query->whereDate('fecha', '<=', $request->fecha_hasta);
+            }
+        }
+
+        if ($request->filled('search')) {
+            $s = trim($request->search);
+            $query->where(function ($q) use ($s) {
+                $q->where('archivo_id', 'like', "%{$s}%")
+                    ->orWhere('responsable', 'like', "%{$s}%")
+                    ->orWhere('observaciones', 'like', "%{$s}%")
+                    ->orWhereHas('user', function ($uq) use ($s) {
+                        $uq->where('name', 'like', "%{$s}%");
+                    });
+            });
+        }
+
+        return $query;
+    }
+
+    /**
+     * Exporta los datos de estadísticas a formato CSV con codificación UTF-8 BOM (o XLSX para gráficos).
+     */
+    public function export(Request $request): StreamedResponse
+    {
         $tipo = $request->input('tipo', 'general');
 
         if ($tipo === 'graficos') {
             return NasStatsExcelExporter::exportWithCharts();
         }
+
+        $query = $this->buildFilteredStatsQuery($request)->orderBy('fecha')->orderBy('id');
 
         $filename = 'Estadisticas_Migracion_NAS_' . date('Ymd_His') . '.csv';
 

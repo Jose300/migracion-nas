@@ -171,6 +171,11 @@ class RolePermissionSeeder extends Seeder
                 'description' => 'Iniciar sincronización de archivos por lotes o paralizar ejecución activa'
             ],
             [
+                'name' => 'reubicar-orbitas-pendientes-nas',
+                'module' => 'Migración NAS',
+                'description' => 'Ejecutar traslado masivo de órbitas pendientes (rescate local y compartida intermedia) hacia Inspur RAWDATA final'
+            ],
+            [
                 'name' => 'editar-tarea-nas',
                 'module' => 'Migración NAS',
                 'description' => 'Configurar y modificar parámetros, rutas y credenciales de tareas'

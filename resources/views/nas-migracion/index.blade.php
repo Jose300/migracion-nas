@@ -15,6 +15,25 @@
                 </h2>
             </div>
             <div class="col-auto ms-auto d-print-none d-flex align-items-center gap-2">
+                @php $topTask = $tasks->first(); @endphp
+                @if($topTask)
+                    @can('reubicar-orbitas-pendientes-nas')
+                    <button type="button"
+                        class="btn btn-icon btn-success shadow-sm btn-relocate-pending {{ $topTask->status === 'running' ? 'd-none' : '' }}"
+                        id="btn-relocate-top-{{ $topTask->id }}"
+                        data-task-id="{{ $topTask->id }}"
+                        data-task-name="{{ $topTask->name }}"
+                        data-inspur-dir="{{ $topTask->inspur_target_dir ?: 'VRSS-2' }}"
+                        data-test-url="{{ route('nas-migracion.tasks.test', $topTask) }}"
+                        data-url="{{ route('nas-migracion.tasks.relocate-pending', $topTask) }}"
+                        data-status-url="{{ route('nas-migracion.tasks.status', $topTask) }}"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="bottom"
+                        title="Mover Órbitas Pendientes (Rescate Local + MIGRACION_SYNOLOGY) a Inspur RAWDATA Final">
+                        <i class="ti ti-truck-delivery fs-2"></i>
+                    </button>
+                    @endcan
+                @endif
                 @can('ver-estadisticas-nas')
                 <a href="{{ route('nas-migracion.estadisticas.index') }}" class="btn btn-outline-warning btn-sm fw-bold">
                     <i class="ti ti-chart-bar me-1"></i> Estadísticas
@@ -146,30 +165,11 @@
 
         {{-- Lista de Tareas de Migración --}}
         <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
+            <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
                 <h3 class="card-title text-dark fw-bold mb-0 d-flex align-items-center">
                     <i class="ti ti-arrows-transfer-down me-2 text-primary fs-2"></i> Tareas de Sincronización Configuradas
                 </h3>
-                <div class="d-flex align-items-center gap-2">
-                    @php $headerTask = $tasks->first(); @endphp
-                    @if($headerTask)
-                        @can('ejecutar-migracion-nas')
-                        <button type="button"
-                            class="btn btn-success btn-sm fw-bold shadow-sm btn-relocate-pending {{ $headerTask->status === 'running' ? 'd-none' : '' }}"
-                            id="btn-relocate-header-{{ $headerTask->id }}"
-                            data-task-id="{{ $headerTask->id }}"
-                            data-task-name="{{ $headerTask->name }}"
-                            data-inspur-dir="{{ $headerTask->inspur_target_dir ?: 'VRSS-2' }}"
-                            data-test-url="{{ route('nas-migracion.tasks.test', $headerTask) }}"
-                            data-url="{{ route('nas-migracion.tasks.relocate-pending', $headerTask) }}"
-                            data-status-url="{{ route('nas-migracion.tasks.status', $headerTask) }}"
-                            title="Trasladar todas las órbitas pendientes (Rescate Local + MIGRACION_SYNOLOGY) hacia Inspur RAWDATA Final">
-                            <i class="ti ti-truck-delivery me-1 fs-3"></i> Mover Órbitas Pendientes a Inspur
-                        </button>
-                        @endcan
-                    @endif
-                    <span class="badge bg-blue-lt fw-bold">{{ $tasksActivas }} Activa(s)</span>
-                </div>
+                <span class="badge bg-blue-lt fw-bold">{{ $tasksActivas }} Activa(s)</span>
             </div>
 
             <div class="card-body p-0">
@@ -319,24 +319,6 @@
                                 data-bs-placement="top"
                                 title="Probar Conexión y Montajes NFS hacia {{ $task->nas_host }}">
                                 <i class="ti ti-wifi fs-2"></i>
-                            </button>
-                            @endcan
-
-                            {{-- Botón Trasladar Todas las Órbitas Pendientes al Destino Final en Inspur --}}
-                            @can('ejecutar-migracion-nas')
-                            <button type="button"
-                                class="btn btn-icon btn-success shadow-sm btn-relocate-pending {{ $task->status === 'running' ? 'd-none' : '' }}"
-                                id="btn-relocate-{{ $task->id }}"
-                                data-task-id="{{ $task->id }}"
-                                data-task-name="{{ $task->name }}"
-                                data-inspur-dir="{{ $task->inspur_target_dir ?: 'VRSS-2' }}"
-                                data-test-url="{{ route('nas-migracion.tasks.test', $task) }}"
-                                data-url="{{ route('nas-migracion.tasks.relocate-pending', $task) }}"
-                                data-status-url="{{ route('nas-migracion.tasks.status', $task) }}"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="top"
-                                title="Mover Órbitas Pendientes (Rescate Local + MIGRACION_SYNOLOGY) a Inspur RAWDATA Final">
-                                <i class="ti ti-truck-delivery fs-2"></i>
                             </button>
                             @endcan
 
@@ -1417,16 +1399,14 @@
         // Función para cambiar el estado visual de la fila y conmutar botones
         function setTaskRunningState(taskId, isRunning) {
             const btnSync = document.getElementById(`btn-sync-${taskId}`);
-            const btnRelocate = document.getElementById(`btn-relocate-${taskId}`);
-            const btnRelocateHeader = document.getElementById(`btn-relocate-header-${taskId}`);
+            const btnRelocateTop = document.getElementById(`btn-relocate-top-${taskId}`);
             const btnStop = document.getElementById(`btn-stop-${taskId}`);
             const statusContainer = document.getElementById(`task-status-container-${taskId}`);
             const progressBox = document.getElementById(`task-progress-box-${taskId}`);
 
             if (isRunning) {
                 if (btnSync) btnSync.classList.add('d-none');
-                if (btnRelocate) btnRelocate.classList.add('d-none');
-                if (btnRelocateHeader) btnRelocateHeader.classList.add('d-none');
+                if (btnRelocateTop) btnRelocateTop.classList.add('d-none');
                 if (btnStop) btnStop.classList.remove('d-none');
                 if (statusContainer) {
                     statusContainer.innerHTML = `
@@ -1447,13 +1427,9 @@
                     btnSync.classList.remove('d-none');
                     btnSync.disabled = false;
                 }
-                if (btnRelocate) {
-                    btnRelocate.classList.remove('d-none');
-                    btnRelocate.disabled = false;
-                }
-                if (btnRelocateHeader) {
-                    btnRelocateHeader.classList.remove('d-none');
-                    btnRelocateHeader.disabled = false;
+                if (btnRelocateTop) {
+                    btnRelocateTop.classList.remove('d-none');
+                    btnRelocateTop.disabled = false;
                 }
                 if (btnStop) {
                     btnStop.classList.add('d-none');
