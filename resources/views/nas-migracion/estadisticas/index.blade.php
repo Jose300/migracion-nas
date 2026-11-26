@@ -447,18 +447,21 @@
                     <span class="text-primary small fw-semibold d-none" id="stats-filter-spinner">
                         <span class="spinner-border spinner-border-sm me-1" role="status"></span> Actualizando...
                     </span>
-                    <button type="button"
-                            id="btn-clear-stats-filters"
-                            class="btn btn-danger btn-sm fw-bold {{ request()->anyFilled(['responsable', 'satelite', 'fecha', 'fecha_desde', 'fecha_hasta', 'search']) ? '' : 'd-none' }}">
-                        <i class="ti ti-x me-1"></i> Limpiar Filtros
-                    </button>
                 </div>
             </div>
 
             {{-- Barra de Filtros Dinámicos --}}
+            @php
+                $hasInitialStatsFilters = request()->filled('search')
+                    || (request()->filled('responsable') && request('responsable') !== 'all')
+                    || (request()->filled('satelite') && request('satelite') !== 'all')
+                    || request()->filled('fecha')
+                    || request()->filled('fecha_desde')
+                    || request()->filled('fecha_hasta');
+            @endphp
             <div class="card-body border-bottom bg-light py-2">
                 <form action="{{ route('nas-migracion.estadisticas.index') }}" method="GET" id="form-stats-filters" class="row g-2 align-items-center">
-                    <div class="col-md-3">
+                    <div class="col-md-4" id="col-stats-search">
                         <div class="input-icon">
                             <span class="input-icon-addon"><i class="ti ti-search"></i></span>
                             <input type="text"
@@ -470,7 +473,7 @@
                                    placeholder="Buscar por ID de archivo u operador...">
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3" id="col-stats-responsable">
                         <select name="responsable" id="filter-stats-responsable" class="form-select form-select-sm">
                             <option value="all">Todos los Responsables</option>
                             @foreach($availableExecutors as $exec)
@@ -480,14 +483,14 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3" id="col-stats-satelite">
                         <select name="satelite" id="filter-stats-satelite" class="form-select form-select-sm">
                             <option value="all">Todos los Satélites</option>
                             <option value="VRSS-1" {{ request('satelite') === 'VRSS-1' ? 'selected' : '' }}>VRSS-1</option>
                             <option value="VRSS-2" {{ request('satelite') === 'VRSS-2' ? 'selected' : '' }}>VRSS-2</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
+                    <div class="{{ $hasInitialStatsFilters ? 'col-md-2' : 'col-md-2' }}" id="col-stats-fecha">
                         <input type="date"
                                name="fecha"
                                id="filter-stats-fecha"
@@ -495,9 +498,11 @@
                                value="{{ request('fecha', request('fecha_desde')) }}"
                                title="Filtrar por fecha exacta">
                     </div>
-                    <div class="col-md-2 d-flex gap-1">
-                        <button type="submit" class="btn btn-success btn-sm fw-bold flex-grow-1">
-                            <i class="ti ti-filter me-1"></i> Filtrar
+                    <div class="col-md-2 {{ $hasInitialStatsFilters ? '' : 'd-none' }}" id="col-stats-clear">
+                        <button type="button"
+                                id="btn-clear-stats-filters"
+                                class="btn btn-danger btn-sm fw-bold w-100">
+                            <i class="ti ti-x me-1"></i> Limpiar Filtros
                         </button>
                     </div>
                 </form>
@@ -1286,6 +1291,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const statsSatSelect = document.getElementById('filter-stats-satelite');
     const statsFechaInput = document.getElementById('filter-stats-fecha');
     const btnClearStatsFilters = document.getElementById('btn-clear-stats-filters');
+    const colStatsClear = document.getElementById('col-stats-clear');
+    const colStatsSearch = document.getElementById('col-stats-search');
+    const colStatsSatelite = document.getElementById('col-stats-satelite');
     const statsFilterSpinner = document.getElementById('stats-filter-spinner');
     const statsTotalBadge = document.getElementById('stats-records-total-badge');
     const exportCsvLink = document.getElementById('link-export-detalle-csv');
@@ -1293,8 +1301,36 @@ document.addEventListener('DOMContentLoaded', function () {
     let statsSearchDebounce = null;
     let currentStatsAbortCtrl = null;
 
+    function syncClearFilterButtonVisibility() {
+        const searchVal = (statsSearchInput?.value || '').trim();
+        const respVal = statsRespSelect?.value || 'all';
+        const satVal = statsSatSelect?.value || 'all';
+        const fechaVal = statsFechaInput?.value || '';
+
+        const hasAnyActiveFilter = searchVal !== ''
+            || (respVal !== '' && respVal !== 'all')
+            || (satVal !== '' && satVal !== 'all')
+            || fechaVal !== '';
+
+        if (colStatsClear) {
+            colStatsClear.classList.toggle('d-none', !hasAnyActiveFilter);
+        }
+        if (colStatsSearch) {
+            colStatsSearch.className = hasAnyActiveFilter ? 'col-md-3' : 'col-md-4';
+        }
+        if (colStatsSatelite) {
+            colStatsSatelite.className = hasAnyActiveFilter ? 'col-md-2' : 'col-md-3';
+        }
+        return hasAnyActiveFilter;
+    }
+
+    // Sincronizar columnas al cargar la vista
+    syncClearFilterButtonVisibility();
+
     function fetchStatsRecordsDynamic(page = 1) {
         if (!statsFilterForm || !statsRecordsContainer) return;
+
+        syncClearFilterButtonVisibility();
 
         if (currentStatsAbortCtrl) {
             currentStatsAbortCtrl.abort();
@@ -1338,9 +1374,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (statsTotalBadge && data.total !== undefined) {
                     statsTotalBadge.textContent = `${Number(data.total).toLocaleString('es-VE')} reg.`;
                 }
-                if (btnClearStatsFilters) {
-                    btnClearStatsFilters.classList.toggle('d-none', !data.has_filters);
-                }
+                syncClearFilterButtonVisibility();
                 if (exportCsvLink && data.export_csv_url) {
                     exportCsvLink.setAttribute('href', data.export_csv_url);
                 }
@@ -1365,6 +1399,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (statsSearchInput) {
             statsSearchInput.addEventListener('input', function () {
+                syncClearFilterButtonVisibility();
                 clearTimeout(statsSearchDebounce);
                 statsSearchDebounce = setTimeout(() => {
                     fetchStatsRecordsDynamic(1);
@@ -1390,6 +1425,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (statsRespSelect) statsRespSelect.value = 'all';
                 if (statsSatSelect) statsSatSelect.value = 'all';
                 if (statsFechaInput) statsFechaInput.value = '';
+                syncClearFilterButtonVisibility();
                 fetchStatsRecordsDynamic(1);
             });
         }
