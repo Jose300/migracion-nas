@@ -228,15 +228,19 @@ class NasMigrationController extends Controller
             ]);
 
             $motivo = '';
+            $errorType = 'connection_error';
             if (!$connTest['port_open']) {
                 $motivo = "El puerto SSH {$task->nas_port} en {$task->nas_host} no responde o está cerrado (" . ($connTest['port_error'] ?? '') . ").";
             } elseif (!$connTest['ssh_auth']) {
                 $motivo = "Autenticación SSH fallida en {$task->nas_host}:{$task->nas_port} para el usuario '{$task->ssh_user}'. Verifica la contraseña o credenciales en la configuración de la tarea (" . ($connTest['ssh_output'] ?? '') . ").";
+            } elseif (!empty($connTest['mount_error'])) {
+                $errorType = 'nfs_mount_error';
+                $motivo = $connTest['mount_error'];
             } else {
                 $motivo = "No se pudo establecer sesión SSH en {$task->nas_host}:{$task->nas_port}.";
             }
 
-            // Registrar log del intento fallido para trazabilidad
+            // Registrar log del intento bloqueado para trazabilidad
             NasMigrationLog::create([
                 'nas_migration_task_id' => $task->id,
                 'status' => 'failed',
@@ -246,13 +250,13 @@ class NasMigrationController extends Controller
                 'finished_at' => now(),
                 'duration_seconds' => 0,
                 'files_transferred' => 0,
-                'error_message' => "Fallo de conexión previo a la migración: {$motivo}",
-                'output' => "Diagnóstico de conexión:\n" . json_encode($connTest, JSON_PRETTY_PRINT),
+                'error_message' => "Ejecución bloqueada preventivamente: {$motivo}",
+                'output' => "Diagnóstico de conexión y montajes NFS:\n" . json_encode($connTest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
             ]);
 
             return response()->json([
                 'success' => false,
-                'error_type' => 'connection_error',
+                'error_type' => $errorType,
                 'message' => "No se pudo iniciar la sincronización: {$motivo}",
                 'details' => $connTest,
             ], 422);
@@ -484,8 +488,10 @@ class NasMigrationController extends Controller
             'success' => $result['success'],
             'data' => $result,
             'message' => $result['success']
-                ? "Conexión exitosa con {$task->nas_host}: Ping respondido y autenticación SSH verificada."
-                : "Fallo de conexión con {$task->nas_host}. Revisa el host, puerto o credenciales.",
+                ? "Conexión y montajes NFS verificados en {$task->nas_host}: Ping, SSH y montajes hacia Inspur activos."
+                : (!empty($result['mount_error'])
+                    ? $result['mount_error']
+                    : "Fallo de conexión con {$task->nas_host}. Revisa el host, puerto o credenciales."),
         ]);
     }
 

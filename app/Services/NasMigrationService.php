@@ -85,20 +85,69 @@ class NasMigrationService
             $socketError = "Puerto {$port} no responde: {$errstr} ({$errno})";
         }
 
-        // 3. Probar Autenticación SSH si el socket responde
+        // 3. Probar Autenticación SSH y Estado de Montajes NFS hacia Inspur si el socket responde
         $sshAuthOk = false;
         $sshAuthOutput = '';
+        $nfsSharedMounted = false;
+        $nfsSharedSource = null;
+        $nfsInspurMounted = false;
+        $nfsInspurSource = null;
+
+        $sharedMountPoint = rtrim($task->target_path ?: '/volume3/dae-RowData/MIGRACION_SYNOLOGY', '/');
+        $inspurMountPoint = '/volume3/dae-RowData/INSPUR_HS_IPS';
+        $requireInspurMount = (bool) ($task->auto_move_to_inspur ?? true);
 
         if ($socketOk) {
-            $testCmd = 'echo "CONEXION_OK"';
+            $mountCheckPy = "import os\n" .
+                "def check_nfs(mp):\n" .
+                "    mp = mp.rstrip('/')\n" .
+                "    try:\n" .
+                "        with open('/proc/mounts', 'r') as f:\n" .
+                "            for line in f:\n" .
+                "                p = line.split()\n" .
+                "                if len(p) >= 3 and p[1].rstrip('/') == mp and p[2].startswith('nfs'):\n" .
+                "                    return True, p[0]\n" .
+                "    except Exception:\n" .
+                "        pass\n" .
+                "    return False, ''\n" .
+                "s_ok, s_src = check_nfs(" . var_export($sharedMountPoint, true) . ")\n" .
+                "i_ok, i_src = check_nfs(" . var_export($inspurMountPoint, true) . ")\n" .
+                "print('CONEXION_OK')\n" .
+                "print(f'NFS_SHARED:{int(s_ok)}:{s_src}')\n" .
+                "print(f'NFS_INSPUR:{int(i_ok)}:{i_src}')\n";
+
+            $b64Mount = base64_encode($mountCheckPy);
+            $testCmd = "python3 -c \"import base64; exec(base64.b64decode('{$b64Mount}'))\"";
             $sshRun = $this->executeRemoteSsh($task, $testCmd, 15);
             $sshAuthOk = str_contains($sshRun['output'], 'CONEXION_OK');
             $sshAuthOutput = $sshRun['output'];
+
+            if (preg_match('/NFS_SHARED:([01]):([^\r\n]*)/', $sshAuthOutput, $mShared)) {
+                $nfsSharedMounted = $mShared[1] === '1';
+                $nfsSharedSource = trim($mShared[2]) ?: null;
+            }
+            if (preg_match('/NFS_INSPUR:([01]):([^\r\n]*)/', $sshAuthOutput, $mInspur)) {
+                $nfsInspurMounted = $mInspur[1] === '1';
+                $nfsInspurSource = trim($mInspur[2]) ?: null;
+            }
         }
 
-        // Éxito: el puerto SSH responde y la autenticación SSH es válida
-        // No exigimos ping obligatorio por si hay firewalls/VLANs que bloquean ICMP
-        $success = $socketOk && $sshAuthOk;
+        // Validar montajes NFS requeridos para evitar escritura accidental en disco local de Synology
+        $mountsOk = $nfsSharedMounted && (!$requireInspurMount || $nfsInspurMounted);
+        $mountError = null;
+        if ($sshAuthOk && !$mountsOk) {
+            $missingMounts = [];
+            if (!$nfsSharedMounted) {
+                $missingMounts[] = "Carpeta intermedia '{$sharedMountPoint}' (recurso NFS MIGRACION_SYNOLOGY)";
+            }
+            if ($requireInspurMount && !$nfsInspurMounted) {
+                $missingMounts[] = "Destino final '{$inspurMountPoint}' (recurso NFS {$task->inspur_host}:/HS_IPS_PRIVATE)";
+            }
+            $mountError = 'Montaje NFS caído o desconectado en Synology: ' . implode(' y ', $missingMounts) . '. Remonta la carpeta remota NFS en Synology File Station antes de continuar para evitar escribir en el volumen local.';
+        }
+
+        // Éxito: puerto SSH abierto, autenticación válida y montajes NFS activos
+        $success = $socketOk && $sshAuthOk && $mountsOk;
 
         return [
             'ping' => $pingOk,
@@ -106,6 +155,14 @@ class NasMigrationService
             'port_error' => $socketError,
             'ssh_auth' => $sshAuthOk,
             'ssh_output' => trim($sshAuthOutput),
+            'nfs_shared_mounted' => $nfsSharedMounted,
+            'nfs_shared_source' => $nfsSharedSource,
+            'nfs_shared_path' => $sharedMountPoint,
+            'nfs_inspur_mounted' => $nfsInspurMounted,
+            'nfs_inspur_source' => $nfsInspurSource,
+            'nfs_inspur_path' => $inspurMountPoint,
+            'mounts_ok' => $mountsOk,
+            'mount_error' => $mountError,
             'success' => $success,
         ];
     }
@@ -147,7 +204,9 @@ class NasMigrationService
                     ? "Puerto SSH {$task->nas_port} cerrado o inaccesible en {$task->nas_host} (" . ($connTest['port_error'] ?? '') . ")."
                     : (!$connTest['ssh_auth']
                         ? "Autenticación SSH fallida hacia {$task->nas_host}:{$task->nas_port} con usuario '{$task->ssh_user}'. Revisa usuario y contraseña."
-                        : "Conexión SSH no disponible hacia {$task->nas_host}:{$task->nas_port}.");
+                        : (!empty($connTest['mount_error'])
+                            ? "Protección Anti-Desmontaje NFS activada: {$connTest['mount_error']}"
+                            : "Conexión SSH no disponible hacia {$task->nas_host}:{$task->nas_port}."));
 
                 $duration = (int) round(microtime(true) - $startTime);
 
@@ -156,8 +215,8 @@ class NasMigrationService
                     'finished_at' => now(),
                     'duration_seconds' => $duration,
                     'files_transferred' => 0,
-                    'error_message' => "Fallo de conexión previo: {$motivo}",
-                    'output' => "Prueba de conectividad fallida:\n" . json_encode($connTest, JSON_PRETTY_PRINT),
+                    'error_message' => "Ejecución bloqueada preventivamente: {$motivo}",
+                    'output' => "Verificación previa de seguridad y montajes NFS fallida:\n" . json_encode($connTest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
                 ]);
 
                 $task->update([
@@ -202,14 +261,33 @@ class NasMigrationService
             // Bypassea completamente errores de escape en bash al manejar rutas con espacios
             // ("RAWDATA PRINCIPAL") y directorios internos de órbitas (CH1 y CH2).
             if ($batchLimit > 0) {
+                $inspurMountRoot = '/volume3/dae-RowData/INSPUR_HS_IPS';
                 $pyScript = "import os, sys, subprocess\n\n" .
+                    "def is_nfs_mounted(mp):\n" .
+                    "    mp = mp.rstrip('/')\n" .
+                    "    try:\n" .
+                    "        with open('/proc/mounts', 'r') as f:\n" .
+                    "            for line in f:\n" .
+                    "                p = line.split()\n" .
+                    "                if len(p) >= 3 and p[1].rstrip('/') == mp and p[2].startswith('nfs'):\n" .
+                    "                    return True\n" .
+                    "    except Exception:\n" .
+                    "        pass\n" .
+                    "    return False\n\n" .
                     "src = " . var_export($source, true) . "\n" .
                     "tgt = " . var_export($target, true) . "\n" .
+                    "inspur_mount_root = " . var_export($inspurMountRoot, true) . "\n" .
                     "inspur_final = " . var_export($inspurNfsTarget, true) . "\n" .
                     "last_orbit = " . var_export($lastOrbit, true) . "\n" .
                     "limit_orbits = " . (int)$batchLimit . "\n" .
                     "rsync_opts_str = " . var_export($options, true) . "\n" .
                     "batch_file = '/tmp/nas_batch_{$task->id}_' + str(os.getpid()) + '.txt'\n\n" .
+                    "if not is_nfs_mounted(tgt):\n" .
+                    "    print('[PROTECCION ANTI-DESMONTAJE] ERROR CRITICO: El recurso NFS intermedio ' + tgt + ' NO esta montado en Synology. Abortando Fase 1 para no llenar el volumen local.')\n" .
+                    "    sys.exit(2)\n\n" .
+                    "inspur_mounted = is_nfs_mounted(inspur_mount_root)\n" .
+                    "if not inspur_mounted:\n" .
+                    "    print('[AVISO MONTAJE] ' + inspur_mount_root + ' no esta montado por NFS; se ignorara cualquier carpeta local fantasma al verificar duplicados.')\n\n" .
                     "print('=== INICIANDO DETECCION AUTOMATICA DE ORBITAS Y ARCHIVOS PENDIENTES ===')\n" .
                     "if last_orbit:\n" .
                     "    print('[INDICE DE REANUDACION] Ultima orbita registrada: ' + last_orbit)\n" .
@@ -233,15 +311,15 @@ class NasMigrationService
                     "        for f in files:\n" .
                     "            rel = os.path.relpath(os.path.join(root, f), src)\n" .
                     "            orb_files.append(rel)\n" .
-                    "    # Detectar si faltan archivos considerando tanto la carpeta intermedia como el destino final Inspur RAWDATA\n" .
+                    "    # Detectar si faltan archivos considerando tanto la carpeta intermedia como el destino final Inspur RAWDATA (solo si esta montado por NFS)\n" .
                     "    pending = []\n" .
                     "    for rel_f in orb_files:\n" .
                     "        full_src = os.path.join(src, rel_f)\n" .
                     "        full_inter = os.path.join(tgt, rel_f)\n" .
                     "        full_inspur = os.path.join(inspur_final, rel_f)\n" .
                     "        src_sz = os.path.getsize(full_src) if os.path.exists(full_src) else -1\n\n" .
-                    "        # Si existe en Inspur RAWDATA con tamano identico -> Ya esta migrado\n" .
-                    "        if os.path.exists(full_inspur) and os.path.getsize(full_inspur) == src_sz:\n" .
+                    "        # Si existe en Inspur RAWDATA (con montaje NFS activo) y tamano identico -> Ya esta migrado\n" .
+                    "        if inspur_mounted and os.path.exists(full_inspur) and os.path.getsize(full_inspur) == src_sz:\n" .
                     "            continue\n" .
                     "        # Si existe en la carpeta compartida intermedia con tamano identico -> Ya se copio en Fase 1\n" .
                     "        if os.path.exists(full_inter) and os.path.getsize(full_inter) == src_sz:\n" .
@@ -380,8 +458,10 @@ class NasMigrationService
                 $orbitsSkipped = (int) $mOrb[3];
             }
 
-            // Si se transfirieron archivos con éxito y se detectó una última órbita en el lote, actualizar el índice de la tarea
-            if ($success && $lastProcessedOrbit) {
+            // Si se transfirieron archivos con éxito en AMBAS fases y se detectó una última órbita en el lote, actualizar el índice de la tarea
+            $finalTaskSuccess = $success && ($phaseInspurStatus !== 'failed');
+
+            if ($finalTaskSuccess && $lastProcessedOrbit) {
                 $task->update([
                     'last_migrated_orbit' => $lastProcessedOrbit,
                     'last_migrated_orbit_at' => now(),
@@ -394,7 +474,9 @@ class NasMigrationService
                     ($lastProcessedOrbit ? " (Última: {$lastProcessedOrbit})" : '');
             }
 
-            $finalTaskSuccess = $success && ($phaseInspurStatus !== 'failed');
+            $phase2ErrorMsg = ($phaseInspurStatus === 'failed' && isset($moveResult['error']))
+                ? $moveResult['error']
+                : 'Error al trasladar archivos en Inspur.';
 
             $log->update([
                 'status' => $finalTaskSuccess ? 'completed' : 'failed',
@@ -415,7 +497,7 @@ class NasMigrationService
                 'speed' => $stats['speed'],
                 'summary' => $stats['summary'] . $moveSummary . $orbitSummaryText,
                 'output' => $output,
-                'error_message' => $finalTaskSuccess ? null : ($execResult['error'] ?: ($phaseInspurStatus === 'failed' ? 'Error al trasladar archivos en Inspur.' : 'El proceso rsync finalizó con código de error.')),
+                'error_message' => $finalTaskSuccess ? null : ($execResult['error'] ?: ($phaseInspurStatus === 'failed' ? $phase2ErrorMsg : 'El proceso rsync finalizó con código de error.')),
             ]);
 
             // Si la tarea concluyó con éxito y transfirió archivos, registrar automáticamente en Estadísticas
@@ -529,13 +611,33 @@ class NasMigrationService
     {
         $sharedSynologyFolder = rtrim($task->target_path ?: '/volume3/dae-RowData/MIGRACION_SYNOLOGY', '/');
         $cleanSubdir = trim($inspurDir, '/');
+        $inspurMountRoot = '/volume3/dae-RowData/INSPUR_HS_IPS';
         // Ruta en Synology hacia el recurso NFS montado directamente de Inspur (/HS_IPS_PRIVATE)
-        $inspurNfsTarget = "/volume3/dae-RowData/INSPUR_HS_IPS/RDP_FTP/RAWDATA/{$cleanSubdir}";
+        $inspurNfsTarget = "{$inspurMountRoot}/RDP_FTP/RAWDATA/{$cleanSubdir}";
 
         // Script en Python ejecutado en Synology para mover directamente vía rsync --remove-source-files
+        // Incluye PROTECCIÓN ESTRICTA ANTI-DESMONTAJE NFS: jamás escribe en /volume3 local si el montaje NFS cayó.
         $pyScript = "import os, subprocess, sys\n\n" .
+            "def is_nfs_mounted(mp):\n" .
+            "    mp = mp.rstrip('/')\n" .
+            "    try:\n" .
+            "        with open('/proc/mounts', 'r') as f:\n" .
+            "            for line in f:\n" .
+            "                p = line.split()\n" .
+            "                if len(p) >= 3 and p[1].rstrip('/') == mp and p[2].startswith('nfs'):\n" .
+            "                    return True\n" .
+            "    except Exception:\n" .
+            "        pass\n" .
+            "    return False\n\n" .
             "src = " . var_export($sharedSynologyFolder, true) . "\n" .
+            "mount_root = " . var_export($inspurMountRoot, true) . "\n" .
             "tgt = " . var_export($inspurNfsTarget, true) . "\n\n" .
+            "if not is_nfs_mounted(src):\n" .
+            "    print('ERROR_MOUNT_SRC:El recurso NFS origen ' + src + ' no esta montado en Synology.')\n" .
+            "    sys.exit(3)\n\n" .
+            "if not is_nfs_mounted(mount_root):\n" .
+            "    print('ERROR_MOUNT_DEST:PROTECCION ANTI-DESMONTAJE ACTIVADA: El punto de montaje ' + mount_root + ' NO tiene montado el recurso NFS de Inspur (/HS_IPS_PRIVATE). Se aborta Fase 2 y las orbitas quedan resguardadas en ' + src + ' para evitar escribir en el disco local de Synology.')\n" .
+            "    sys.exit(4)\n\n" .
             "if not os.path.exists(tgt):\n" .
             "    try:\n" .
             "        os.makedirs(tgt, exist_ok=True)\n" .
@@ -544,7 +646,13 @@ class NasMigrationService
             "        sys.exit(1)\n\n" .
             "entries = [d for d in os.listdir(src) if not d.startswith(('#', '@'))]\n" .
             "total_moved = 0\n" .
+            "move_errors = []\n" .
             "for orb in entries:\n" .
+            "    # Re-verificar en cada orbita que el montaje NFS no se haya caido a mitad de transferencia\n" .
+            "    if not is_nfs_mounted(mount_root):\n" .
+            "        move_errors.append('Montaje NFS ' + mount_root + ' se desconecto durante el traslado de ' + orb)\n" .
+            "        print('ERROR_MOUNT_LOST:' + orb)\n" .
+            "        break\n" .
             "    src_orb = os.path.join(src, orb)\n" .
             "    tgt_orb = os.path.join(tgt, orb)\n" .
             "    if not os.path.isdir(src_orb):\n" .
@@ -564,8 +672,14 @@ class NasMigrationService
             "        except: pass\n" .
             "        print('ORB_MOVED:' + orb + ':' + str(f_count))\n" .
             "    else:\n" .
-            "        print('ERROR_MOVE:' + orb + ':' + proc.stdout[:200])\n" .
+            "        err_line = proc.stdout[:200].replace('\\n', ' ')\n" .
+            "        move_errors.append(orb + ': ' + err_line)\n" .
+            "        print('ERROR_MOVE:' + orb + ':' + err_line)\n" .
             "    sys.stdout.flush()\n" .
+            "if move_errors:\n" .
+            "    print('ERROR_SUMMARY:' + ' | '.join(move_errors))\n" .
+            "    print('[MOVED:' + str(total_moved) + ']')\n" .
+            "    sys.exit(5)\n" .
             "print('[MOVED:' + str(total_moved) + ']')\n" .
             "sys.stdout.flush()\n";
 
@@ -576,7 +690,7 @@ class NasMigrationService
             if ($log) {
                 // Mantener viva la marca de tiempo de la tarea en la BD para que el monitor nunca la confunda con colgada
                 $updateData = [];
-                if (str_contains($buffer, 'TRASLADANDO_ORBITA:')) {
+                if (str_contains($buffer, 'TRASLADANDO_ORBITA:') || str_contains($buffer, 'ERROR_MOUNT')) {
                     $updateData['output'] = substr(($log->output ?? '') . "\n" . trim($buffer), -5000);
                 }
                 $log->touch();
@@ -588,22 +702,55 @@ class NasMigrationService
 
         // Ejecutar con timeout de 0 (sin límite) porque mover terabytes/gigabytes toma su tiempo
         $result = $this->executeRemoteSsh($task, $cmd, 0, $onMoveOutput);
+        $out = $result['output'] ?? '';
+        $exitCode = $result['exit_code'] ?? 1;
 
-        if (preg_match('/\[MOVED:(\d+)\]/', $result['output'] ?? '', $m)) {
-            $movedCount = (int) $m[1];
+        if (preg_match('/ERROR_MOUNT_DEST:([^\r\n]+)/', $out, $mDest)) {
             return [
-                'success' => true,
+                'success' => false,
+                'moved' => 0,
+                'message' => trim($mDest[1]),
+                'error' => trim($mDest[1]),
+            ];
+        }
+
+        if (preg_match('/ERROR_MOUNT_SRC:([^\r\n]+)/', $out, $mSrc)) {
+            return [
+                'success' => false,
+                'moved' => 0,
+                'message' => trim($mSrc[1]),
+                'error' => trim($mSrc[1]),
+            ];
+        }
+
+        $movedCount = 0;
+        if (preg_match('/\[MOVED:(\d+)\]/', $out, $m)) {
+            $movedCount = (int) $m[1];
+        }
+
+        if ($exitCode !== 0) {
+            $errDetail = 'Fallo durante el traslado a Inspur RAWDATA.';
+            if (preg_match('/ERROR_SUMMARY:([^\r\n]+)/', $out, $mSum)) {
+                $errDetail = trim($mSum[1]);
+            } elseif (preg_match('/ERROR_MKDIR:([^\r\n]+)/', $out, $mMk)) {
+                $errDetail = 'No se pudo crear directorio destino en Inspur: ' . trim($mMk[1]);
+            } elseif (!empty(trim($result['error'] ?? ''))) {
+                $errDetail = trim($result['error']);
+            }
+
+            return [
+                'success' => false,
                 'moved' => $movedCount,
-                'message' => "Archivos trasladados con éxito en Inspur a /HS_IPS_PRIVATE/RDP_FTP/RAWDATA/{$cleanSubdir} ({$movedCount} archivos trasladados).",
-                'error' => null
+                'message' => "Traslado interrumpido ({$movedCount} archivos movidos). Motivo: {$errDetail}",
+                'error' => $errDetail,
             ];
         }
 
         return [
             'success' => true,
-            'moved' => 0,
-            'message' => "Archivos resguardados en MIGRACION_SYNOLOGY (Inspur NFS).",
-            'error' => null
+            'moved' => $movedCount,
+            'message' => "Archivos trasladados con éxito en Inspur a /HS_IPS_PRIVATE/RDP_FTP/RAWDATA/{$cleanSubdir} ({$movedCount} archivos trasladados).",
+            'error' => null,
         ];
     }
 

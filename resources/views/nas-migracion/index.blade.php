@@ -1099,26 +1099,36 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
+                    const info = data.data || {};
                     Swal.fire({
                         icon: 'success',
-                        title: '¡Conexión Exitosa!',
-                        html: `<div class="text-start p-2 bg-light rounded font-monospace" style="font-size: 0.85rem;">
+                        title: '¡Conexión y Montajes NFS Verificados!',
+                        html: `<div class="text-start p-2 bg-light rounded font-monospace" style="font-size: 0.84rem;">
                                 <div class="text-success"><i class="ti ti-check"></i> Ping ICMP: Respondido con éxito.</div>
                                 <div class="text-success"><i class="ti ti-check"></i> Puerto SSH: Abierto y listo.</div>
-                                <div class="text-success"><i class="ti ti-check"></i> Autenticación: Verificada correctamente.</div>
+                                <div class="text-success"><i class="ti ti-check"></i> Autenticación SSH: Verificada correctamente.</div>
+                                <div class="text-success"><i class="ti ti-check"></i> Montaje NFS Intermedio: Activo (${info.nfs_shared_source || 'MIGRACION_SYNOLOGY'}).</div>
+                                <div class="text-success"><i class="ti ti-check"></i> Montaje NFS Inspur Final: Activo (${info.nfs_inspur_source || 'HS_IPS_PRIVATE'}).</div>
                                </div>`,
                         confirmButtonText: 'Aceptar',
                         confirmButtonColor: '#2fb344'
                     });
                 } else {
                     const info = data.data || {};
+                    const isMountProblem = info.ssh_auth && info.mounts_ok === false;
                     Swal.fire({
-                        icon: 'error',
-                        title: 'Error de Conexión',
+                        icon: isMountProblem ? 'warning' : 'error',
+                        title: isMountProblem ? 'Protección Anti-Desmontaje NFS Activada' : 'Error de Conexión',
                         html: `<div class="text-start p-2 bg-light rounded" style="font-size: 0.85rem;">
                                 <div><b>Ping:</b> ${info.ping ? '✅ Respondido' : '❌ Sin respuesta'}</div>
                                 <div><b>Puerto SSH:</b> ${info.port_open ? '✅ Abierto' : '❌ Cerrado o inaccesible'}</div>
                                 <div><b>Autenticación SSH:</b> ${info.ssh_auth ? '✅ OK' : '❌ Falló (Verifica usuario y contraseña)'}</div>
+                                ${info.ssh_auth ? `
+                                    <hr class="my-2">
+                                    <div><b>NFS Intermedio (${info.nfs_shared_path || 'MIGRACION_SYNOLOGY'}):</b> ${info.nfs_shared_mounted ? `✅ Montado (<code>${info.nfs_shared_source}</code>)` : '❌ DESMONTADO'}</div>
+                                    <div><b>NFS Inspur Final (${info.nfs_inspur_path || 'INSPUR_HS_IPS'}):</b> ${info.nfs_inspur_mounted ? `✅ Montado (<code>${info.nfs_inspur_source}</code>)` : '❌ DESMONTADO (Riesgo de copia local)'}</div>
+                                ` : ''}
+                                ${info.mount_error ? `<div class="alert alert-danger p-2 mt-2 mb-0 small"><i class="ti ti-shield-lock me-1"></i> ${info.mount_error}</div>` : ''}
                                 ${info.port_error ? `<div class="text-danger mt-1">${info.port_error}</div>` : ''}
                                </div>`,
                         confirmButtonText: 'Cerrar',
@@ -1260,15 +1270,20 @@ document.addEventListener('DOMContentLoaded', function () {
                             // Iniciar polling fluido cada 1.5 segundos
                             startPollingTask(taskId, statusUrl, taskName);
                         } else {
-                            // Fallo de conexión o error: restaurar botón y alertar
+                            // Fallo de conexión o desmontaje NFS detectado: restaurar botón y alertar
                             setTaskRunningState(taskId, false);
+                            const isNfsBlock = body.error_type === 'nfs_mount_error';
                             Swal.fire({
-                                icon: 'error',
-                                title: 'Fallo de Conexión - Ejecución Paralizada',
+                                icon: isNfsBlock ? 'warning' : 'error',
+                                title: isNfsBlock ? 'Protección Anti-Desmontaje NFS Activada' : 'Fallo de Conexión - Ejecución Paralizada',
                                 html: `<div class="alert alert-danger text-start p-2 mb-2" style="font-size: 0.85rem;">
-                                           <i class="ti ti-wifi-off me-1"></i> <b>La tarea no se puede ejecutar:</b><br>${body.message || 'La NAS remota no responde.'}
+                                           <i class="ti ${isNfsBlock ? 'ti-plug-connected-x' : 'ti-wifi-off'} me-1"></i> <b>Ejecución bloqueada por seguridad:</b><br>${body.message || 'La NAS remota no responde.'}
                                        </div>
-                                       <div class="text-secondary small">La tarea ha sido paralizada para evitar bloqueos del sistema. Comprueba que la NAS esté encendida, en red y con el puerto SSH accesible.</div>`,
+                                       <div class="text-secondary small">
+                                           ${isNfsBlock
+                                               ? 'La sincronización se detuvo automáticamente para impedir que las órbitas se escriban en el disco local de Synology. Remonta la carpeta NFS en Synology File Station y vuelve a intentarlo.'
+                                               : 'La tarea ha sido paralizada para evitar bloqueos del sistema. Comprueba que la NAS esté encendida, en red y con el puerto SSH accesible.'}
+                                       </div>`,
                                 confirmButtonText: 'Entendido',
                                 confirmButtonColor: '#2fb344'
                             });

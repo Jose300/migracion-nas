@@ -47,23 +47,48 @@ class NasVerificationService
             $source = rtrim($task->source_path, '/');
             $intermediate = rtrim($task->target_path ?: '/volume3/dae-RowData/MIGRACION_SYNOLOGY', '/');
             $cleanSubdir = trim($task->inspur_target_dir ?: 'VRSS-1', '/');
-            $inspurFinal = "/volume3/dae-RowData/INSPUR_HS_IPS/RDP_FTP/RAWDATA/{$cleanSubdir}";
+            $inspurMountRoot = '/volume3/dae-RowData/INSPUR_HS_IPS';
+            $inspurFinal = "{$inspurMountRoot}/RDP_FTP/RAWDATA/{$cleanSubdir}";
 
             $filterOrbitsJson = json_encode($specificOrbits ?: []);
 
             // Script remoto en Python3 ejecutado en Synology que compara los 2 saltos:
             // Salto 1: Origen (Synology) -> Carpeta Compartida (MIGRACION_SYNOLOGY)
             // Salto 2: Carpeta Compartida (MIGRACION_SYNOLOGY) -> Inspur RAWDATA (NFS)
+            // Verifica estrictamente en /proc/mounts que las carpetas destino sean montajes NFS reales y no directorios locales
             $pyScript = <<<'PYEOF'
 import os, sys, json
+
+def is_nfs_mounted(mp):
+    mp = mp.rstrip('/')
+    try:
+        with open('/proc/mounts', 'r') as f:
+            for line in f:
+                p = line.split()
+                if len(p) >= 3 and p[1].rstrip('/') == mp and p[2].startswith('nfs'):
+                    return True
+    except Exception:
+        pass
+    return False
 
 src = sys.argv[1].rstrip('/')
 inter = sys.argv[2].rstrip('/')
 tgt = sys.argv[3].rstrip('/')
 filter_orbits = json.loads(sys.argv[4]) if len(sys.argv) > 4 else []
+inspur_mount_root = '/volume3/dae-RowData/INSPUR_HS_IPS'
 
 if not os.path.exists(src):
     print(json.dumps({'success': False, 'error': f'Ruta origen no encontrada en Synology: {src}'}))
+    sys.exit(0)
+
+inter_mounted = is_nfs_mounted(inter)
+inspur_mounted = is_nfs_mounted(inspur_mount_root)
+
+if not inspur_mounted:
+    print(json.dumps({
+        'success': False,
+        'error': f'Protección Anti-Desmontaje NFS: El recurso remoto de Inspur ({inspur_mount_root}) NO está montado por NFS en la Synology. No se puede dar por confirmada ninguna órbita en Inspur hasta remontar 192.168.10.180:/HS_IPS_PRIVATE.'
+    }))
     sys.exit(0)
 
 items = []
