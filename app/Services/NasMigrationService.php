@@ -1078,8 +1078,8 @@ PYEOF;
 
             $pyScript = $pyHeader . $pyBody;
             $b64 = base64_encode($pyScript);
-            // Exactamente el mismo formato probado de runSync + marcador nas_relocate_active visible en ps aux
-            $remoteCmd = "python3 -c \"# nas_relocate_active\nimport base64; exec(base64.b64decode('{$b64}').decode('utf-8'))\"";
+            // Sin saltos de línea para evitar que plink/cmd.exe en Windows corte el comando y abra una shell interactiva
+            $remoteCmd = "python3 -c \"import base64; exec(base64.b64decode('{$b64}').decode('utf-8'))\" # nas_relocate_active";
 
             $filesCount = 0;
             $totalBatchFiles = 0;
