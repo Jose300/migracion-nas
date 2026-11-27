@@ -421,6 +421,9 @@ class NasMigrationService
 
             $onOutput = function ($type, $buffer) use (&$filesCount, &$totalBatchFiles, &$accumulatedOutput, &$lastProgressUpdate, $log) {
                 $accumulatedOutput .= $buffer;
+                if (app()->runningInConsole()) {
+                    echo $buffer;
+                }
 
                 // Detectar el total de archivos a transferir en este lote
                 if (preg_match('/TOTAL_BATCH_FILES:(\d+)/', $buffer, $mTotal)) {
@@ -1093,6 +1096,9 @@ PYEOF;
 
             $onOutput = function ($type, $buffer) use (&$filesCount, &$totalBatchFiles, &$accumulatedOutput, &$lastProgressUpdate, $log) {
                 $accumulatedOutput .= $buffer;
+                if (app()->runningInConsole()) {
+                    echo $buffer;
+                }
 
                 if (preg_match('/TOTAL_BATCH_FILES:(\d+)/', $buffer, $mTotal)) {
                     $totalBatchFiles = (int) $mTotal[1];
