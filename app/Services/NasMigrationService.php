@@ -908,10 +908,8 @@ if not mounted_ok:
 print("=== INICIANDO TRASLADO DEFINITIVO DE ORBITAS PENDIENTES A INSPUR ===", flush=True)
 print(f"[FASE 2 - INSPUR] Destino NFS verificado: {inspur_root}/RDP_FTP/RAWDATA/", flush=True)
 
-# Recolectar listado rapido de carpetas de orbita (sin os.walk global previo para arrancar en < 1 segundo)
-jobs = []
-
-# 1) Orbitas resguardadas en carpeta local de rescate (INSPUR_HS_IPS_LOCAL_PENDIENTE/RDP_FTP/RAWDATA/{SAT}/{ORB})
+# 1) FASE 1: Pasar orbitas de INSPUR_HS_IPS_LOCAL_PENDIENTE -> MIGRACION_SYNOLOGY
+rescue_jobs = []
 rescue_rawdata = os.path.join(rescue_root, 'RDP_FTP', 'RAWDATA')
 if os.path.isdir(rescue_rawdata):
     for sub in sorted(os.listdir(rescue_rawdata)):
@@ -924,9 +922,44 @@ if os.path.isdir(rescue_rawdata):
                     continue
                 orb_p = os.path.join(sub_path, orb)
                 if os.path.isdir(orb_p):
-                    jobs.append(('LOCAL_RESCATE', orb_p, sub, orb))
+                    rescue_jobs.append((orb_p, sub, orb))
 
-# 2) Orbitas pendientes en carpeta compartida intermedia (MIGRACION_SYNOLOGY/{ORB})
+if len(rescue_jobs) > 0:
+    if not os.path.isdir(shared_src):
+        print(f"[ERROR_MOUNT] La carpeta destino MIGRACION_SYNOLOGY ({shared_src}) no existe o no esta accesible.", flush=True)
+        sys.exit(4)
+    os.makedirs(shared_src, exist_ok=True)
+    print(f"[FASE 1 - RESCATE] Pasando {len(rescue_jobs)} orbitas de INSPUR_HS_IPS_LOCAL_PENDIENTE hacia MIGRACION_SYNOLOGY ({shared_src})...", flush=True)
+    for r_idx, (src_orb, sub, orb) in enumerate(rescue_jobs, 1):
+        tgt_shared_orb = os.path.join(shared_src, orb)
+        print(f"[FASE 1: {r_idx}/{len(rescue_jobs)}] MOVIENDO_A_SHARED:{orb} -> MIGRACION_SYNOLOGY/{orb}", flush=True)
+        cmd_r = ['rsync', '-avh', '--timeout=300', '--partial', '--remove-source-files', '--out-format=PROGRESS_FILE:' + orb + '/%n', src_orb + '/', tgt_shared_orb + '/']
+        proc_r = subprocess.Popen(cmd_r, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+        out_r = []
+        for line in proc_r.stdout:
+            sys.stdout.write(line)
+            sys.stdout.flush()
+            if len(out_r) < 30:
+                out_r.append(line.strip())
+        proc_r.wait()
+        if proc_r.returncode == 0:
+            for root, dirs, _ in os.walk(src_orb, topdown=False):
+                for d in dirs:
+                    try:
+                        os.rmdir(os.path.join(root, d))
+                    except Exception:
+                        pass
+            try:
+                os.rmdir(src_orb)
+            except Exception:
+                pass
+        else:
+            err_snip = ' '.join(out_r[-3:])[:220]
+            print(f"[ERROR_FASE_1] {orb}: {err_snip}", flush=True)
+            sys.exit(5)
+
+# 2) FASE 2: Pasar todas las orbitas desde MIGRACION_SYNOLOGY -> NAS Inspur (/HS_IPS_PRIVATE)
+jobs = []
 if is_nfs_mounted(shared_src) and os.path.isdir(shared_src):
     for orb in sorted(os.listdir(shared_src)):
         if orb.startswith(('#', '@', '.')):
