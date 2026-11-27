@@ -1077,9 +1077,8 @@ sys.exit(0)
 PYEOF;
 
             $pyScript = $pyHeader . $pyBody;
-            $b64 = base64_encode($pyScript);
-            // Sin saltos de línea para evitar que plink/cmd.exe en Windows corte el comando y abra una shell interactiva
-            $remoteCmd = "python3 -c \"import base64; exec(base64.b64decode('{$b64}').decode('utf-8'))\" # nas_relocate_active";
+            // Enviar el script Python por stdin (python3 -) para evitar el límite de 8191 caracteres de Windows cmd.exe/plink
+            $remoteCmd = "python3 - # nas_relocate_active";
 
             $filesCount = 0;
             $totalBatchFiles = 0;
@@ -1127,7 +1126,7 @@ PYEOF;
                 }
             };
 
-            $execResult = $this->executeRemoteSsh($task, $remoteCmd, 0, $onOutput);
+            $execResult = $this->executeRemoteSsh($task, $remoteCmd, 0, $onOutput, $pyScript);
             $duration = (int) round(microtime(true) - $startTime);
             $output = $execResult['output'] ?? '';
             $success = ($execResult['exit_code'] ?? 1) === 0;
@@ -1338,7 +1337,7 @@ PYEOF;
     /**
      * Ejecuta un comando en el host SSH de la NAS utilizando las herramientas nativas del sistema.
      */
-    public function executeRemoteSsh(NasMigrationTask $task, string $remoteCommand, int $timeout = 60, ?callable $onOutput = null): array
+    public function executeRemoteSsh(NasMigrationTask $task, string $remoteCommand, int $timeout = 60, ?callable $onOutput = null, ?string $stdin = null): array
     {
         $host = $task->nas_host;
         $port = $task->nas_port ?: 22;
@@ -1362,7 +1361,11 @@ PYEOF;
                 $remoteCommand
             ];
 
-            $proc = Process::timeout($timeout)->run($cmd, function ($type, $buffer) use ($onOutput) {
+            $pending = Process::timeout($timeout);
+            if ($stdin !== null) {
+                $pending = $pending->input($stdin);
+            }
+            $proc = $pending->run($cmd, function ($type, $buffer) use ($onOutput) {
                 if ($onOutput) {
                     $onOutput($type, $buffer);
                 }
@@ -1391,7 +1394,11 @@ PYEOF;
                 $remoteCommand,
             ];
 
-            $proc = Process::timeout($timeout)->run($cmd, function ($type, $buffer) use ($onOutput) {
+            $pending = Process::timeout($timeout);
+            if ($stdin !== null) {
+                $pending = $pending->input($stdin);
+            }
+            $proc = $pending->run($cmd, function ($type, $buffer) use ($onOutput) {
                 if ($onOutput) {
                     $onOutput($type, $buffer);
                 }
@@ -1406,7 +1413,11 @@ PYEOF;
         // Si no hay plink o en sistemas Linux con sshpass
         if (PHP_OS_FAMILY !== 'Windows') {
             $cmd = "sshpass -p '{$password}' ssh -p {$port} -o StrictHostKeyChecking=no {$user}@{$host} '{$remoteCommand}'";
-            $proc = Process::timeout($timeout)->run($cmd, function ($type, $buffer) use ($onOutput) {
+            $pending = Process::timeout($timeout);
+            if ($stdin !== null) {
+                $pending = $pending->input($stdin);
+            }
+            $proc = $pending->run($cmd, function ($type, $buffer) use ($onOutput) {
                 if ($onOutput) {
                     $onOutput($type, $buffer);
                 }
